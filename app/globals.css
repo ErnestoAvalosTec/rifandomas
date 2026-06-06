@@ -67,6 +67,16 @@
   display: none;
 }
 
+/* Ocultar spinner nativo en inputs numéricos */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 @layer components {
   /* font-title always renders at ExtraBold weight */
   .font-title {

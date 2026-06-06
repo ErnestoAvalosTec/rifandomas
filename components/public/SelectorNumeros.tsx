@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Search } from 'lucide-react'
 import type { Database } from '@/types/database.types'
 
 type EstatusBoleto = Database['public']['Tables']['boletos']['Row']['estatus']
@@ -26,6 +26,7 @@ export function SelectorNumeros({
   const supabase = createClient()
   const [boletos, setBoletos] = useState<Map<string, EstatusBoleto>>(new Map())
   const [cargando, setCargando] = useState(true)
+  const [busqueda, setBusqueda] = useState('')
 
   useEffect(() => {
     const cargar = async () => {
@@ -100,12 +101,43 @@ export function SelectorNumeros({
     )
   }
 
+  const digits = String(totalNumeros).length
   const numeros = Array.from({ length: totalNumeros }, (_, i) =>
-    String(i + 1).padStart(4, '0')
+    String(i + 1).padStart(digits, '0')
   )
+
+  const search = busqueda.trim()
+  const numerosFiltrados = search
+    ? numeros.filter(n => n.includes(search) || n.replace(/^0+/, '').startsWith(search))
+    : numeros
 
   return (
     <div>
+      {/* Buscador */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'rgba(255,255,255,0.35)' }} />
+        <input
+          type="text"
+          inputMode="numeric"
+          placeholder="Busca tu número (ej. 42)"
+          value={busqueda}
+          onChange={e => setBusqueda(e.target.value.replace(/\D/g, '').slice(0, 4))}
+          style={{
+            width: '100%', paddingLeft: 36, paddingRight: 12, height: 40,
+            background: 'rgba(255,255,255,0.07)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: 10, color: '#fff', fontSize: 14, outline: 'none',
+          }}
+          onFocus={e => { e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)' }}
+          onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
+        />
+        {search && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-ui" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            {numerosFiltrados.length} resultado{numerosFiltrados.length !== 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
+
       <div className="flex flex-wrap gap-3 mb-4 text-xs font-ui">
         <span className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded bg-brand-green/40 border border-brand-green/50" />
@@ -126,11 +158,17 @@ export function SelectorNumeros({
         <span className="text-white font-semibold">{maxSeleccion}</span> números seleccionados
       </p>
 
+      {numerosFiltrados.length === 0 && (
+        <p className="text-center py-6 text-sm font-ui" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          No hay números disponibles con ese criterio.
+        </p>
+      )}
+
       <div
         className="grid gap-1.5 max-h-72 overflow-y-auto pr-1"
         style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(52px, 1fr))' }}
       >
-        {numeros.map((num) => {
+        {numerosFiltrados.map((num) => {
           const estatus = boletos.get(num) ?? 'disponible'
           const estaSeleccionado = seleccionados.includes(num)
           const disponible = estatus === 'disponible'

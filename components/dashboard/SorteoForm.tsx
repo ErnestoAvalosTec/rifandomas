@@ -58,6 +58,8 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
   const sb = supabase as any
   const router = useRouter()
   const [guardando, setGuardando] = useState(false)
+  const [esLoteria, setEsLoteria] = useState<boolean>((sorteo as any)?.es_loteria ?? false)
+  const [digitosLoteria, setDigitosLoteria] = useState<number>(3)
 
   const isEdit = !!sorteo
 
@@ -81,6 +83,17 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
   const { fields: premioFields, append: appendPremio, remove: removePremio } = useFieldArray({ control, name: 'premios' })
   const { fields: cuentaFields, append: appendCuenta, remove: removeCuenta } = useFieldArray({ control, name: 'cuentas' })
 
+  const toggleLoteria = (checked: boolean) => {
+    setEsLoteria(checked)
+    if (checked) setValue('total_numeros', Math.pow(10, digitosLoteria))
+    else setValue('total_numeros', 100)
+  }
+
+  const handleDigitosChange = (d: number) => {
+    setDigitosLoteria(d)
+    setValue('total_numeros', Math.pow(10, d))
+  }
+
   const uploadImagen = async (file: File, index: number) => {
     const ext = file.name.split('.').pop()
     const path = `premios/${userId}/${Date.now()}.${ext}`
@@ -96,15 +109,19 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
     try {
       let sorteoId = sorteo?.id
 
+      const totalNums = esLoteria ? Math.pow(10, digitosLoteria) : values.total_numeros
+      const digits = esLoteria ? digitosLoteria : String(values.total_numeros).length
+
       if (isEdit && sorteoId) {
         const { error } = await sb.from('sorteos').update({
           nombre: values.nombre,
           descripcion: values.descripcion,
           fecha_sorteo: values.fecha_sorteo,
-          total_numeros: values.total_numeros,
+          total_numeros: totalNums,
           precio_unitario: values.precio_unitario,
           promo_activa: values.promo_activa,
           promo_tipo: values.promo_tipo,
+          es_loteria: esLoteria,
           ...(adminMode ? {} : { estatus: 'pendiente' }),
           updated_at: new Date().toISOString(),
         }).eq('id', sorteoId)
@@ -115,10 +132,11 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
           nombre: values.nombre,
           descripcion: values.descripcion,
           fecha_sorteo: values.fecha_sorteo,
-          total_numeros: values.total_numeros,
+          total_numeros: totalNums,
           precio_unitario: values.precio_unitario,
           promo_activa: values.promo_activa,
           promo_tipo: values.promo_tipo,
+          es_loteria: esLoteria,
           estatus: adminMode ? 'activo' : 'pendiente',
         }).select().single()
         if (error) throw error
@@ -126,9 +144,9 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
         sorteoId = data.id
 
         if (adminMode) {
-          const boletos = Array.from({ length: values.total_numeros }, (_, i) => ({
+          const boletos = Array.from({ length: totalNums }, (_, i) => ({
             sorteo_id: sorteoId!,
-            numero: String(i + 1).padStart(4, '0'),
+            numero: String(esLoteria ? i : i + 1).padStart(digits, '0'),
             estatus: 'disponible' as const,
           }))
           for (let i = 0; i < boletos.length; i += 500) {
@@ -188,18 +206,61 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
           <Label>Descripción (opcional)</Label>
           <textarea className="flex w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-[80px] resize-none" placeholder="Descripción corta del sorteo..." {...register('descripcion')} />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <Label>Fecha tentativa del sorteo</Label>
-            <Input type="date" {...register('fecha_sorteo')} />
-            {errors.fecha_sorteo && <p className="text-xs text-red-400">{errors.fecha_sorteo.message}</p>}
+        <div className="space-y-1.5">
+          <Label>Fecha tentativa del sorteo</Label>
+          <Input type="date" {...register('fecha_sorteo')} />
+          {errors.fecha_sorteo && <p className="text-xs text-red-400">{errors.fecha_sorteo.message}</p>}
+        </div>
+
+        {/* Modalidad de números */}
+        <label className="flex items-start gap-3 p-3 rounded-xl border border-brand-border bg-brand-border/10 cursor-pointer hover:border-primary/40 transition-colors">
+          <input
+            type="checkbox"
+            checked={esLoteria}
+            onChange={e => toggleLoteria(e.target.checked)}
+            className="mt-0.5 w-4 h-4 accent-primary cursor-pointer flex-shrink-0"
+          />
+          <div>
+            <p className="text-sm font-ui font-semibold text-brand-text">Basado en Lotería Nacional</p>
+            <p className="text-xs text-brand-muted mt-0.5 leading-relaxed">
+              El ganador se determina con los últimos dígitos del sorteo de la Lotería Nacional. El sistema generará todas las combinaciones posibles.
+            </p>
           </div>
+        </label>
+
+        {esLoteria ? (
+          <div className="space-y-3">
+            <Label>¿Cuántos dígitos tendrá el número ganador?</Label>
+            <div className="grid grid-cols-3 gap-3">
+              {([2, 3, 4] as const).map(d => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => handleDigitosChange(d)}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    digitosLoteria === d
+                      ? 'border-primary bg-primary/10'
+                      : 'border-brand-border bg-brand-border/20 hover:border-brand-muted'
+                  }`}
+                >
+                  <p className="font-ui font-bold text-brand-text text-sm">{d} dígitos</p>
+                  <p className="text-brand-muted text-xs mt-1 font-ui">
+                    {'0'.repeat(d)} – {'9'.repeat(d)}
+                  </p>
+                  <p className="text-primary text-xs font-semibold mt-0.5">
+                    {Math.pow(10, d).toLocaleString('es-MX')} combinaciones
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
           <div className="space-y-1.5">
             <Label>Total de números</Label>
             <Input type="number" min={10} max={10000} placeholder="100" {...register('total_numeros')} />
             {errors.total_numeros && <p className="text-xs text-red-400">{errors.total_numeros.message}</p>}
           </div>
-        </div>
+        )}
         <div className="space-y-1.5">
           <Label>Precio por boleto (MXN)</Label>
           <div className="relative">

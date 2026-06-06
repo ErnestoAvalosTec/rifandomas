@@ -113,7 +113,7 @@ export function SorteosGrid({ sorteos }: SorteosGridProps) {
       </div>
 
       <section id="sorteos" className="py-16" style={{ background: '#1c1c1c' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6">
 
           {/* Encabezado SEO */}
           <div className="mb-8 sm:mb-10 text-center">
@@ -141,12 +141,12 @@ export function SorteosGrid({ sorteos }: SorteosGridProps) {
                     style={{ minWidth: 58, gap: 4, background: 'none', border: 'none', padding: '2px 0' }}
                   >
                     <div style={{
-                      width: 91, height: 91,
+                      width: 68, height: 68,
                       borderRadius: '50%',
                       background: active ? 'rgba(34,197,94,0.18)' : 'rgba(255,255,255,0.07)',
                       border: `2px solid ${active ? '#22C55E' : 'transparent'}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 46,
+                      fontSize: 35,
                       transition: 'all 0.15s',
                     }}>
                       {emoji}
@@ -185,7 +185,7 @@ export function SorteosGrid({ sorteos }: SorteosGridProps) {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-5 items-start">
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 items-start">
               {sorteosFiltrados.map(sorteo => (
                 <SorteoCard key={sorteo.id} sorteo={sorteo} onParticipar={handleParticipar} />
               ))}

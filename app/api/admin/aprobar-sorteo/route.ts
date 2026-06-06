@@ -10,13 +10,26 @@ export async function POST(req: NextRequest) {
 
     const supabase = createAdminSupabaseClient()
 
+    // Leer flag de lotería del sorteo
+    const { data: sorteoData } = await (supabase as any)
+      .from('sorteos')
+      .select('es_loteria')
+      .eq('id', sorteoId)
+      .single()
+
+    const esLoteria: boolean = sorteoData?.es_loteria ?? false
+
     // Eliminar boletos previos si existieran (reintento seguro)
     await (supabase as any).from('boletos').delete().eq('sorteo_id', sorteoId)
 
     // Generar boletos en lotes de 500
+    // - Modo normal:  001 → 100  (empieza en 1, dígitos = longitud de totalNumeros)
+    // - Modo lotería: 000 → 999  (empieza en 0, dígitos = log10 de totalNumeros)
+    const digits = esLoteria ? Math.round(Math.log10(totalNumeros)) : String(totalNumeros).length
+
     const boletos = Array.from({ length: totalNumeros }, (_, i) => ({
       sorteo_id: sorteoId,
-      numero: String(i + 1).padStart(4, '0'),
+      numero: String(esLoteria ? i : i + 1).padStart(digits, '0'),
       estatus: 'disponible',
     }))
 
