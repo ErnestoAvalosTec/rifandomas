@@ -102,7 +102,111 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
   }
 
   return (
-    <div className="relative" style={{ marginTop: 105 }}>
+    <>
+      {/* ── MOBILE COMPACT (muestra 2 por fila en celular) ── */}
+      <div className="sm:hidden rounded-xl overflow-hidden border border-white/10" style={{ background: '#166534' }}>
+        {/* Imagen */}
+        <div className="relative w-full" style={{ aspectRatio: '4 / 3', background: '#0f4a26' }}>
+          <div style={fadeOpacity} className="absolute inset-0">
+            {premioActual?.imagen_url ? (
+              <Image src={premioActual.imagen_url} alt={premioActual.nombre} fill className="object-contain p-2" priority />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <Ticket className="w-6 h-6 text-white/30" />
+              </div>
+            )}
+          </div>
+          {/* Badge de precio — esquina inferior izquierda */}
+          <span className="absolute bottom-1.5 left-1.5" style={{
+            background: '#F97316', color: '#fff',
+            borderRadius: 4, padding: '2px 6px',
+            fontSize: 9, fontWeight: 800, lineHeight: 1,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
+          }}>
+            {formatCurrency(sorteo.precio_unitario)}
+          </span>
+          {porcentaje >= 80 && (
+            <span className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full px-1 py-px animate-pulse" style={{ fontSize: 7, fontWeight: 700 }}>¡Lleno!</span>
+          )}
+          {totalPremios > 1 && (
+            <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-0.5">
+              {premios.map((_, idx) => (
+                <button key={idx} onClick={() => irAPremio(idx)} style={{
+                  width: idx === premioIndex ? 10 : 3, height: 3,
+                  borderRadius: 2, border: 'none', cursor: 'pointer',
+                  background: idx === premioIndex ? '#fff' : 'rgba(255,255,255,0.35)',
+                  transition: 'all 0.2s',
+                }} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Contenido */}
+        <div style={{ padding: '7px 7px 8px' }}>
+
+          {/* Título */}
+          <h3 style={{ color: '#fff', fontSize: 12, fontWeight: 700, lineHeight: 1.2, marginBottom: 2 }}
+            className="line-clamp-1">
+            {premioActual?.nombre ?? sorteo.nombre}
+          </h3>
+
+          {/* Descripción */}
+          {premioActual?.descripcion && (
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 10, lineHeight: 1.3, marginBottom: 4 }}
+              className="line-clamp-1">
+              {premioActual.descripcion}
+            </p>
+          )}
+
+          {/* Barra de progreso + vendidos */}
+          <div style={{ marginBottom: 5 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+              <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 9 }}>{vendidos.toLocaleString('es-MX')} vend.</span>
+              <span style={{ color: '#86EFAC', fontSize: 9, fontWeight: 700 }}>{porcentaje}%</span>
+            </div>
+            <div style={{ height: 3, background: 'rgba(0,0,0,0.3)', borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${porcentaje}%`, background: '#4ADE80', borderRadius: 2 }} />
+            </div>
+          </div>
+
+          {/* Countdown — 4 pastillas */}
+          <div style={{ display: 'flex', gap: 2, marginBottom: 6 }}>
+            {[
+              { val: countdown.days,    label: 'd' },
+              { val: countdown.hours,   label: 'h' },
+              { val: countdown.minutes, label: 'm' },
+              { val: countdown.seconds, label: 's' },
+            ].map(({ val, label }) => (
+              <div key={label} style={{
+                flex: 1, background: 'rgba(255,255,255,0.15)',
+                borderRadius: 4, padding: '4px 1px', textAlign: 'center',
+              }}>
+                <p style={{ fontSize: 11, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{String(val).padStart(2, '0')}</p>
+                <p style={{ fontSize: 7, color: 'rgba(255,255,255,0.55)', marginTop: 1 }}>{label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <button
+            onClick={() => onParticipar(sorteo, paqueteSeleccionado)}
+            style={{
+              width: '100%', padding: '7px 0',
+              background: 'linear-gradient(135deg, #F97316, #EA580C)',
+              color: '#fff', fontSize: 11, fontWeight: 700,
+              borderRadius: 6, border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
+            }}
+          >
+            <Ticket style={{ width: 10, height: 10 }} />
+            ¡Participar!
+          </button>
+        </div>
+      </div>
+
+      {/* ── DESKTOP FULL (sm+) ── */}
+      <div className="hidden sm:block relative" style={{ marginTop: 105 }}>
 
       {/* Stack card 3 */}
       {totalPremios > 2 && (
@@ -316,5 +420,6 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
         </div>
       </div>
     </div>
+    </>
   )
 }

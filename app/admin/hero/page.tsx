@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { Trash2, ChevronUp, ChevronDown, Eye, EyeOff, Plus, Star, Loader2, ImageIcon } from 'lucide-react'
+import { Trash2, ChevronUp, ChevronDown, Eye, EyeOff, Plus, Star, Loader2, ImageIcon, Info, Upload } from 'lucide-react'
 
 interface Slide {
   id: string
@@ -33,7 +33,10 @@ export default function AdminHeroPage() {
   const [savingDestacado, setSavingDestacado] = useState(false)
   const [uploading, setUploading]             = useState(false)
   const [nuevoTitulo, setNuevoTitulo]         = useState('')
-  const fileRef = useRef<HTMLInputElement>(null)
+  const [ctaBannerUrl, setCtaBannerUrl]       = useState<string | null>(null)
+  const [uploadingCta, setUploadingCta]       = useState(false)
+  const fileRef    = useRef<HTMLInputElement>(null)
+  const ctaFileRef = useRef<HTMLInputElement>(null)
 
   const loadSlides = async () => {
     const res  = await fetch('/api/admin/hero-slides')
@@ -53,7 +56,41 @@ export default function AdminHeroPage() {
     if (found) setDestacadoId(found.id)
   }
 
-  useEffect(() => { loadSlides(); loadSorteos() }, [])
+  const loadCtaBanner = async () => {
+    const res  = await fetch('/api/admin/marca-get')
+    const data = await res.json()
+    setCtaBannerUrl(data.cta_banner_url ?? null)
+  }
+
+  const handleCtaUpload = async () => {
+    const file = ctaFileRef.current?.files?.[0]
+    if (!file) { toast.error('Selecciona una imagen'); return }
+    setUploadingCta(true)
+    const form = new FormData()
+    form.append('file', file)
+    form.append('tipo', 'cta_banner')
+    const res  = await fetch('/api/admin/marca', { method: 'POST', body: form })
+    const json = await res.json()
+    setUploadingCta(false)
+    if (!res.ok) { toast.error(json.error ?? 'Error al subir'); return }
+    setCtaBannerUrl(json.url)
+    if (ctaFileRef.current) ctaFileRef.current.value = ''
+    toast.success('Banner CTA actualizado')
+  }
+
+  const handleCtaDelete = async () => {
+    if (!confirm('¿Eliminar el banner CTA?')) return
+    const res = await fetch('/api/admin/marca', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo: 'cta_banner' }),
+    })
+    if (!res.ok) { toast.error('Error al eliminar'); return }
+    setCtaBannerUrl(null)
+    toast.success('Banner CTA eliminado')
+  }
+
+  useEffect(() => { loadSlides(); loadSorteos(); loadCtaBanner() }, [])
 
   const handleUpload = async () => {
     const file = fileRef.current?.files?.[0]
@@ -235,6 +272,66 @@ export default function AdminHeroPage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* ── CTA Banner ── */}
+      <div className={card}>
+        <h2 className="font-ui font-semibold text-brand-text text-lg mb-1 flex items-center gap-2">
+          <ImageIcon className="w-5 h-5 text-primary" />
+          Banner CTA (debajo del hero)
+        </h2>
+        <p className="text-brand-muted text-xs font-body mb-4">
+          Imagen que reemplaza la franja de confianza debajo del slider. Se muestra a ancho completo.
+        </p>
+
+        {/* Spec hint */}
+        <div className="rounded-xl p-3 flex gap-2 mb-5" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)' }}>
+          <Info className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#60a5fa' }} />
+          <div>
+            <p className="text-sm font-semibold" style={{ color: '#93c5fd' }}>
+              Resolución recomendada: 1200 × 120 px
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: '#7dd3fc' }}>
+              Proporción 10:1 — banner horizontal muy ancho · PNG, JPG o WebP · Máx 2 MB
+            </p>
+          </div>
+        </div>
+
+        {/* Preview */}
+        {ctaBannerUrl && (
+          <div className="relative w-full rounded-xl overflow-hidden border border-brand-border mb-4" style={{ height: 80 }}>
+            <Image src={ctaBannerUrl} alt="Banner CTA" fill style={{ objectFit: 'cover' }} unoptimized />
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 flex-wrap">
+          <div>
+            <label className="text-xs font-ui font-semibold text-brand-muted mb-1 block">Imagen</label>
+            <input
+              ref={ctaFileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="text-sm text-brand-muted file:mr-2 file:rounded-lg file:border-0 file:bg-primary/10 file:text-primary file:text-xs file:font-semibold file:px-3 file:py-1.5 file:cursor-pointer"
+            />
+          </div>
+          <button
+            onClick={handleCtaUpload}
+            disabled={uploadingCta}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-ui font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60"
+          >
+            {uploadingCta ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            {ctaBannerUrl ? 'Reemplazar' : 'Subir banner'}
+          </button>
+          {ctaBannerUrl && (
+            <button
+              onClick={handleCtaDelete}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-500/30 text-red-400 text-sm font-ui font-semibold hover:bg-red-500/10 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              Eliminar
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Destacado ── */}

@@ -3,21 +3,32 @@ import { createAdminSupabaseClient } from '@/lib/supabase/server'
 
 const BUCKET = 'brand'
 
+const TIPO_TO_FIELD: Record<string, string> = {
+  logo:       'logo_url',
+  favicon:    'favicon_url',
+  cta_banner: 'cta_banner_url',
+}
+
+const TIPO_TO_PATH: Record<string, string> = {
+  logo:       'logo',
+  favicon:    'favicon',
+  cta_banner: 'cta-banner',
+}
+
 export async function POST(req: NextRequest) {
   const supabase = createAdminSupabaseClient() as any
   const formData = await req.formData()
   const file = formData.get('file') as File | null
-  const tipo = formData.get('tipo') as 'logo' | 'favicon' | null
+  const tipo = formData.get('tipo') as string | null
 
-  if (!file || !tipo) {
+  if (!file || !tipo || !TIPO_TO_FIELD[tipo]) {
     return NextResponse.json({ error: 'Faltan parámetros' }, { status: 400 })
   }
 
   const ext = file.name.split('.').pop()?.toLowerCase() ?? 'png'
-  const path = tipo === 'logo' ? `logo.${ext}` : `favicon.${ext}`
+  const path = `${TIPO_TO_PATH[tipo]}.${ext}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
-  // Upsert — reemplaza si ya existe
   const { error: storageError } = await supabase.storage
     .from(BUCKET)
     .upload(path, buffer, { contentType: file.type, upsert: true })
@@ -26,11 +37,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: storageError.message }, { status: 500 })
   }
 
-  // Forzar cache bust añadiendo timestamp a la URL pública
   const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path)
   const url = `${urlData.publicUrl}?v=${Date.now()}`
 
-  const field = tipo === 'logo' ? 'logo_url' : 'favicon_url'
+  const field = TIPO_TO_FIELD[tipo]
   const { error } = await supabase
     .from('marca')
     .update({ [field]: url, updated_at: new Date().toISOString() })
@@ -42,9 +52,10 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const supabase = createAdminSupabaseClient() as any
-  const { tipo } = await req.json() as { tipo: 'logo' | 'favicon' }
+  const { tipo } = await req.json() as { tipo: string }
 
-  const field = tipo === 'logo' ? 'logo_url' : 'favicon_url'
+  const field = TIPO_TO_FIELD[tipo]
+  if (!field) return NextResponse.json({ error: 'Tipo inválido' }, { status: 400 })
 
   const { error } = await supabase
     .from('marca')

@@ -37,6 +37,12 @@ export async function GET() {
     // v1/v2: { base64: "data:image/png;base64,..." }
     // v2 nested: { qrcode: { base64: "..." } }
     // Algunos builds: { code: "...", base64: "..." }
+    // Si la instancia ya está conectada, Evolution API devuelve el estado en lugar del QR
+    const instanceState = raw?.instance?.state ?? raw?.state
+    if (instanceState === 'open') {
+      return NextResponse.json({ alreadyConnected: true })
+    }
+
     const b64 =
       raw?.base64 ??
       raw?.qrcode?.base64 ??

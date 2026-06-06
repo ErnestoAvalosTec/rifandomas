@@ -62,6 +62,11 @@
   }
 }
 
+/* Ocultar scrollbar en el slider de categorías móvil */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @layer components {
   /* font-title always renders at ExtraBold weight */
   .font-title {
@@ -98,7 +103,7 @@
 
   /* Number grid */
   .numero-disponible {
-    @apply bg-brand-green/10 border border-brand-green/40 text-green-700 hover:bg-brand-green/20 cursor-pointer transition-all duration-150;
+    @apply bg-brand-green/10 border border-brand-green/40 text-brand-green hover:bg-brand-green/20 cursor-pointer transition-all duration-150;
   }
   .numero-reservado {
     @apply bg-brand-border/60 border border-brand-border text-brand-muted cursor-not-allowed;
@@ -107,7 +112,7 @@
     @apply bg-brand-border/60 border border-brand-border text-brand-muted cursor-not-allowed;
   }
   .numero-seleccionado {
-    @apply bg-brand-gold/20 border border-brand-gold text-yellow-700 cursor-pointer;
+    @apply bg-brand-gold/20 border border-brand-gold text-brand-gold cursor-pointer;
   }
 
   /* Dot pattern background */

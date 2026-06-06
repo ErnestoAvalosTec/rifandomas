@@ -28,6 +28,7 @@ export interface SorteoDestacado {
 interface HeroSectionProps {
   slides: HeroSlide[]
   sorteoDestacado?: SorteoDestacado | null
+  ctaBannerUrl?: string | null
 }
 
 // ─── Countdown ────────────────────────────────────────────────────────────────
@@ -73,7 +74,7 @@ function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   if (!slides.length) {
     return (
       <div
-        className="flex flex-col items-center justify-center min-h-[220px] sm:min-h-[300px] lg:min-h-[420px]"
+        className="flex flex-col items-center justify-center min-h-[90px] sm:min-h-[300px] lg:min-h-[420px]"
         style={{ background: '#166534', borderRadius: 10, gap: 14 }}
       >
         <div style={{
@@ -93,7 +94,7 @@ function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   const slide = slides[current]
   return (
     <div
-      className="relative overflow-hidden min-h-[220px] sm:min-h-[300px] lg:min-h-[420px]"
+      className="relative overflow-hidden min-h-[90px] sm:min-h-[300px] lg:min-h-[420px]"
       style={{ background: '#111', borderRadius: 10 }}
     >
       <div style={{ position: 'absolute', inset: 0, opacity: fading ? 0 : 1, transition: 'opacity 200ms ease' }}>
@@ -162,59 +163,67 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
         borderRadius: 10, overflow: 'hidden',
       }}
     >
-      {/* On mobile: horizontal layout (image left, info right). On lg: vertical */}
-      <div className="flex flex-row lg:flex-col">
+      {/* Siempre vertical — en mobile ocupa media pantalla, en lg ocupa el panel derecho */}
+      <div className="flex flex-col h-full">
 
         {/* Image */}
         <div
-          className="relative w-[130px] sm:w-[160px] lg:w-full h-auto lg:h-[180px] flex-shrink-0"
-          style={{ background: 'rgba(0,0,0,0.25)', minHeight: 130 }}
+          className="relative w-full flex-shrink-0 h-[100px] lg:h-[210px]"
+          style={{ background: 'rgba(0,0,0,0.25)' }}
         >
           {primerPremio?.imagen_url ? (
-            <Image
-              src={primerPremio.imagen_url}
-              alt={primerPremio.nombre}
-              fill
-              style={{ objectFit: 'contain', padding: 12 }}
-            />
+            <Image src={primerPremio.imagen_url} alt={primerPremio.nombre} fill style={{ objectFit: 'contain', padding: 6 }} />
           ) : (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Ticket style={{ width: 44, height: 44, color: 'rgba(255,255,255,0.25)' }} />
+              <Ticket style={{ width: 28, height: 28, color: 'rgba(255,255,255,0.25)' }} />
             </div>
           )}
-          <div style={{ position: 'absolute', top: 8, left: 8 }}>
+          {/* Badge DESTACADO — top-left */}
+          <div style={{ position: 'absolute', top: 5, left: 5 }}>
             <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 3,
+              display: 'inline-flex', alignItems: 'center', gap: 2,
               background: '#F97316', color: '#fff',
-              borderRadius: 4, padding: '2px 7px',
-              fontSize: 9, fontWeight: 700, letterSpacing: '0.03em',
+              borderRadius: 4, padding: '2px 5px',
+              fontSize: 8, fontWeight: 700, letterSpacing: '0.03em',
             }}>
-              <Star style={{ width: 8, height: 8 }} />
+              <Star style={{ width: 7, height: 7 }} />
               DESTACADO
+            </span>
+          </div>
+          {/* Badge precio — bottom-left */}
+          <div style={{ position: 'absolute', bottom: 5, left: 5 }}>
+            <span style={{
+              background: 'rgba(0,0,0,0.75)', color: '#fff',
+              borderRadius: 4, padding: '2px 6px',
+              fontSize: 9, fontWeight: 800, lineHeight: 1,
+              border: '1px solid rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(4px)',
+            }}>
+              {formatCurrency(sorteo.precio_unitario)}<span style={{ fontWeight: 400, fontSize: 7, marginLeft: 2 }}>/boleto</span>
             </span>
           </div>
         </div>
 
-        {/* Info — shown beside image on mobile, below on lg */}
-        <div className="flex flex-col flex-1 p-3 lg:p-4">
-          <h3 style={{ color: '#fff', fontSize: 18, fontWeight: 800, lineHeight: 1.2, marginBottom: 4 }}>
+        {/* Info */}
+        <div className="flex flex-col flex-1 p-1.5 lg:p-4">
+          <h3 className="lg:text-lg" style={{ color: '#fff', fontSize: 12, fontWeight: 800, lineHeight: 1.2, marginBottom: 3 }}>
             {primerPremio?.nombre ?? sorteo.nombre}
           </h3>
           {primerPremio?.valor_estimado && (
-            <div style={{ marginBottom: 10 }}>
+            <div className="hidden lg:block" style={{ marginBottom: 10 }}>
               <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
+                display: 'inline-flex', alignItems: 'center', gap: 3,
                 background: 'rgba(249,115,22,0.2)', border: '1px solid rgba(249,115,22,0.4)',
-                color: '#fdba74', borderRadius: 6, padding: '3px 10px',
-                fontSize: 13, fontWeight: 700,
+                color: '#fdba74', borderRadius: 5, padding: '2px 7px',
+                fontSize: 10, fontWeight: 700,
               }}>
                 Valor: {formatCurrency(primerPremio.valor_estimado)}
               </span>
             </div>
           )}
 
-          {/* Progress */}
-          <div style={{ marginBottom: 10 }}>
+          {/* Progress — solo desktop */}
+          <div className="hidden lg:block" style={{ marginBottom: 10 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
               <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>
                 {sorteo.boletos_vendidos.toLocaleString('es-MX')} vendidos
@@ -226,8 +235,14 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
             </div>
           </div>
 
-          {/* Countdown */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 4, marginBottom: 12 }}>
+          {/* Countdown — mobile: solo días / desktop: los 4 */}
+          <div className="lg:hidden" style={{ marginBottom: 8 }}>
+            <div style={{ background: '#fff', borderRadius: 4, padding: '4px 6px', textAlign: 'center', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <p style={{ fontSize: 13, fontWeight: 800, color: '#14532d', lineHeight: 1 }}>{String(t.d).padStart(2, '0')}</p>
+              <p style={{ fontSize: 8, color: '#6B7280', fontWeight: 500 }}>días restantes</p>
+            </div>
+          </div>
+          <div className="hidden lg:grid" style={{ gridTemplateColumns: 'repeat(4,1fr)', gap: 4, marginBottom: 12 }}>
             {[{ v: t.d, l: 'días' }, { v: t.h, l: 'hrs' }, { v: t.m, l: 'min' }, { v: t.s, l: 'seg' }].map(({ v, l }) => (
               <div key={l} style={{ background: '#fff', borderRadius: 5, padding: '6px 3px', textAlign: 'center' }}>
                 <p style={{ fontSize: 17, fontWeight: 800, color: '#14532d', lineHeight: 1 }}>{String(v).padStart(2, '0')}</p>
@@ -240,33 +255,30 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
           <button
             onClick={() => document.querySelector('#sorteos')?.scrollIntoView({ behavior: 'smooth' })}
             style={{
-              width: '100%', padding: '11px 0',
+              width: '100%', padding: '7px 0',
               background: '#F97316', color: '#fff',
-              fontSize: 14, fontWeight: 800,
-              borderRadius: 6, border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              fontSize: 11, fontWeight: 800,
+              borderRadius: 5, border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
               transition: 'opacity 0.15s', marginTop: 'auto',
-              letterSpacing: '0.01em',
             }}
             onMouseEnter={e => { e.currentTarget.style.opacity = '0.88' }}
             onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
           >
-            <Ticket style={{ width: 14, height: 14 }} />
-            Participar ahora
+            <Ticket style={{ width: 11, height: 11 }} />
+            Participar
           </button>
-          <p style={{ textAlign: 'center', fontSize: 11, color: '#86EFAC', marginTop: 5, fontWeight: 600 }}>
-            Desde {formatCurrency(sorteo.precio_unitario)} por boleto
-          </p>
         </div>
       </div>
 
-      {/* WhatsApp link — sell the featured spot */}
+      {/* WhatsApp link — solo visible en desktop */}
       <a
         href="https://wa.me/3317385212?text=Quiero%20ser%20Destacado"
         target="_blank"
         rel="noopener noreferrer"
+        className="hidden lg:block"
         style={{
-          display: 'block', textAlign: 'center',
+          textAlign: 'center',
           fontSize: 10, color: 'rgba(255,255,255,0.3)',
           padding: '7px 0',
           borderTop: '1px solid rgba(255,255,255,0.07)',
@@ -338,12 +350,12 @@ const TRUST_ITEMS = [
 ]
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export function HeroSection({ slides, sorteoDestacado }: HeroSectionProps) {
+export function HeroSection({ slides, sorteoDestacado, ctaBannerUrl }: HeroSectionProps) {
   return (
     <section id="inicio" style={{ background: '#1c1c1c' }}>
       {/* Slider + Featured card */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_290px] gap-2 lg:gap-[3px]">
+        <div className="grid grid-cols-[7fr_3fr] lg:grid-cols-[minmax(0,1fr)_290px] gap-2 lg:gap-[3px]">
           <HeroSlider slides={slides} />
           {sorteoDestacado
             ? <FeaturedSorteoCard sorteo={sorteoDestacado} />
@@ -352,46 +364,46 @@ export function HeroSection({ slides, sorteoDestacado }: HeroSectionProps) {
         </div>
       </div>
 
-      {/* Trust / CTA bar */}
-      <div style={{ background: '#1c1c1c', paddingBottom: 20 }}>
+      {/* CTA bar — oculto en móvil, visible desde sm */}
+      <div className="hidden sm:block" style={{ background: '#1c1c1c', paddingBottom: 20 }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div
-            className="grid grid-cols-3 divide-x"
-            style={{ background: '#14532d', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '0 0 10px 10px' }}
-          >
-            {TRUST_ITEMS.map(({ icon: Icon, label, sub }) => (
-              <div
-                key={label}
-                className="flex flex-col items-center text-center sm:flex-row sm:text-left sm:justify-center gap-3 sm:gap-5 py-6 px-3 sm:px-8"
-                style={{ borderColor: 'rgba(255,255,255,0.1)' }}
-              >
+          {ctaBannerUrl ? (
+            <div className="relative w-full overflow-hidden" style={{ borderRadius: '0 0 10px 10px', height: 100 }}>
+              <Image src={ctaBannerUrl} alt="Banner CTA" fill style={{ objectFit: 'cover' }} priority />
+            </div>
+          ) : (
+            <div
+              className="grid grid-cols-3 divide-x"
+              style={{ background: '#14532d', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '0 0 10px 10px' }}
+            >
+              {TRUST_ITEMS.map(({ icon: Icon, label, sub }) => (
                 <div
-                  className="rounded-full sm:rounded-[8px] flex-shrink-0"
-                  style={{
-                    width: 56, height: 56,
-                    background: 'rgba(255,255,255,0.12)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
+                  key={label}
+                  className="flex flex-col items-center text-center sm:flex-row sm:text-left sm:justify-center gap-3 sm:gap-5 py-6 px-3 sm:px-8"
+                  style={{ borderColor: 'rgba(255,255,255,0.1)' }}
                 >
-                  <Icon style={{ width: 28, height: 28, color: '#4ADE80' }} />
-                </div>
-                <div>
-                  <p
-                    className="text-xs sm:text-base"
-                    style={{ color: '#fff', fontWeight: 700, lineHeight: 1.3 }}
+                  <div
+                    className="rounded-full sm:rounded-[8px] flex-shrink-0"
+                    style={{
+                      width: 56, height: 56,
+                      background: 'rgba(255,255,255,0.12)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
                   >
-                    {label}
-                  </p>
-                  <p
-                    className="hidden sm:block"
-                    style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginTop: 4 }}
-                  >
-                    {sub}
-                  </p>
+                    <Icon style={{ width: 28, height: 28, color: '#4ADE80' }} />
+                  </div>
+                  <div>
+                    <p className="text-xs sm:text-base" style={{ color: '#fff', fontWeight: 700, lineHeight: 1.3 }}>
+                      {label}
+                    </p>
+                    <p className="hidden sm:block" style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginTop: 4 }}>
+                      {sub}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>

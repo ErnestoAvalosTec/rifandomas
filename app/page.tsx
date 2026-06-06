@@ -14,9 +14,9 @@ export default async function HomePage() {
   const supabase = createClient()
   const sb = supabase as any
 
-  // Fetch marca (logo, favicon, topbar)
+  // Fetch marca (logo, favicon, topbar, cta banner)
   const { data: marca } = await sb.from('marca')
-    .select('logo_url, favicon_url, topbar_activo, topbar_ubicacion, topbar_telefono, topbar_correo, topbar_redes, topbar_bg_color, topbar_text_color, topbar_icon_color')
+    .select('logo_url, favicon_url, cta_banner_url, topbar_activo, topbar_ubicacion, topbar_telefono, topbar_correo, topbar_redes, topbar_bg_color, topbar_text_color, topbar_icon_color')
     .eq('id', 1).single()
 
   // Fetch all active sorteos
@@ -71,6 +71,7 @@ export default async function HomePage() {
         <HeroSection
           slides={slidesResult.data ?? []}
           sorteoDestacado={sorteoDestacado}
+          ctaBannerUrl={marca?.cta_banner_url ?? null}
         />
         <SorteosGrid sorteos={sorteosConVendidos} />
       </main>

@@ -121,7 +121,12 @@ export default function AdminWhatsAppPage() {
     try {
       const res  = await fetch('/api/admin/whatsapp/qr')
       const data = await res.json()
-      if (data.base64) {
+      if (data.alreadyConnected) {
+        setStatus('connected')
+        setQrBase64(null)
+        stopTimers()
+        toast.success('¡WhatsApp conectado correctamente!')
+      } else if (data.base64) {
         setQrBase64(data.base64)
       } else if (data.error) {
         setQrError(data.error)
