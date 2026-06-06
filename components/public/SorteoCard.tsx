@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { formatCurrency } from '@/lib/utils'
-import { Clock, Ticket, ChevronRight } from 'lucide-react'
+import { Clock, Ticket, ChevronRight, ChevronLeft } from 'lucide-react'
 import type { Database } from '@/types/database.types'
 
 type Sorteo = Database['public']['Tables']['sorteos']['Row'] & {
@@ -106,7 +106,7 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
       {/* ── MOBILE COMPACT (muestra 2 por fila en celular) ── */}
       <div className="sm:hidden rounded-xl overflow-hidden border border-white/10" style={{ background: '#166534' }}>
         {/* Imagen */}
-        <div className="relative w-full" style={{ aspectRatio: '4 / 3', background: '#0f4a26' }}>
+        <div className="relative w-full" style={{ aspectRatio: '4 / 3', background: '#0f4a26', overflow: 'hidden' }}>
           <div style={fadeOpacity} className="absolute inset-0">
             {premioActual?.imagen_url ? (
               <Image src={premioActual.imagen_url} alt={premioActual.nombre} fill className="object-contain p-2" priority />
@@ -116,6 +116,82 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
               </div>
             )}
           </div>
+
+          {/* Franja superior con nombre del premio + contador — solo cuando hay múltiples */}
+          {totalPremios > 1 && (
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 100%)',
+              padding: '6px 6px 14px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              {/* Medal + nombre del premio */}
+              <span style={{
+                fontSize: 8, fontWeight: 800, color: '#fff',
+                background: 'rgba(0,0,0,0.35)', borderRadius: 99,
+                padding: '2px 6px', letterSpacing: '0.02em',
+                maxWidth: '62%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {MEDAL[premioActual?.lugar ?? 1]} {premioActual?.nombre ?? ''}
+              </span>
+              {/* Contador tappable */}
+              <button
+                onClick={irAlSiguiente}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 2,
+                  background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(4px)',
+                  borderRadius: 99, padding: '2px 6px 2px 8px',
+                  fontSize: 8, fontWeight: 800, color: '#fff',
+                  border: '1px solid rgba(255,255,255,0.25)', cursor: 'pointer',
+                }}
+              >
+                {premioIndex + 1}/{totalPremios}
+                <ChevronRight style={{ width: 9, height: 9 }} />
+              </button>
+            </div>
+          )}
+
+          {/* Zona de tap izquierda — premio anterior */}
+          {totalPremios > 1 && (
+            <button
+              onClick={() => irAPremio((premioIndex - 1 + totalPremios) % totalPremios)}
+              aria-label="Premio anterior"
+              style={{
+                position: 'absolute', left: 0, top: 0, bottom: 0, width: '30%',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: 4,
+                opacity: premioIndex === 0 ? 0 : 1, transition: 'opacity 0.2s',
+              }}
+            >
+              <span style={{
+                background: 'rgba(0,0,0,0.3)', borderRadius: '50%',
+                width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <ChevronLeft style={{ width: 12, height: 12, color: '#fff' }} />
+              </span>
+            </button>
+          )}
+
+          {/* Zona de tap derecha — premio siguiente */}
+          {totalPremios > 1 && (
+            <button
+              onClick={irAlSiguiente}
+              aria-label="Premio siguiente"
+              style={{
+                position: 'absolute', right: 0, top: 0, bottom: 0, width: '30%',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 4,
+              }}
+            >
+              <span style={{
+                background: 'rgba(0,0,0,0.3)', borderRadius: '50%',
+                width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <ChevronRight style={{ width: 12, height: 12, color: '#fff' }} />
+              </span>
+            </button>
+          )}
+
           {/* Badge de precio — esquina inferior izquierda */}
           <span className="absolute bottom-1.5 left-1.5" style={{
             background: '#F97316', color: '#fff',
@@ -125,31 +201,50 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
           }}>
             {formatCurrency(sorteo.precio_unitario)}
           </span>
-          {porcentaje >= 80 && (
-            <span className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full px-1 py-px animate-pulse" style={{ fontSize: 7, fontWeight: 700 }}>¡Lleno!</span>
-          )}
+
+          {/* Dots de posición — abajo centrados (más grandes y visibles) */}
           {totalPremios > 1 && (
-            <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-0.5">
+            <div style={{
+              position: 'absolute', bottom: 5, left: 0, right: 0,
+              display: 'flex', justifyContent: 'center', gap: 4,
+            }}>
               {premios.map((_, idx) => (
                 <button key={idx} onClick={() => irAPremio(idx)} style={{
-                  width: idx === premioIndex ? 10 : 3, height: 3,
-                  borderRadius: 2, border: 'none', cursor: 'pointer',
-                  background: idx === premioIndex ? '#fff' : 'rgba(255,255,255,0.35)',
-                  transition: 'all 0.2s',
+                  width: idx === premioIndex ? 14 : 5, height: 5,
+                  borderRadius: 3, border: 'none', cursor: 'pointer',
+                  background: idx === premioIndex ? '#fff' : 'rgba(255,255,255,0.4)',
+                  transition: 'all 0.2s', padding: 0,
                 }} />
               ))}
             </div>
+          )}
+
+          {porcentaje >= 80 && (
+            <span className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full px-1 py-px animate-pulse" style={{ fontSize: 7, fontWeight: 700 }}>¡Lleno!</span>
           )}
         </div>
 
         {/* Contenido */}
         <div style={{ padding: '7px 7px 8px' }}>
 
-          {/* Título */}
-          <h3 style={{ color: '#fff', fontSize: 12, fontWeight: 700, lineHeight: 1.2, marginBottom: 2 }}
-            className="line-clamp-1">
-            {premioActual?.nombre ?? sorteo.nombre}
-          </h3>
+          {/* Título + badge de premios múltiples */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 4, marginBottom: 2 }}>
+            <h3 style={{ color: '#fff', fontSize: 12, fontWeight: 700, lineHeight: 1.2, flex: 1, minWidth: 0 }}
+              className="line-clamp-1">
+              {premioActual?.nombre ?? sorteo.nombre}
+            </h3>
+            {totalPremios > 1 && (
+              <span style={{
+                flexShrink: 0,
+                background: 'rgba(255,255,255,0.15)',
+                borderRadius: 99, padding: '1px 5px',
+                fontSize: 7, fontWeight: 800, color: 'rgba(255,255,255,0.8)',
+                whiteSpace: 'nowrap', letterSpacing: '0.02em',
+              }}>
+                +{totalPremios - 1} más
+              </span>
+            )}
+          </div>
 
           {/* Descripción */}
           {premioActual?.descripcion && (
