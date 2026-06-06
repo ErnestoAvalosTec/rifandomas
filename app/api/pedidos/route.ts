@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
     }
 
-    const supabase = createAdminSupabaseClient()
+    const supabase = createAdminSupabaseClient() as any
 
     const { data: pedido, error: errPedido } = await supabase.from('pedidos').insert({
       sorteo_id,

@@ -4,7 +4,7 @@ import { createAdminSupabaseClient } from '@/lib/supabase/server'
 const BUCKET = 'hero-slides'
 
 export async function GET() {
-  const supabase = createAdminSupabaseClient()
+  const supabase = createAdminSupabaseClient() as any
   const { data, error } = await supabase
     .from('hero_slides')
     .select('*')
@@ -14,7 +14,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = createAdminSupabaseClient()
+  const supabase = createAdminSupabaseClient() as any
   const formData = await req.formData()
   const file = formData.get('file') as File | null
   const titulo = (formData.get('titulo') as string | null) ?? null
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const supabase = createAdminSupabaseClient()
+  const supabase = createAdminSupabaseClient() as any
   const body = await req.json()
   const { id, ...updates } = body
   if (!id) return NextResponse.json({ error: 'Falta id' }, { status: 400 })
@@ -62,7 +62,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const supabase = createAdminSupabaseClient()
+  const supabase = createAdminSupabaseClient() as any
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'Falta id' }, { status: 400 })
 

@@ -4,7 +4,7 @@ import { createAdminSupabaseClient } from '@/lib/supabase/server'
 export const revalidate = 300 // refresca cada 5 minutos
 
 export async function GET() {
-  const supabase = createAdminSupabaseClient()
+  const supabase = createAdminSupabaseClient() as any
   const { data } = await supabase
     .from('marca')
     .select('favicon_url')

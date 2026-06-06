@@ -36,7 +36,7 @@ export function SorteosGrid({ sorteos }: SorteosGridProps) {
   // Extract unique categories present in active sorteos
   const categoriasDisponibles = Array.from(new Set(
     sorteos.flatMap(s =>
-      s.premios?.map(p => (p as any).categoria as string | null).filter(Boolean) ?? []
+      s.premios?.map(p => (p as any).categoria as string | null).filter((c): c is string => !!c) ?? []
     )
   )).sort()
 

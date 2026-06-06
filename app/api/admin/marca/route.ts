@@ -4,7 +4,7 @@ import { createAdminSupabaseClient } from '@/lib/supabase/server'
 const BUCKET = 'brand'
 
 export async function POST(req: NextRequest) {
-  const supabase = createAdminSupabaseClient()
+  const supabase = createAdminSupabaseClient() as any
   const formData = await req.formData()
   const file = formData.get('file') as File | null
   const tipo = formData.get('tipo') as 'logo' | 'favicon' | null
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const supabase = createAdminSupabaseClient()
+  const supabase = createAdminSupabaseClient() as any
   const { tipo } = await req.json() as { tipo: 'logo' | 'favicon' }
 
   const field = tipo === 'logo' ? 'logo_url' : 'favicon_url'

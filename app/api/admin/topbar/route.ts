@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 
 export async function PATCH(req: NextRequest) {
-  const supabase = createAdminSupabaseClient()
+  const supabase = createAdminSupabaseClient() as any
   const body = await req.json()
 
   const { error } = await supabase
