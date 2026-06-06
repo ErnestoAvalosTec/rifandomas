@@ -19,11 +19,29 @@ export default async function OrdenesPage() {
   const sorteoIds = sorteos.map((s) => s.id)
 
   const placeholder = '00000000-0000-0000-0000-000000000000'
-  const { data: pedidos } = await (admin as any)
+  const { data: pedidosRaw } = await (admin as any)
     .from('pedidos')
-    .select('*, sorteos(nombre), pedido_boletos(boletos(numero))')
+    .select('*, sorteos(nombre)')
     .in('sorteo_id', sorteoIds.length ? sorteoIds : [placeholder])
     .order('created_at', { ascending: false })
+
+  const pedidosBase = pedidosRaw ?? []
+  const pedidoIds = pedidosBase.map((p: any) => p.id)
+
+  const { data: boletosRaw } = pedidoIds.length
+    ? await (admin as any).from('boletos').select('pedido_id, numero').in('pedido_id', pedidoIds)
+    : { data: [] }
+
+  const boletosMap = new Map<string, string[]>()
+  ;(boletosRaw ?? []).forEach((b: any) => {
+    if (!boletosMap.has(b.pedido_id)) boletosMap.set(b.pedido_id, [])
+    boletosMap.get(b.pedido_id)!.push(b.numero)
+  })
+
+  const pedidos = pedidosBase.map((p: any) => ({
+    ...p,
+    pedido_boletos: (boletosMap.get(p.id) ?? []).map((num: string) => ({ boletos: { numero: num } })),
+  }))
 
   return (
     <div className="max-w-7xl mx-auto">

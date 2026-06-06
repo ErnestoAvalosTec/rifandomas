@@ -48,9 +48,14 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
       .channel('mis-ordenes-realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pedidos', filter: `sorteo_id=in.(${sorteoIds.join(',')})` },
         async (payload: any) => {
-          const { data } = await sb.from('pedidos').select('*, sorteos(nombre), pedido_boletos(boletos(numero))').eq('id', payload.new.id).single()
-          if (data) {
-            setPedidos((prev) => [data as Pedido, ...prev])
+          const { data: pedidoData } = await sb.from('pedidos').select('*, sorteos(nombre)').eq('id', payload.new.id).single()
+          const { data: boletosData } = await sb.from('boletos').select('numero').eq('pedido_id', payload.new.id)
+          if (pedidoData) {
+            const pedido = {
+              ...pedidoData,
+              pedido_boletos: (boletosData ?? []).map((b: any) => ({ boletos: { numero: b.numero } })),
+            } as Pedido
+            setPedidos((prev) => [pedido, ...prev])
             toast.success(`¡Nuevo pedido de ${payload.new.cliente_nombre}!`, { duration: 5000 })
           }
         }

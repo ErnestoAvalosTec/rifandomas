@@ -12,7 +12,7 @@ function DropdownMenuContent({ className, ...props }: React.ComponentPropsWithou
       <DropdownMenuPrimitive.Content
         sideOffset={4}
         className={cn(
-          'z-50 min-w-[140px] overflow-hidden rounded-xl border border-brand-border bg-white p-1 shadow-lg',
+          'z-50 min-w-[160px] overflow-hidden rounded-xl border border-brand-border bg-[#1e1e1e] p-1 shadow-[0_8px_32px_rgba(0,0,0,0.5)]',
           'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
           className
         )}
@@ -26,8 +26,8 @@ function DropdownMenuItem({ className, ...props }: React.ComponentPropsWithoutRe
   return (
     <DropdownMenuPrimitive.Item
       className={cn(
-        'relative flex cursor-pointer select-none items-center gap-2 rounded-lg px-3 py-2 text-xs font-ui text-brand-muted outline-none transition-colors',
-        'hover:bg-brand-card hover:text-brand-text focus:bg-brand-card focus:text-brand-text',
+        'relative flex cursor-pointer select-none items-center gap-2 rounded-lg px-3 py-2 text-xs font-ui text-white outline-none transition-colors',
+        'hover:bg-white/8 focus:bg-white/8',
         'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className
       )}

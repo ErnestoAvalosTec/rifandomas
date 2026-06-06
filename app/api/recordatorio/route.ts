@@ -1,30 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sendWhatsAppMessage } from '@/lib/whatsapp'
+import { createAdminSupabaseClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
   try {
     const { telefono, nombre, sorteoNombre, numeros, monto, pedidoId } = await req.json()
 
-    const mensaje = `
-Hola ${nombre} 👋, te recordamos que tienes un pedido *pendiente de pago* en Rifando+.
+    const supabase = createAdminSupabaseClient() as any
+    const { data: pedido } = await supabase
+      .from('pedidos')
+      .select('sorteo_id, expires_at')
+      .eq('id', pedidoId)
+      .single()
+
+    const { data: cuenta } = pedido
+      ? await supabase
+          .from('sorteos')
+          .select('usuario_id')
+          .eq('id', pedido.sorteo_id)
+          .single()
+      : { data: null }
+
+    const { data: cuentaDeposito } = cuenta
+      ? await supabase
+          .from('cuentas_deposito')
+          .select('banco, clabe, titular')
+          .eq('usuario_id', cuenta.usuario_id)
+          .eq('activo', true)
+          .limit(1)
+          .single()
+      : { data: null }
+
+    const bancoInfo = cuentaDeposito
+      ? `\n🏦 Banco: ${cuentaDeposito.banco}\n💳 CLABE: ${cuentaDeposito.clabe}\n👤 Titular: ${cuentaDeposito.titular}`
+      : ''
+
+    const mensaje = `Hola ${nombre} 👋, te recordamos que tienes un pago *pendiente* en Rifando+.
 
 *Sorteo:* ${sorteoNombre}
 *Números:* ${numeros}
 *Monto:* $${monto} MXN
-*Folio:* ${pedidoId?.slice(0, 8)}
+*Folio:* ${pedidoId?.slice(0, 8)}${bancoInfo}
 
-⚠️ Si no realizas el pago tu reserva puede ser liberada.
+⚠️ Sin pago tu reserva puede liberarse automáticamente.
+¡Gracias! 🍀 — Rifando+`.trim()
 
-¿Ya pagaste? Responde este mensaje para confirmar. ¡Gracias! 🍀
-— Rifando+
-    `.trim()
+    const result = await sendWhatsAppMessage(telefono, mensaje)
 
-    const apiKey = process.env.CALLMEBOT_API_KEY
-    const url = `https://api.callmebot.com/whatsapp.php?phone=52${telefono}&text=${encodeURIComponent(mensaje)}&apikey=${apiKey}`
+    if (result.ok) return NextResponse.json({ success: true })
 
-    await fetch(url, { signal: AbortSignal.timeout(10000) })
-
-    return NextResponse.json({ success: true })
-  } catch {
+    console.warn('[recordatorio] Send failed:', result.error)
+    return NextResponse.json({ success: false, error: result.error }, { status: 500 })
+  } catch (err) {
+    console.error('[recordatorio] Unexpected error:', err)
     return NextResponse.json({ success: false }, { status: 500 })
   }
 }
