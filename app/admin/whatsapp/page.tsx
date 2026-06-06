@@ -278,8 +278,9 @@ export default function AdminWhatsAppPage() {
               <img src={qrBase64} alt="QR WhatsApp" style={{ width: 224, height: 224, display: 'block' }} />
             </div>
           ) : qrError ? (
-            <div className="text-center px-4">
-              <p className="text-sm text-red-500 font-body">{qrError}</p>
+            <div className="text-center px-4 space-y-2">
+              <p className="text-sm text-red-400 font-body">Error al obtener QR</p>
+              <p className="text-xs text-brand-muted font-body break-all">{qrError}</p>
               <button onClick={fetchQR} className={`${BTN_OUTLINE} mt-3`}>
                 <RefreshCw className="w-3.5 h-3.5" /> Reintentar
               </button>

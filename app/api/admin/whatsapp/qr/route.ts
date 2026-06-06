@@ -14,17 +14,49 @@ export async function GET() {
     return NextResponse.json({ error: 'WhatsApp no configurado' }, { status: 400 })
   }
 
+  const baseUrl = config.api_url.replace(/\/$/, '')
+  const headers = { apikey: config.api_key, 'Content-Type': 'application/json' }
+
   try {
     const res = await fetch(
-      `${config.api_url}/instance/connect/${config.instance_name}`,
-      { headers: { apikey: config.api_key } }
+      `${baseUrl}/instance/connect/${config.instance_name}`,
+      { headers, cache: 'no-store' }
     )
-    const data = await res.json()
+
+    const raw = await res.json()
+
     if (!res.ok) {
-      return NextResponse.json({ error: data.message ?? 'Error al obtener QR' }, { status: res.status })
+      console.error('[QR] Evolution API error:', res.status, raw)
+      return NextResponse.json(
+        { error: raw?.message ?? raw?.error ?? `Error ${res.status} de Evolution API` },
+        { status: res.status }
+      )
     }
-    return NextResponse.json(data)
-  } catch {
+
+    // Evolution API devuelve base64 en distintos lugares según la versión:
+    // v1/v2: { base64: "data:image/png;base64,..." }
+    // v2 nested: { qrcode: { base64: "..." } }
+    // Algunos builds: { code: "...", base64: "..." }
+    const b64 =
+      raw?.base64 ??
+      raw?.qrcode?.base64 ??
+      raw?.qr?.base64 ??
+      null
+
+    if (!b64) {
+      console.error('[QR] Respuesta sin base64:', JSON.stringify(raw))
+      return NextResponse.json(
+        { error: 'Evolution API no devolvió el QR. Respuesta: ' + JSON.stringify(raw).slice(0, 200) },
+        { status: 502 }
+      )
+    }
+
+    // Asegurarse de que sea un data URL válido
+    const src = b64.startsWith('data:') ? b64 : `data:image/png;base64,${b64}`
+    return NextResponse.json({ base64: src })
+
+  } catch (err) {
+    console.error('[QR] fetch error:', err)
     return NextResponse.json({ error: 'No se pudo conectar con Evolution API' }, { status: 500 })
   }
 }
