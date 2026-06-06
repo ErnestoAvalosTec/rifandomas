@@ -81,7 +81,7 @@ export default function RegistroPage() {
       id:        authData.user.id,
       nombre:    data.nombre,
       apellidos: data.apellidos,
-      telefono:  data.telefono,
+      telefono:  `52${data.telefono}`,
       rol:       'usuario',
     })
 

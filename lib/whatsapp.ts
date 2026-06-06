@@ -27,9 +27,10 @@ export async function sendWhatsAppMessage(
     return { ok: false, error: 'not_configured' }
   }
 
-  // Normalize: digits only (e.g. "33-1738-5212" → "3317385212", with country code → "523317385212")
-  const normalized = number.replace(/\D/g, '')
-  if (!normalized) return { ok: false, error: 'invalid_number' }
+  // Normalize: digits only, ensure Mexican country code (52) is present
+  const digits = number.replace(/\D/g, '')
+  if (!digits) return { ok: false, error: 'invalid_number' }
+  const normalized = digits.length === 10 ? `52${digits}` : digits
 
   try {
     const res = await fetch(

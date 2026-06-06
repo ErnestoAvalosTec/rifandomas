@@ -33,8 +33,11 @@ Realiza tu transferencia en las próximas *48 horas*:
 ¡Mucha suerte! 🍀 — Rifando+
   `.trim()
 
+  const digits = telefono.replace(/\D/g, '')
+  const phoneNormalized = digits.startsWith('52') ? digits : `52${digits}`
+
   const apiKey = process.env.CALLMEBOT_API_KEY
-  const url = `https://api.callmebot.com/whatsapp.php?phone=52${telefono}&text=${encodeURIComponent(mensaje)}&apikey=${apiKey}`
+  const url = `https://api.callmebot.com/whatsapp.php?phone=${phoneNormalized}&text=${encodeURIComponent(mensaje)}&apikey=${apiKey}`
 
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(10000) })

@@ -90,6 +90,7 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
       return
     }
     setEnviando(true)
+    const telefonoConCodigo = `52${datosCliente.telefono}`
     try {
       const res = await fetch('/api/pedidos', {
         method: 'POST',
@@ -99,7 +100,7 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
           usuario_id: sorteo.usuario_id,
           cliente_nombre: datosCliente.nombre,
           cliente_apellidos: `${datosCliente.apellido_paterno} ${datosCliente.apellido_materno}`,
-          cliente_telefono: datosCliente.telefono,
+          cliente_telefono: telefonoConCodigo,
           cliente_estado: datosCliente.estado,
           monto_total: monto,
           numeros: numerosSeleccionados,
@@ -120,7 +121,7 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          telefono: datosCliente.telefono,
+          telefono: telefonoConCodigo,
           nombre: datosCliente.nombre,
           sorteoNombre: sorteo.nombre,
           numeros: numerosSeleccionados,
