@@ -6,27 +6,24 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Loader2, Plus, Trash2 } from 'lucide-react'
+import { Loader2, Plus, Trash2, Save, Lock, CreditCard } from 'lucide-react'
 
 const perfilSchema = z.object({
-  nombre: z.string().min(2),
+  nombre:    z.string().min(2),
   apellidos: z.string().min(2),
-  telefono: z.string().optional(),
+  telefono:  z.string().optional(),
 })
 
 const passwordSchema = z.object({
-  nueva: z.string().min(8, 'Mínimo 8 caracteres'),
+  nueva:     z.string().min(8, 'Mínimo 8 caracteres'),
   confirmar: z.string(),
 }).refine((d) => d.nueva === d.confirmar, {
   message: 'Las contraseñas no coinciden',
   path: ['confirmar'],
 })
 
-type PerfilForm = z.infer<typeof perfilSchema>
-type PasswordForm = z.infer<typeof passwordSchema>
+type PerfilForm    = z.infer<typeof perfilSchema>
+type PasswordForm  = z.infer<typeof passwordSchema>
 
 interface Cuenta {
   id?: string
@@ -36,28 +33,96 @@ interface Cuenta {
   activo: boolean
 }
 
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  background: '#161616',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 10,
+  padding: '10px 14px',
+  fontSize: 14,
+  color: '#fff',
+  outline: 'none',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+}
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: 11,
+  fontWeight: 700,
+  color: 'rgba(255,255,255,0.5)',
+  letterSpacing: '0.05em',
+  textTransform: 'uppercase',
+  marginBottom: 6,
+}
+
+const cardStyle: React.CSSProperties = {
+  background: '#252525',
+  border: '1px solid rgba(255,255,255,0.07)',
+  borderRadius: 16,
+  padding: '24px',
+}
+
+const btnPrimary: React.CSSProperties = {
+  width: '100%',
+  padding: '11px 0',
+  background: '#22C55E',
+  color: '#fff',
+  border: 'none',
+  borderRadius: 10,
+  fontSize: 13,
+  fontWeight: 700,
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  transition: 'background 0.15s',
+  marginTop: 4,
+}
+
+const btnOutline: React.CSSProperties = {
+  width: '100%',
+  padding: '11px 0',
+  background: 'transparent',
+  color: 'rgba(255,255,255,0.7)',
+  border: '1px solid rgba(255,255,255,0.15)',
+  borderRadius: 10,
+  fontSize: 13,
+  fontWeight: 600,
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  transition: 'all 0.15s',
+  marginTop: 4,
+}
+
 export default function ConfiguracionPage() {
   const supabase = createClient()
   const sb = supabase as any
-  const [cargando, setCargando] = useState(false)
+  const [cargando, setCargando]       = useState(false)
   const [guardandoPass, setGuardandoPass] = useState(false)
-  const [cuentas, setCuentas] = useState<Cuenta[]>([])
-  const [userId, setUserId] = useState<string>('')
+  const [cuentas, setCuentas]         = useState<Cuenta[]>([])
+  const [userId, setUserId]           = useState<string>('')
 
   const perfilForm = useForm<PerfilForm>({ resolver: zodResolver(perfilSchema) })
-  const passForm = useForm<PasswordForm>({ resolver: zodResolver(passwordSchema) })
+  const passForm   = useForm<PasswordForm>({ resolver: zodResolver(passwordSchema) })
 
   useEffect(() => {
     const cargar = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       setUserId(user.id)
-
       const { data: perfil } = await sb.from('perfiles').select('*').eq('id', user.id).single()
       if (perfil) {
-        perfilForm.reset({ nombre: perfil.nombre, apellidos: perfil.apellidos, telefono: perfil.telefono ?? '' })
+        perfilForm.reset({
+          nombre:    perfil.nombre,
+          apellidos: perfil.apellidos,
+          telefono:  perfil.telefono ?? '',
+        })
       }
-
       const { data: cuentasDB } = await sb.from('cuentas_deposito').select('*').eq('usuario_id', user.id)
       if (cuentasDB) setCuentas(cuentasDB)
     }
@@ -88,83 +153,162 @@ export default function ConfiguracionPage() {
     toast.success('Cuentas guardadas')
   }
 
-  const agregarCuenta = () => setCuentas([...cuentas, { banco: '', clabe: '', titular: '', activo: true }])
+  const agregarCuenta  = () => setCuentas([...cuentas, { banco: '', clabe: '', titular: '', activo: true }])
   const eliminarCuenta = (i: number) => setCuentas(cuentas.filter((_, idx) => idx !== i))
+  const updateCuenta   = (i: number, field: keyof Cuenta, val: string) =>
+    setCuentas(cuentas.map((c, idx) => idx === i ? { ...c, [field]: val } : c))
+
+  const errStyle: React.CSSProperties = { fontSize: 11, color: '#F87171', marginTop: 4 }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
+    <div className="max-w-2xl mx-auto" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
       <div>
-        <h1 className="font-title text-4xl text-white tracking-wide">CONFIGURACIÓN</h1>
-        <p className="text-brand-muted font-body text-sm mt-1">Administra tu cuenta y cuentas de depósito.</p>
+        <h1 className="font-title" style={{ fontSize: 32, color: '#fff', letterSpacing: '0.06em' }}>CONFIGURACIÓN</h1>
+        <p className="font-body" style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginTop: 4 }}>
+          Administra tu cuenta y cuentas de depósito.
+        </p>
       </div>
 
-      <div className="bg-brand-card border border-brand-border rounded-2xl p-6 space-y-4">
-        <h2 className="font-ui font-semibold text-white">Datos personales</h2>
-        <form onSubmit={perfilForm.handleSubmit(guardarPerfil)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label>Nombre(s)</Label>
-              <Input {...perfilForm.register('nombre')} />
+      {/* Datos personales */}
+      <div style={cardStyle}>
+        <h2 className="font-ui" style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Save style={{ width: 16, height: 16, color: '#22C55E' }} />
+          Datos personales
+        </h2>
+        <form onSubmit={perfilForm.handleSubmit(guardarPerfil)} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label className="font-ui" style={labelStyle}>Nombre(s)</label>
+              <input style={inputStyle} {...perfilForm.register('nombre')} />
+              {perfilForm.formState.errors.nombre && <p style={errStyle}>{perfilForm.formState.errors.nombre.message}</p>}
             </div>
-            <div className="space-y-1.5">
-              <Label>Apellidos</Label>
-              <Input {...perfilForm.register('apellidos')} />
+            <div>
+              <label className="font-ui" style={labelStyle}>Apellidos</label>
+              <input style={inputStyle} {...perfilForm.register('apellidos')} />
+              {perfilForm.formState.errors.apellidos && <p style={errStyle}>{perfilForm.formState.errors.apellidos.message}</p>}
             </div>
           </div>
-          <div className="space-y-1.5">
-            <Label>Teléfono WhatsApp</Label>
-            <Input placeholder="10 dígitos" {...perfilForm.register('telefono')} />
+          <div>
+            <label className="font-ui" style={labelStyle}>Teléfono WhatsApp</label>
+            <input placeholder="10 dígitos" style={inputStyle} {...perfilForm.register('telefono')} />
           </div>
-          <Button type="submit" disabled={cargando} className="w-full">
-            {cargando ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Guardando...</> : 'Guardar cambios'}
-          </Button>
+          <button type="submit" disabled={cargando} className="font-ui" style={btnPrimary}>
+            {cargando ? <Loader2 style={{ width: 15, height: 15 }} className="animate-spin" /> : <Save style={{ width: 15, height: 15 }} />}
+            {cargando ? 'Guardando...' : 'Guardar cambios'}
+          </button>
         </form>
       </div>
 
-      <div className="bg-brand-card border border-brand-border rounded-2xl p-6 space-y-4">
-        <h2 className="font-ui font-semibold text-white">Cambiar contraseña</h2>
-        <form onSubmit={passForm.handleSubmit(cambiarPassword)} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Nueva contraseña</Label>
-            <Input type="password" {...passForm.register('nueva')} />
-            {passForm.formState.errors.nueva && <p className="text-xs text-red-400">{passForm.formState.errors.nueva.message}</p>}
+      {/* Cambiar contraseña */}
+      <div style={cardStyle}>
+        <h2 className="font-ui" style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Lock style={{ width: 16, height: 16, color: '#22C55E' }} />
+          Cambiar contraseña
+        </h2>
+        <form onSubmit={passForm.handleSubmit(cambiarPassword)} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <label className="font-ui" style={labelStyle}>Nueva contraseña</label>
+            <input type="password" style={inputStyle} {...passForm.register('nueva')} />
+            {passForm.formState.errors.nueva && <p style={errStyle}>{passForm.formState.errors.nueva.message}</p>}
           </div>
-          <div className="space-y-1.5">
-            <Label>Confirmar contraseña</Label>
-            <Input type="password" {...passForm.register('confirmar')} />
-            {passForm.formState.errors.confirmar && <p className="text-xs text-red-400">{passForm.formState.errors.confirmar.message}</p>}
+          <div>
+            <label className="font-ui" style={labelStyle}>Confirmar contraseña</label>
+            <input type="password" style={inputStyle} {...passForm.register('confirmar')} />
+            {passForm.formState.errors.confirmar && <p style={errStyle}>{passForm.formState.errors.confirmar.message}</p>}
           </div>
-          <Button type="submit" variant="outline" disabled={guardandoPass} className="w-full">
-            {guardandoPass ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-            Cambiar contraseña
-          </Button>
+          <button type="submit" disabled={guardandoPass} className="font-ui" style={btnOutline}>
+            {guardandoPass ? <Loader2 style={{ width: 15, height: 15 }} className="animate-spin" /> : <Lock style={{ width: 15, height: 15 }} />}
+            {guardandoPass ? 'Cambiando...' : 'Cambiar contraseña'}
+          </button>
         </form>
       </div>
 
-      <div className="bg-brand-card border border-brand-border rounded-2xl p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-ui font-semibold text-white">Cuentas de depósito</h2>
-          <Button type="button" variant="outline" size="sm" onClick={agregarCuenta} className="gap-1.5">
-            <Plus className="w-3.5 h-3.5" />Agregar
-          </Button>
+      {/* Cuentas de depósito */}
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <h2 className="font-ui" style={{ fontSize: 15, fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <CreditCard style={{ width: 16, height: 16, color: '#22C55E' }} />
+            Cuentas de depósito
+          </h2>
+          <button
+            type="button"
+            onClick={agregarCuenta}
+            className="font-ui"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '6px 12px', borderRadius: 8,
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            <Plus style={{ width: 13, height: 13 }} />
+            Agregar
+          </button>
         </div>
-        {cuentas.map((c, i) => (
-          <div key={i} className="p-4 rounded-xl border border-brand-border/60 bg-brand-border/10 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-ui text-brand-muted">Cuenta {i + 1}</span>
-              <button type="button" onClick={() => eliminarCuenta(i)} className="text-brand-muted hover:text-red-400 transition-colors cursor-pointer">
-                <Trash2 className="w-4 h-4" />
-              </button>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {cuentas.map((c, i) => (
+            <div key={i} style={{
+              background: '#1c1c1c',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 12,
+              padding: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span className="font-ui" style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Cuenta {i + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => eliminarCuenta(i)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', lineHeight: 0 }}
+                >
+                  <Trash2 style={{ width: 15, height: 15 }} />
+                </button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <input
+                  placeholder="Banco"
+                  value={c.banco}
+                  onChange={(e) => updateCuenta(i, 'banco', e.target.value)}
+                  style={inputStyle}
+                />
+                <input
+                  placeholder="Titular"
+                  value={c.titular}
+                  onChange={(e) => updateCuenta(i, 'titular', e.target.value)}
+                  style={inputStyle}
+                />
+              </div>
+              <input
+                placeholder="CLABE (18 dígitos)"
+                maxLength={18}
+                value={c.clabe}
+                onChange={(e) => updateCuenta(i, 'clabe', e.target.value)}
+                style={inputStyle}
+              />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="Banco" value={c.banco} onChange={(e) => setCuentas(cuentas.map((cc, idx) => idx === i ? { ...cc, banco: e.target.value } : cc))} />
-              <Input placeholder="Titular" value={c.titular} onChange={(e) => setCuentas(cuentas.map((cc, idx) => idx === i ? { ...cc, titular: e.target.value } : cc))} />
-            </div>
-            <Input placeholder="CLABE (18 dígitos)" maxLength={18} value={c.clabe} onChange={(e) => setCuentas(cuentas.map((cc, idx) => idx === i ? { ...cc, clabe: e.target.value } : cc))} />
-          </div>
-        ))}
-        {cuentas.length > 0 && <Button onClick={guardarCuentas} className="w-full">Guardar cuentas</Button>}
+          ))}
+        </div>
+
+        {cuentas.length > 0 && (
+          <button onClick={guardarCuentas} className="font-ui" style={{ ...btnPrimary, marginTop: 16 }}>
+            <Save style={{ width: 15, height: 15 }} />
+            Guardar cuentas
+          </button>
+        )}
+
+        {cuentas.length === 0 && (
+          <p className="font-body" style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '16px 0' }}>
+            No tienes cuentas registradas. Agrégalas para que los clientes puedan depositarte.
+          </p>
+        )}
       </div>
+
     </div>
   )
 }

@@ -35,9 +35,9 @@ function Pregunta({ pregunta, respuesta }: { pregunta: string; respuesta: string
   const [abierta, setAbierta] = useState(false)
 
   return (
-    <div className="border border-brand-border rounded-xl overflow-hidden">
+    <div className="border border-brand-border rounded-xl overflow-hidden bg-white shadow-sm">
       <button
-        className="w-full flex items-center justify-between px-5 py-4 text-left font-ui font-medium text-white hover:bg-brand-card transition-colors duration-200 cursor-pointer"
+        className="w-full flex items-center justify-between px-5 py-4 text-left font-ui font-semibold text-brand-text hover:bg-brand-card transition-colors duration-200 cursor-pointer"
         onClick={() => setAbierta(!abierta)}
         aria-expanded={abierta}
       >
@@ -53,11 +53,11 @@ function Pregunta({ pregunta, respuesta }: { pregunta: string; respuesta: string
 
 export function FAQ() {
   return (
-    <section className="py-24 bg-brand-bg">
+    <section className="py-24 bg-brand-card">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
           <p className="text-primary text-sm font-ui font-semibold uppercase tracking-widest mb-3">Resolvemos tus dudas</p>
-          <h2 className="font-title text-5xl sm:text-6xl text-white tracking-wide">PREGUNTAS FRECUENTES</h2>
+          <h2 className="font-title text-5xl sm:text-6xl text-brand-text">PREGUNTAS FRECUENTES</h2>
         </div>
         <div className="space-y-3">
           {PREGUNTAS.map((p) => (

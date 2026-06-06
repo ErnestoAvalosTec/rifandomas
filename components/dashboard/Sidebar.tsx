@@ -9,15 +9,14 @@ import {
   LayoutDashboard, Ticket, Plus, ShoppingCart, Settings,
   LogOut, Menu, X, ChevronRight,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
 const NAV_ITEMS = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Inicio', exact: true },
-  { href: '/dashboard/sorteos', icon: Ticket, label: 'Mis Sorteos' },
-  { href: '/dashboard/sorteos/nuevo', icon: Plus, label: 'Crear Sorteo' },
-  { href: '/dashboard/ordenes', icon: ShoppingCart, label: 'Órdenes' },
-  { href: '/dashboard/configuracion', icon: Settings, label: 'Configuración' },
+  { href: '/dashboard',           icon: LayoutDashboard, label: 'Inicio',        exact: true },
+  { href: '/dashboard/sorteos',   icon: Ticket,          label: 'Mis Sorteos' },
+  { href: '/dashboard/sorteos/nuevo', icon: Plus,        label: 'Crear Sorteo' },
+  { href: '/dashboard/ordenes',   icon: ShoppingCart,    label: 'Órdenes' },
+  { href: '/dashboard/configuracion', icon: Settings,    label: 'Configuración' },
 ]
 
 interface SidebarProps {
@@ -47,8 +46,8 @@ export function Sidebar({ userName }: SidebarProps) {
         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
           <Ticket className="w-4 h-4 text-white" />
         </div>
-        <span className="font-title text-xl tracking-wider text-white">
-          RIFANDO<span className="text-primary">+</span>
+        <span className="font-title text-xl text-white">
+          RIFANDO<span className="text-brand-red">MAS</span>
         </span>
       </div>
 
@@ -71,10 +70,10 @@ export function Sidebar({ userName }: SidebarProps) {
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-ui transition-all duration-200',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-ui font-medium transition-all duration-200',
                   active
-                    ? 'bg-primary/10 text-primary border border-primary/20'
-                    : 'text-brand-muted hover:bg-brand-border/40 hover:text-white'
+                    ? 'bg-primary/15 text-primary border border-primary/20'
+                    : 'text-brand-muted hover:bg-brand-card hover:text-white'
                 )}
                 aria-current={active ? 'page' : undefined}
               >
@@ -89,10 +88,13 @@ export function Sidebar({ userName }: SidebarProps) {
 
       {/* Logout */}
       <div className="px-3 py-4 border-t border-brand-border">
-        <Button variant="ghost" size="sm" className="w-full justify-start gap-3 text-brand-muted hover:text-red-400 hover:bg-red-500/10" onClick={logout}>
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-ui font-medium text-brand-muted hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer"
+        >
           <LogOut className="w-4 h-4" />
           Cerrar sesión
-        </Button>
+        </button>
       </div>
     </nav>
   )
@@ -100,19 +102,23 @@ export function Sidebar({ userName }: SidebarProps) {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-brand-card border-r border-brand-border fixed inset-y-0 left-0 z-30">
+      <aside className="hidden lg:flex flex-col w-64 bg-brand-bg border-r border-brand-border fixed inset-y-0 left-0 z-30">
         <NavContent />
       </aside>
 
       {/* Mobile top bar */}
-      <header className="lg:hidden fixed top-0 inset-x-0 z-30 flex items-center justify-between h-14 px-4 bg-brand-card border-b border-brand-border">
+      <header className="lg:hidden fixed top-0 inset-x-0 z-30 flex items-center justify-between h-14 px-4 bg-brand-bg border-b border-brand-border">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
             <Ticket className="w-3.5 h-3.5 text-white" />
           </div>
-          <span className="font-title text-lg tracking-wider text-white">RIFANDO<span className="text-primary">+</span></span>
+          <span className="font-title text-lg text-white">RIFANDO<span className="text-brand-red">MAS</span></span>
         </div>
-        <button className="p-2 text-brand-muted hover:text-white transition-colors cursor-pointer" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menú">
+        <button
+          className="p-2 text-brand-muted hover:text-white transition-colors cursor-pointer"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Menú"
+        >
           {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </header>
@@ -120,8 +126,8 @@ export function Sidebar({ userName }: SidebarProps) {
       {/* Mobile drawer overlay */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-40 flex">
-          <div className="fixed inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
-          <aside className="relative w-64 bg-brand-card border-r border-brand-border flex flex-col">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
+          <aside className="relative w-64 bg-brand-bg border-r border-brand-border flex flex-col">
             <NavContent />
           </aside>
         </div>

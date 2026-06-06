@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { createClient } from '@/lib/supabase/client'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -48,8 +47,6 @@ type ClienteForm = z.infer<typeof schemaCliente>
 const PASOS = ['Paquete', 'Tus datos', 'Elige números']
 
 export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: FormularioCompraProps) {
-  const supabase = createClient()
-  const sb = supabase as any
   const [paso, setPaso] = useState(0)
   const [paquete, setPaquete] = useState<Paquete>(paqueteInicial)
   const [numerosSeleccionados, setNumerosSeleccionados] = useState<string[]>([])
@@ -95,35 +92,32 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
     setEnviando(true)
 
     try {
-      const { data: pedido, error: errPedido } = await sb.from('pedidos').insert({
-        sorteo_id: sorteo.id,
-        cliente_nombre: datosCliente.nombre,
-        cliente_apellidos: `${datosCliente.apellido_paterno} ${datosCliente.apellido_materno}`,
-        cliente_telefono: datosCliente.telefono,
-        cliente_estado: datosCliente.estado,
-        monto_total: paqueteActual.monto,
-      }).select().single()
-
-      if (errPedido || !pedido) throw new Error('No se pudo crear el pedido.')
-
-      const { error: errReserva } = await (supabase as any).rpc('reservar_boletos', {
-        p_numeros: numerosSeleccionados,
-        p_sorteo_id: sorteo.id,
-        p_pedido_id: (pedido as any).id,
+      const res = await fetch('/api/pedidos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sorteo_id: sorteo.id,
+          usuario_id: sorteo.usuario_id,
+          cliente_nombre: datosCliente.nombre,
+          cliente_apellidos: `${datosCliente.apellido_paterno} ${datosCliente.apellido_materno}`,
+          cliente_telefono: datosCliente.telefono,
+          cliente_estado: datosCliente.estado,
+          monto_total: paqueteActual.monto,
+          numeros: numerosSeleccionados,
+        }),
       })
 
-      if (errReserva) {
-        if (errReserva.message.includes('uno_o_mas_numeros_no_disponibles')) {
-          toast.error('Uno o más números ya fueron tomados. Por favor selecciona otros.', { duration: 6000 })
-          setNumerosSeleccionados([])
-          await sb.from('pedidos').update({ estatus: 'cancelado' }).eq('id', (pedido as any).id)
-        } else {
-          throw errReserva
-        }
+      const json = await res.json()
+
+      if (res.status === 409 && json.error === 'numeros_no_disponibles') {
+        toast.error('Uno o más números ya fueron tomados. Por favor selecciona otros.', { duration: 6000 })
+        setNumerosSeleccionados([])
         return
       }
 
-      const { data: cuentaData } = await sb.from('cuentas_deposito').select('*').eq('usuario_id', sorteo.usuario_id).eq('activo', true).limit(1).single()
+      if (!res.ok) throw new Error(json.error ?? 'No se pudo crear el pedido.')
+
+      const { pedidoId, cuenta } = json
 
       await fetch('/api/whatsapp', {
         method: 'POST',
@@ -135,10 +129,10 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
           numeros: numerosSeleccionados,
           fechaSorteo: new Date(sorteo.fecha_sorteo).toLocaleDateString('es-MX'),
           montoTotal: paqueteActual.monto,
-          banco: cuentaData?.banco ?? 'Ver en plataforma',
-          clabe: cuentaData?.clabe ?? 'Ver en plataforma',
-          titular: cuentaData?.titular ?? 'Ver en plataforma',
-          pedidoId: (pedido as any).id,
+          banco: cuenta?.banco ?? 'Ver en plataforma',
+          clabe: cuenta?.clabe ?? 'Ver en plataforma',
+          titular: cuenta?.titular ?? 'Ver en plataforma',
+          pedidoId,
         }),
       })
 

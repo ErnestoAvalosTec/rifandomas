@@ -42,7 +42,7 @@ export interface Database {
           promo_activa: boolean
           promo_tipo: 'x_por_y' | 'compra_lleva' | null
           promo_config: Json | null
-          estatus: 'borrador' | 'pendiente' | 'activo' | 'finalizado' | 'rechazado'
+          estatus: 'borrador' | 'pendiente' | 'activo' | 'pausado' | 'finalizado' | 'rechazado' | 'eliminado'
           motivo_rechazo: string | null
           created_at: string
           updated_at: string
@@ -58,7 +58,7 @@ export interface Database {
           promo_activa?: boolean
           promo_tipo?: 'x_por_y' | 'compra_lleva' | null
           promo_config?: Json | null
-          estatus?: 'borrador' | 'pendiente' | 'activo' | 'finalizado' | 'rechazado'
+          estatus?: 'borrador' | 'pendiente' | 'activo' | 'pausado' | 'finalizado' | 'rechazado' | 'eliminado'
           motivo_rechazo?: string | null
         }
         Update: {
@@ -70,7 +70,7 @@ export interface Database {
           promo_activa?: boolean
           promo_tipo?: 'x_por_y' | 'compra_lleva' | null
           promo_config?: Json | null
-          estatus?: 'borrador' | 'pendiente' | 'activo' | 'finalizado' | 'rechazado'
+          estatus?: 'borrador' | 'pendiente' | 'activo' | 'pausado' | 'finalizado' | 'rechazado' | 'eliminado'
           motivo_rechazo?: string | null
           updated_at?: string
         }

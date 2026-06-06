@@ -1,0 +1,86 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createAdminSupabaseClient } from '@/lib/supabase/server'
+
+const BUCKET = 'hero-slides'
+
+export async function GET() {
+  const supabase = createAdminSupabaseClient()
+  const { data, error } = await supabase
+    .from('hero_slides')
+    .select('*')
+    .order('orden', { ascending: true })
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data)
+}
+
+export async function POST(req: NextRequest) {
+  const supabase = createAdminSupabaseClient()
+  const formData = await req.formData()
+  const file = formData.get('file') as File | null
+  const titulo = (formData.get('titulo') as string | null) ?? null
+  const orden = parseInt((formData.get('orden') as string) ?? '0', 10)
+
+  if (!file) return NextResponse.json({ error: 'No se recibió archivo' }, { status: 400 })
+
+  const ext = file.name.split('.').pop() ?? 'jpg'
+  const path = `slide-${Date.now()}.${ext}`
+  const buffer = Buffer.from(await file.arrayBuffer())
+
+  const { error: storageError } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, buffer, { contentType: file.type, upsert: false })
+
+  if (storageError) return NextResponse.json({ error: storageError.message }, { status: 500 })
+
+  const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path)
+
+  const { data, error } = await supabase
+    .from('hero_slides')
+    .insert({ imagen_url: urlData.publicUrl, titulo, orden, activo: true })
+    .select()
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data)
+}
+
+export async function PATCH(req: NextRequest) {
+  const supabase = createAdminSupabaseClient()
+  const body = await req.json()
+  const { id, ...updates } = body
+  if (!id) return NextResponse.json({ error: 'Falta id' }, { status: 400 })
+
+  const { data, error } = await supabase
+    .from('hero_slides')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data)
+}
+
+export async function DELETE(req: NextRequest) {
+  const supabase = createAdminSupabaseClient()
+  const { id } = await req.json()
+  if (!id) return NextResponse.json({ error: 'Falta id' }, { status: 400 })
+
+  const { data: slide } = await supabase
+    .from('hero_slides')
+    .select('imagen_url')
+    .eq('id', id)
+    .single()
+
+  if (slide?.imagen_url) {
+    const url = new URL(slide.imagen_url)
+    const storagePath = url.pathname.split(`/object/public/${BUCKET}/`)[1]
+    if (storagePath) {
+      await supabase.storage.from(BUCKET).remove([storagePath])
+    }
+  }
+
+  const { error } = await supabase.from('hero_slides').delete().eq('id', id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
+}

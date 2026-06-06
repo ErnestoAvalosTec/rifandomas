@@ -1,35 +1,32 @@
 import type { Metadata } from 'next'
-import { Bebas_Neue, Poppins, Comfortaa } from 'next/font/google'
+import { Montserrat, Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 
-const bebasNeue = Bebas_Neue({
-  weight: '400',
+const montserrat = Montserrat({
+  weight: ['400', '500', '600', '700', '800'],
   subsets: ['latin'],
-  variable: '--font-bebas',
+  variable: '--font-montserrat',
   display: 'swap',
 })
 
-const poppins = Poppins({
-  weight: ['400', '500', '600', '700'],
+const inter = Inter({
+  weight: ['400', '500', '600'],
   subsets: ['latin'],
-  variable: '--font-poppins',
-  display: 'swap',
-})
-
-const comfortaa = Comfortaa({
-  weight: ['400', '500', '700'],
-  subsets: ['latin'],
-  variable: '--font-comfortaa',
+  variable: '--font-inter',
   display: 'swap',
 })
 
 export const metadata: Metadata = {
-  title: 'Rifando+ | Sorteos y Rifas Virtuales en México',
+  title: 'RifandoMas | Sorteos y Rifas Virtuales en México',
   description: 'La plataforma más confiable para sorteos y rifas virtuales en México. Premios de alto valor, pagos seguros y resultados transparentes.',
-  keywords: 'rifas, sorteos, México, boletos, premios',
+  keywords: 'rifas, sorteos, México, boletos, premios, RifandoMas',
+  icons: {
+    icon: '/api/favicon',
+    shortcut: '/api/favicon',
+  },
   openGraph: {
-    title: 'Rifando+ | Sorteos y Rifas Virtuales',
+    title: 'RifandoMas | Sorteos y Rifas Virtuales',
     description: 'Participa en los mejores sorteos de México',
     type: 'website',
   },
@@ -37,10 +34,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className="dark">
-      <body className={`${bebasNeue.variable} ${poppins.variable} ${comfortaa.variable} font-body bg-brand-bg text-white antialiased`}>
+    <html lang="es">
+      <body className={`${montserrat.variable} ${inter.variable} font-body bg-brand-bg text-brand-text antialiased`}>
         {children}
-        <Toaster theme="dark" position="top-right" richColors />
+        <Toaster theme="light" position="top-right" richColors />
       </body>
     </html>
   )

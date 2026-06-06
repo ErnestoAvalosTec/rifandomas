@@ -29,12 +29,12 @@ const PASOS = [
 
 export function ComoFunciona() {
   return (
-    <section id="como-funciona" className="py-24 bg-brand-bg">
+    <section id="como-funciona" className="py-24 bg-brand-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="text-center mb-16">
           <p className="text-primary text-sm font-ui font-semibold uppercase tracking-widest mb-3">Simple y rápido</p>
-          <h2 className="font-title text-5xl sm:text-6xl text-white tracking-wide">
+          <h2 className="font-title text-5xl sm:text-6xl text-brand-text">
             ¿CÓMO FUNCIONA?
           </h2>
           <p className="text-brand-muted font-body mt-4 max-w-xl mx-auto">
@@ -42,7 +42,7 @@ export function ComoFunciona() {
           </p>
         </div>
 
-        {/* Steps — horizontal desktop, vertical mobile */}
+        {/* Steps */}
         <div className="relative">
           {/* Connector line (desktop) */}
           <div className="hidden md:block absolute top-12 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-transparent via-brand-border to-transparent" />
@@ -54,7 +54,7 @@ export function ComoFunciona() {
                 <div key={i} className="flex flex-col items-center text-center group">
                   {/* Icon circle */}
                   <div className="relative mb-6">
-                    <div className="w-20 h-20 rounded-2xl bg-brand-card border border-brand-border flex items-center justify-center group-hover:border-primary/50 group-hover:bg-primary/5 transition-all duration-300">
+                    <div className="w-20 h-20 rounded-2xl bg-white border border-brand-border shadow-sm flex items-center justify-center group-hover:border-primary/40 group-hover:shadow-md transition-all duration-300">
                       <Icon className="w-8 h-8 text-primary" />
                     </div>
                     <span className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-primary flex items-center justify-center font-title text-sm text-white">
@@ -62,7 +62,7 @@ export function ComoFunciona() {
                     </span>
                   </div>
 
-                  <h3 className="font-ui font-semibold text-white text-base mb-2">{paso.titulo}</h3>
+                  <h3 className="font-ui font-semibold text-brand-text text-base mb-2">{paso.titulo}</h3>
                   <p className="text-brand-muted text-sm leading-relaxed max-w-[200px] font-body">{paso.descripcion}</p>
                 </div>
               )

@@ -8,9 +8,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Ticket, Loader2, Eye, EyeOff } from 'lucide-react'
 
 const schema = z.object({
@@ -19,6 +16,19 @@ const schema = z.object({
 })
 
 type LoginForm = z.infer<typeof schema>
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  background: '#161616',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 10,
+  padding: '10px 14px',
+  fontSize: 14,
+  color: '#fff',
+  outline: 'none',
+  fontFamily: 'inherit',
+  transition: 'border-color 0.15s',
+}
 
 export default function LoginPage() {
   const supabase = createClient()
@@ -58,49 +68,141 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-bg bg-dot-pattern flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <Ticket className="w-5 h-5 text-white" />
+    <div
+      style={{
+        minHeight: '100vh',
+        background: '#1c1c1c',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px 16px',
+      }}
+    >
+      <div style={{ width: '100%', maxWidth: 420 }}>
+
+        {/* Logo */}
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: 10,
+              background: '#22C55E',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Ticket style={{ width: 20, height: 20, color: '#fff' }} />
             </div>
-            <span className="font-title text-3xl tracking-wider text-white">
-              RIFANDO<span className="text-primary">+</span>
+            <span className="font-title" style={{ fontSize: 28, letterSpacing: '0.08em', color: '#fff' }}>
+              RIFANDO<span style={{ color: '#22C55E' }}>+</span>
             </span>
           </Link>
         </div>
 
-        <div className="bg-brand-card border border-brand-border rounded-2xl p-8">
-          <h1 className="font-title text-4xl text-white mb-1 tracking-wide">INICIAR SESIÓN</h1>
-          <p className="text-brand-muted text-sm font-body mb-6">Accede a tu cuenta para gestionar tus sorteos.</p>
+        {/* Card */}
+        <div style={{
+          background: '#252525',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 16,
+          padding: '36px 32px',
+        }}>
+          <h1 className="font-title" style={{ fontSize: 28, color: '#fff', letterSpacing: '0.06em', marginBottom: 6 }}>
+            INICIAR SESIÓN
+          </h1>
+          <p className="font-body" style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 28 }}>
+            Accede a tu cuenta para gestionar tus sorteos.
+          </p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Correo electrónico</Label>
-              <Input id="email" type="email" placeholder="tu@correo.com" autoComplete="email" {...register('email')} />
-              {errors.email && <p className="text-xs text-red-400">{errors.email.message}</p>}
+          <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+            {/* Email */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              <label className="font-ui" style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.04em' }}>
+                CORREO ELECTRÓNICO
+              </label>
+              <input
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="tu@correo.com"
+                style={inputStyle}
+                {...register('email')}
+              />
+              {errors.email && (
+                <p className="font-body" style={{ fontSize: 11, color: '#F87171' }}>{errors.email.message}</p>
+              )}
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Contraseña</Label>
-              <div className="relative">
-                <Input id="password" type={verPassword ? 'text' : 'password'} placeholder="••••••••" autoComplete="current-password" className="pr-10" {...register('password')} />
-                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted hover:text-white transition-colors cursor-pointer" onClick={() => setVerPassword(!verPassword)} aria-label={verPassword ? 'Ocultar' : 'Mostrar'}>
-                  {verPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+
+            {/* Password */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              <label className="font-ui" style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.04em' }}>
+                CONTRASEÑA
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  id="password"
+                  type={verPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  style={{ ...inputStyle, paddingRight: 42 }}
+                  {...register('password')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setVerPassword(!verPassword)}
+                  style={{
+                    position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 0,
+                    color: 'rgba(255,255,255,0.35)',
+                  }}
+                  aria-label={verPassword ? 'Ocultar' : 'Mostrar'}
+                >
+                  {verPassword
+                    ? <EyeOff style={{ width: 16, height: 16 }} />
+                    : <Eye style={{ width: 16, height: 16 }} />}
                 </button>
               </div>
-              {errors.password && <p className="text-xs text-red-400">{errors.password.message}</p>}
+              {errors.password && (
+                <p className="font-body" style={{ fontSize: 11, color: '#F87171' }}>{errors.password.message}</p>
+              )}
             </div>
-            <Button type="submit" size="lg" className="w-full" disabled={cargando}>
-              {cargando ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Ingresando...</> : 'Ingresar'}
-            </Button>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={cargando}
+              className="font-ui"
+              style={{
+                width: '100%',
+                padding: '12px 0',
+                background: cargando ? 'rgba(34,197,94,0.6)' : '#22C55E',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 10,
+                fontSize: 14,
+                fontWeight: 700,
+                letterSpacing: '0.04em',
+                cursor: cargando ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                transition: 'background 0.15s',
+                marginTop: 4,
+              }}
+            >
+              {cargando
+                ? <><Loader2 style={{ width: 16, height: 16 }} className="animate-spin" /> Ingresando...</>
+                : 'Ingresar'}
+            </button>
+
           </form>
 
-          <p className="text-center text-sm text-brand-muted font-body mt-6">
+          <p className="font-body" style={{ textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 24 }}>
             ¿No tienes cuenta?{' '}
-            <Link href="/registro" className="text-primary hover:underline font-semibold">Regístrate gratis</Link>
+            <Link href="/registro" style={{ color: '#22C55E', fontWeight: 600, textDecoration: 'none' }}>
+              Regístrate gratis
+            </Link>
           </p>
         </div>
+
       </div>
     </div>
   )

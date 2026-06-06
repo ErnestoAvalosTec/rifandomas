@@ -52,10 +52,10 @@ export function VerificadorBoleto() {
   }
 
   return (
-    <section id="verificador" className="py-24 bg-brand-card border-y border-brand-border">
+    <section id="verificador" className="py-24 bg-white border-y border-brand-border">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
         <p className="text-primary text-sm font-ui font-semibold uppercase tracking-widest mb-3">Transparencia total</p>
-        <h2 className="font-title text-5xl sm:text-6xl text-white tracking-wide mb-4">VERIFICA TU BOLETO</h2>
+        <h2 className="font-title text-5xl sm:text-6xl text-brand-text mb-4">VERIFICA TU BOLETO</h2>
         <p className="text-brand-muted font-body mb-8">
           Ingresa el número de tu boleto para ver su estatus actual en tiempo real.
         </p>
@@ -76,15 +76,15 @@ export function VerificadorBoleto() {
         </div>
 
         {noEncontrado && (
-          <div className="mt-6 p-4 rounded-xl border border-brand-border bg-brand-bg text-brand-muted font-body text-sm">
+          <div className="mt-6 p-4 rounded-xl border border-brand-border bg-brand-card text-brand-muted font-body text-sm">
             No se encontró ningún boleto con ese número.
           </div>
         )}
 
         {resultado && (
-          <div className="mt-6 p-6 rounded-2xl border border-brand-border bg-brand-bg text-left space-y-3">
+          <div className="mt-6 p-6 rounded-2xl border border-brand-border bg-white shadow-sm text-left space-y-3">
             <div className="flex items-center justify-between">
-              <span className="font-title text-3xl text-white">#{resultado.numero}</span>
+              <span className="font-title text-3xl text-brand-text">#{resultado.numero}</span>
               <Badge variant={estatusBadgeVariant(resultado.estatus) as any} className="capitalize">
                 {resultado.estatus}
               </Badge>
@@ -92,12 +92,12 @@ export function VerificadorBoleto() {
             <div className="space-y-2 text-sm font-body">
               <div className="flex justify-between">
                 <span className="text-brand-muted">Sorteo:</span>
-                <span className="text-white">{resultado.sorteo}</span>
+                <span className="text-brand-text font-medium">{resultado.sorteo}</span>
               </div>
               {resultado.titular && (
                 <div className="flex justify-between">
                   <span className="text-brand-muted">Titular:</span>
-                  <span className="text-white">{resultado.titular}</span>
+                  <span className="text-brand-text font-medium">{resultado.titular}</span>
                 </div>
               )}
             </div>
