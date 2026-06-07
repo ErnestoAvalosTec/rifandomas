@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -39,12 +39,14 @@ const schema = z.object({
   promo_activa: z.boolean().default(false),
   promo_tipo: z.enum(['x_por_y', 'compra_lleva']).optional(),
   premios: z.array(premioSchema).min(1, 'Agrega al menos 1 premio').max(3),
-  cuentas: z.array(cuentaSchema).min(1, 'Agrega al menos 1 cuenta de depósito'),
+  cuentas: z.array(cuentaSchema).default([]),
 })
 
 type FormValues = z.infer<typeof schema>
 
 type PremioInicial = { nombre: string; descripcion?: string | null; valor_estimado?: number | null; imagen_url?: string | null }
+
+type CuentaExistente = { id: string; banco: string; clabe: string; titular: string; activo: boolean }
 
 interface SorteoFormProps {
   sorteo?: SorteoRow
@@ -60,6 +62,8 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
   const [guardando, setGuardando] = useState(false)
   const [esLoteria, setEsLoteria] = useState<boolean>((sorteo as any)?.es_loteria ?? false)
   const [digitosLoteria, setDigitosLoteria] = useState<number>(3)
+  const [cuentasExistentes, setCuentasExistentes] = useState<CuentaExistente[]>([])
+  const [cuentaSeleccionadaId, setCuentaSeleccionadaId] = useState<string | null>(null)
 
   const isEdit = !!sorteo
 
@@ -76,12 +80,25 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
       premios: premiosIniciales?.length
         ? premiosIniciales.map((p) => ({ nombre: p.nombre, descripcion: p.descripcion ?? '', valor_estimado: p.valor_estimado ?? 0, imagen_url: p.imagen_url ?? '' }))
         : [{ nombre: '', descripcion: '', valor_estimado: 0, imagen_url: '' }],
-      cuentas: [{ banco: '', clabe: '', titular: '' }],
+      cuentas: [],
     },
   })
 
   const { fields: premioFields, append: appendPremio, remove: removePremio } = useFieldArray({ control, name: 'premios' })
   const { fields: cuentaFields, append: appendCuenta, remove: removeCuenta } = useFieldArray({ control, name: 'cuentas' })
+
+  useEffect(() => {
+    const cargarCuentas = async () => {
+      const { data } = await sb.from('cuentas_deposito').select('*').eq('usuario_id', userId)
+      if (data?.length) {
+        setCuentasExistentes(data)
+        setCuentaSeleccionadaId(data.find((c: CuentaExistente) => c.activo)?.id ?? data[0].id)
+      } else {
+        appendCuenta({ banco: '', clabe: '', titular: '' })
+      }
+    }
+    cargarCuentas()
+  }, [userId])
 
   const toggleLoteria = (checked: boolean) => {
     setEsLoteria(checked)
@@ -105,6 +122,10 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
   }
 
   const onSubmit = async (values: FormValues) => {
+    if (!cuentaSeleccionadaId && values.cuentas.length === 0) {
+      toast.error('Selecciona o agrega una cuenta de depósito')
+      return
+    }
     setGuardando(true)
     try {
       let sorteoId = sorteo?.id
@@ -169,11 +190,17 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
       )
       if (premiosError) throw premiosError
 
-      await sb.from('cuentas_deposito').delete().eq('usuario_id', userId)
-      const { error: cuentasError } = await sb.from('cuentas_deposito').insert(
-        values.cuentas.map((c) => ({ usuario_id: userId, banco: c.banco, clabe: c.clabe, titular: c.titular }))
-      )
-      if (cuentasError) throw cuentasError
+      if (cuentaSeleccionadaId) {
+        await sb.from('cuentas_deposito').update({ activo: false }).eq('usuario_id', userId)
+        const { error: cuentasError } = await sb.from('cuentas_deposito').update({ activo: true }).eq('id', cuentaSeleccionadaId)
+        if (cuentasError) throw cuentasError
+      } else if (values.cuentas.length) {
+        await sb.from('cuentas_deposito').update({ activo: false }).eq('usuario_id', userId)
+        const { error: cuentasError } = await sb.from('cuentas_deposito').insert(
+          values.cuentas.map((c, i) => ({ usuario_id: userId, banco: c.banco, clabe: c.clabe, titular: c.titular, activo: i === 0 }))
+        )
+        if (cuentasError) throw cuentasError
+      }
 
       toast.success(adminMode && !isEdit ? 'Sorteo publicado exitosamente.' : adminMode && isEdit ? 'Sorteo actualizado.' : 'Sorteo enviado a revisión. El administrador lo aprobará pronto.')
       router.push(adminMode ? '/admin/sorteos' : '/dashboard/sorteos')
@@ -311,26 +338,76 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
       </div>
 
       <div className="bg-brand-card border border-brand-border rounded-2xl p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-ui font-semibold text-brand-text">Cuentas de depósito</h2>
-          <Button type="button" variant="outline" size="sm" onClick={() => appendCuenta({ banco: '', clabe: '', titular: '' })} className="gap-1.5">
-            <Plus className="w-3.5 h-3.5" />Agregar
-          </Button>
-        </div>
-        {cuentaFields.map((field, i) => (
-          <div key={field.id} className="p-4 rounded-xl border border-brand-border/60 bg-brand-border/10 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-ui text-brand-muted">Cuenta {i + 1}</span>
-              {i > 0 && <button type="button" onClick={() => removeCuenta(i)} className="text-brand-muted hover:text-red-400 transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>}
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="Banco (ej: BBVA)" {...register(`cuentas.${i}.banco`)} />
-              <Input placeholder="Titular" {...register(`cuentas.${i}.titular`)} />
-            </div>
-            <Input placeholder="CLABE interbancaria (18 dígitos)" maxLength={18} {...register(`cuentas.${i}.clabe`)} />
-            {errors.cuentas?.[i]?.clabe && <p className="text-xs text-red-400">{errors.cuentas[i]?.clabe?.message}</p>}
+        <h2 className="font-ui font-semibold text-brand-text">Cuentas de depósito</h2>
+
+        {cuentasExistentes.length > 0 && (
+          <div className="space-y-2">
+            <Label>Selecciona la cuenta donde se recibirán los depósitos</Label>
+            {cuentasExistentes.map((c) => (
+              <label
+                key={c.id}
+                className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
+                  cuentaSeleccionadaId === c.id ? 'border-primary bg-primary/10' : 'border-brand-border bg-brand-border/10 hover:border-brand-muted'
+                }`}
+              >
+                <input
+                  type="radio"
+                  checked={cuentaSeleccionadaId === c.id}
+                  onChange={() => setCuentaSeleccionadaId(c.id)}
+                  className="w-4 h-4 accent-primary cursor-pointer flex-shrink-0"
+                />
+                <div className="min-w-0">
+                  <p className="text-sm font-ui font-semibold text-brand-text truncate">{c.banco} · {c.titular}</p>
+                  <p className="text-xs text-brand-muted font-ui">CLABE •••• {c.clabe.slice(-4)}</p>
+                </div>
+              </label>
+            ))}
+            <label
+              className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
+                cuentaSeleccionadaId === null ? 'border-primary bg-primary/10' : 'border-brand-border bg-brand-border/10 hover:border-brand-muted'
+              }`}
+            >
+              <input
+                type="radio"
+                checked={cuentaSeleccionadaId === null}
+                onChange={() => { setCuentaSeleccionadaId(null); if (cuentaFields.length === 0) appendCuenta({ banco: '', clabe: '', titular: '' }) }}
+                className="w-4 h-4 accent-primary cursor-pointer flex-shrink-0"
+              />
+              <span className="flex items-center gap-1.5 text-sm font-ui font-semibold text-brand-text">
+                <Plus className="w-3.5 h-3.5" />Usar una cuenta nueva
+              </span>
+            </label>
           </div>
-        ))}
+        )}
+
+        {(cuentasExistentes.length === 0 || cuentaSeleccionadaId === null) && (
+          <div className="space-y-3">
+            {cuentasExistentes.length > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-brand-muted font-ui">Datos de la nueva cuenta</span>
+                <Button type="button" variant="secondary" size="sm" onClick={() => appendCuenta({ banco: '', clabe: '', titular: '' })} className="gap-1.5">
+                  <Plus className="w-3.5 h-3.5" />Agregar otra
+                </Button>
+              </div>
+            )}
+            {cuentaFields.map((field, i) => (
+              <div key={field.id} className="p-4 rounded-xl border border-brand-border/60 bg-brand-border/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-ui text-brand-muted">Cuenta {i + 1}</span>
+                  {(cuentasExistentes.length > 0 || i > 0) && (
+                    <button type="button" onClick={() => removeCuenta(i)} className="text-brand-muted hover:text-red-400 transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input placeholder="Banco (ej: BBVA)" {...register(`cuentas.${i}.banco`)} />
+                  <Input placeholder="Titular" {...register(`cuentas.${i}.titular`)} />
+                </div>
+                <Input placeholder="CLABE interbancaria (18 dígitos)" maxLength={18} {...register(`cuentas.${i}.clabe`)} />
+                {errors.cuentas?.[i]?.clabe && <p className="text-xs text-red-400">{errors.cuentas[i]?.clabe?.message}</p>}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex gap-3">

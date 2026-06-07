@@ -219,29 +219,29 @@ export default function AdminSorteosPage() {
                       <Button size="sm" onClick={() => aprobar(s)} className="gap-1.5">
                         <CheckCircle2 className="w-3.5 h-3.5" />Aprobar
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setRechazando(rechazando === s.id ? null : s.id)} className="gap-1.5 border-red-500/30 text-red-400 hover:bg-red-500/10">
+                      <Button size="sm" variant="secondary" onClick={() => setRechazando(rechazando === s.id ? null : s.id)} className="gap-1.5 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-400">
                         <XCircle className="w-3.5 h-3.5" />Rechazar
                       </Button>
                     </>
                   )}
                   {s.estatus === 'pausado' && (
-                    <Button size="sm" variant="outline" onClick={() => reactivar(s.id)} className="gap-1.5 border-green-500/30 text-green-400 hover:bg-green-500/10">
+                    <Button size="sm" variant="secondary" onClick={() => reactivar(s.id)} className="gap-1.5 border-green-500/30 text-green-400 hover:bg-green-500/10 hover:text-green-400">
                       <PlayCircle className="w-3.5 h-3.5" />Reactivar
                     </Button>
                   )}
                   {s.estatus !== 'eliminado' && (
                     <>
                       <Link href={`/admin/sorteos/${s.id}/editar`}>
-                        <Button size="sm" variant="outline" className="gap-1.5">
+                        <Button size="sm" variant="secondary" className="gap-1.5">
                           <Pencil className="w-3.5 h-3.5" />Editar
                         </Button>
                       </Link>
                       {s.estatus !== 'pausado' && (
-                        <Button size="sm" variant="outline" onClick={() => { setAccionPendiente({ id: s.id, tipo: 'pausado' }); setMotivoAccion('') }} className="gap-1.5 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10">
+                        <Button size="sm" variant="secondary" onClick={() => { setAccionPendiente({ id: s.id, tipo: 'pausado' }); setMotivoAccion('') }} className="gap-1.5 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 hover:text-yellow-400">
                           <PauseCircle className="w-3.5 h-3.5" />Pausar
                         </Button>
                       )}
-                      <Button size="sm" variant="outline" onClick={() => { setAccionPendiente({ id: s.id, tipo: 'eliminado' }); setMotivoAccion('') }} className="gap-1.5 border-red-500/30 text-red-400 hover:bg-red-500/10">
+                      <Button size="sm" variant="secondary" onClick={() => { setAccionPendiente({ id: s.id, tipo: 'eliminado' }); setMotivoAccion('') }} className="gap-1.5 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-400">
                         <Trash2 className="w-3.5 h-3.5" />Eliminar
                       </Button>
                     </>
@@ -323,11 +323,11 @@ export default function AdminSorteosPage() {
                                     value={categoriasDraft[premio.id] ?? ''}
                                     onChange={e => setCategoriasDraft(prev => ({ ...prev, [premio.id]: e.target.value }))}
                                     disabled={s.estatus === 'eliminado'}
-                                    className="border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-text bg-white focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="border border-brand-border rounded-lg px-3 py-1.5 text-xs text-brand-text bg-brand-bg focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
-                                    <option value="">Sin categoría</option>
+                                    <option value="" className="bg-brand-bg text-brand-text">Sin categoría</option>
                                     {CATEGORIAS.map(c => (
-                                      <option key={c} value={c}>{c}</option>
+                                      <option key={c} value={c} className="bg-brand-bg text-brand-text">{c}</option>
                                     ))}
                                   </select>
                                   {categoriasDraft[premio.id] && (
