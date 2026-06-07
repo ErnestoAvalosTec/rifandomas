@@ -48,7 +48,11 @@ export default function LoginPage() {
     })
 
     if (error) {
-      toast.error('Correo o contraseña incorrectos.')
+      if (error.message?.toLowerCase().includes('email not confirmed')) {
+        toast.error('Confirma tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.')
+      } else {
+        toast.error('Correo o contraseña incorrectos.')
+      }
       setCargando(false)
       return
     }

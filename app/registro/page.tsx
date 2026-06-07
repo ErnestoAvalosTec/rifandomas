@@ -70,6 +70,14 @@ export default function RegistroPage() {
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
+      options: {
+        data: {
+          nombre: data.nombre,
+          apellidos: data.apellidos,
+          telefono: `52${data.telefono}`,
+          red_social_verificacion: data.redSocial?.trim() || null,
+        },
+      },
     })
 
     if (authError || !authData.user) {
@@ -78,17 +86,12 @@ export default function RegistroPage() {
       return
     }
 
-    const { error: perfilError } = await (supabase as any).from('perfiles').insert({
-      id:        authData.user.id,
-      nombre:    data.nombre,
-      apellidos: data.apellidos,
-      telefono:  `52${data.telefono}`,
-      rol:       'usuario',
-      red_social_verificacion: data.redSocial?.trim() || null,
-    })
-
-    if (perfilError) {
-      toast.error('No se pudo crear el perfil. Contacta soporte.')
+    // El perfil se crea automáticamente vía trigger en auth.users (ver migración 013):
+    // si la confirmación de correo está activa, signUp() no entrega sesión y un insert
+    // desde el cliente sería bloqueado por RLS.
+    if (!authData.session) {
+      toast.success('¡Cuenta creada! Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.')
+      router.push('/login')
       setCargando(false)
       return
     }
