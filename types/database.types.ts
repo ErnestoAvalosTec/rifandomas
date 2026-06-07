@@ -11,6 +11,10 @@ export interface Database {
           telefono: string | null
           rol: 'admin' | 'usuario'
           activo: boolean
+          avatar_url: string | null
+          calificacion: number
+          red_social_verificacion: string | null
+          verificado: boolean
           created_at: string
         }
         Insert: {
@@ -20,6 +24,10 @@ export interface Database {
           telefono?: string | null
           rol?: 'admin' | 'usuario'
           activo?: boolean
+          avatar_url?: string | null
+          calificacion?: number
+          red_social_verificacion?: string | null
+          verificado?: boolean
           created_at?: string
         }
         Update: {
@@ -28,6 +36,10 @@ export interface Database {
           telefono?: string | null
           rol?: 'admin' | 'usuario'
           activo?: boolean
+          avatar_url?: string | null
+          calificacion?: number
+          red_social_verificacion?: string | null
+          verificado?: boolean
         }
       }
       sorteos: {

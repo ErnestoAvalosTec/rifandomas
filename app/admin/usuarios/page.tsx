@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatDate } from '@/lib/utils'
-import { UserCheck, UserX, ShieldCheck, Shield } from 'lucide-react'
+import { UserCheck, UserX, ShieldCheck, Shield, Star, BadgeCheck, Link2 } from 'lucide-react'
 
 interface Perfil {
   id: string
@@ -15,6 +15,9 @@ interface Perfil {
   telefono: string | null
   rol: string
   activo: boolean
+  calificacion: number
+  red_social_verificacion: string | null
+  verificado: boolean
   created_at: string
 }
 
@@ -47,6 +50,22 @@ export default function AdminUsuariosPage() {
     }
   }
 
+  const calificar = async (id: string, calificacion: number) => {
+    const { error } = await (supabase as any).from('perfiles').update({ calificacion }).eq('id', id)
+    if (!error) {
+      setPerfiles((prev) => prev.map((p) => p.id === id ? { ...p, calificacion } : p))
+      toast.success(`Calificación actualizada a ${calificacion.toFixed(1)}`)
+    }
+  }
+
+  const toggleVerificado = async (id: string, verificado: boolean) => {
+    const { error } = await (supabase as any).from('perfiles').update({ verificado: !verificado }).eq('id', id)
+    if (!error) {
+      setPerfiles((prev) => prev.map((p) => p.id === id ? { ...p, verificado: !verificado } : p))
+      toast.success(verificado ? 'Verificación retirada' : 'Perfil verificado')
+    }
+  }
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">
@@ -59,7 +78,7 @@ export default function AdminUsuariosPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-brand-border">
-                {['Nombre', 'Teléfono', 'Rol', 'Estado', 'Registro', 'Acciones'].map((h) => (
+                {['Nombre', 'Red social', 'Teléfono', 'Rol', 'Calificación', 'Estado', 'Registro', 'Acciones'].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-xs text-brand-muted font-ui uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
@@ -67,9 +86,42 @@ export default function AdminUsuariosPage() {
             <tbody>
               {perfiles.map((p) => (
                 <tr key={p.id} className="border-b border-brand-border/50 last:border-0 hover:bg-brand-border/20 transition-colors">
-                  <td className="px-4 py-3 font-ui text-white">{p.nombre} {p.apellidos}</td>
+                  <td className="px-4 py-3 font-ui text-white">
+                    <div className="flex items-center gap-1.5">
+                      <span>{p.nombre} {p.apellidos}</span>
+                      {p.verificado && (
+                        <span title="Perfil verificado">
+                          <BadgeCheck className="w-3.5 h-3.5 text-blue-400 fill-blue-400/20 flex-shrink-0" />
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-brand-muted">
+                    {p.red_social_verificacion ? (
+                      <span className="inline-flex items-center gap-1.5 max-w-[180px]">
+                        <Link2 className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{p.red_social_verificacion}</span>
+                      </span>
+                    ) : '—'}
+                  </td>
                   <td className="px-4 py-3 text-brand-muted">{p.telefono ?? '—'}</td>
                   <td className="px-4 py-3"><Badge variant={p.rol === 'admin' ? 'default' : 'secondary'}>{p.rol}</Badge></td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          title={`Calificar con ${n}`}
+                          onClick={() => calificar(p.id, n)}
+                          className="p-0.5 cursor-pointer"
+                        >
+                          <Star className={`w-3.5 h-3.5 ${n <= Math.round(p.calificacion) ? 'text-brand-gold fill-brand-gold' : 'text-brand-muted'}`} />
+                        </button>
+                      ))}
+                      <span className="text-brand-muted font-ui text-xs ml-1">{p.calificacion.toFixed(1)}</span>
+                    </div>
+                  </td>
                   <td className="px-4 py-3"><Badge variant={p.activo ? 'activo' : 'rechazado'}>{p.activo ? 'Activo' : 'Inactivo'}</Badge></td>
                   <td className="px-4 py-3 text-brand-muted">{formatDate(p.created_at)}</td>
                   <td className="px-4 py-3">
@@ -79,6 +131,9 @@ export default function AdminUsuariosPage() {
                       </Button>
                       <Button size="icon" variant="ghost" className="w-8 h-8" title={p.rol === 'admin' ? 'Quitar admin' : 'Hacer admin'} onClick={() => toggleRol(p.id, p.rol)}>
                         {p.rol === 'admin' ? <Shield className="w-3.5 h-3.5 text-brand-muted" /> : <ShieldCheck className="w-3.5 h-3.5 text-primary" />}
+                      </Button>
+                      <Button size="icon" variant="ghost" className="w-8 h-8" title={p.verificado ? 'Quitar verificación' : 'Verificar perfil'} onClick={() => toggleVerificado(p.id, p.verificado)}>
+                        <BadgeCheck className={`w-3.5 h-3.5 ${p.verificado ? 'text-blue-400 fill-blue-400/20' : 'text-brand-muted'}`} />
                       </Button>
                     </div>
                   </td>

@@ -15,6 +15,7 @@ const schema = z.object({
   apellidos: z.string().min(2, 'Requerido'),
   telefono:  z.string().length(10, '10 dígitos sin código de país'),
   email:     z.string().email('Correo inválido'),
+  redSocial: z.string().optional(),
   password:  z.string().min(8, 'Mínimo 8 caracteres'),
   confirm:   z.string(),
 }).refine((d) => d.password === d.confirm, {
@@ -83,6 +84,7 @@ export default function RegistroPage() {
       apellidos: data.apellidos,
       telefono:  `52${data.telefono}`,
       rol:       'usuario',
+      red_social_verificacion: data.redSocial?.trim() || null,
     })
 
     if (perfilError) {
@@ -194,6 +196,19 @@ export default function RegistroPage() {
                 {...register('email')}
               />
               {errors.email && <p className="font-body" style={errorStyle}>{errors.email.message}</p>}
+            </div>
+
+            {/* Red social para verificación */}
+            <div>
+              <label className="font-ui" style={labelStyle}>RED SOCIAL (OPCIONAL)</label>
+              <input
+                placeholder="@usuario o enlace de Instagram, Facebook, TikTok..."
+                style={inputStyle}
+                {...register('redSocial')}
+              />
+              <p className="font-body" style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 6, lineHeight: 1.5 }}>
+                Compártela para que nuestro equipo pueda verificar tu cuenta y mostrar la insignia de "Perfil verificado" a tus participantes.
+              </p>
             </div>
 
             {/* Password */}

@@ -6,12 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, Plus, Trash2, Save, Lock, CreditCard } from 'lucide-react'
+import { Loader2, Plus, Trash2, Save, Lock, CreditCard, Camera } from 'lucide-react'
 
 const perfilSchema = z.object({
   nombre:    z.string().min(2),
   apellidos: z.string().min(2),
   telefono:  z.string().optional(),
+  redSocial: z.string().optional(),
 })
 
 const passwordSchema = z.object({
@@ -106,6 +107,8 @@ export default function ConfiguracionPage() {
   const [guardandoPass, setGuardandoPass] = useState(false)
   const [cuentas, setCuentas]         = useState<Cuenta[]>([])
   const [userId, setUserId]           = useState<string>('')
+  const [avatarUrl, setAvatarUrl]     = useState<string | null>(null)
+  const [subiendoAvatar, setSubiendoAvatar] = useState(false)
 
   const perfilForm = useForm<PerfilForm>({ resolver: zodResolver(perfilSchema) })
   const passForm   = useForm<PasswordForm>({ resolver: zodResolver(passwordSchema) })
@@ -121,7 +124,9 @@ export default function ConfiguracionPage() {
           nombre:    perfil.nombre,
           apellidos: perfil.apellidos,
           telefono:  perfil.telefono ?? '',
+          redSocial: perfil.red_social_verificacion ?? '',
         })
+        setAvatarUrl(perfil.avatar_url ?? null)
       }
       const { data: cuentasDB } = await sb.from('cuentas_deposito').select('*').eq('usuario_id', user.id)
       if (cuentasDB) setCuentas(cuentasDB)
@@ -129,9 +134,30 @@ export default function ConfiguracionPage() {
     cargar()
   }, [])
 
+  const subirAvatar = async (file: File) => {
+    if (!userId) return
+    setSubiendoAvatar(true)
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+    const path = `${userId}/${Date.now()}.${ext}`
+    const { data, error } = await supabase.storage.from('avatares').upload(path, file, { upsert: true, contentType: file.type })
+    if (error) {
+      toast.error('Error al subir la foto')
+      setSubiendoAvatar(false)
+      return
+    }
+    const { data: { publicUrl } } = supabase.storage.from('avatares').getPublicUrl(data.path)
+    const url = `${publicUrl}?v=${Date.now()}`
+    const { error: dbError } = await sb.from('perfiles').update({ avatar_url: url }).eq('id', userId)
+    setSubiendoAvatar(false)
+    if (dbError) { toast.error('No se pudo guardar la foto'); return }
+    setAvatarUrl(url)
+    toast.success('Foto de perfil actualizada')
+  }
+
   const guardarPerfil = async (data: PerfilForm) => {
     setCargando(true)
-    const { error } = await sb.from('perfiles').update(data).eq('id', userId)
+    const { redSocial, ...resto } = data
+    const { error } = await sb.from('perfiles').update({ ...resto, red_social_verificacion: redSocial?.trim() || null }).eq('id', userId)
     setCargando(false)
     if (error) toast.error('Error al guardar')
     else toast.success('Perfil actualizado')
@@ -176,6 +202,54 @@ export default function ConfiguracionPage() {
           <Save style={{ width: 16, height: 16, color: '#22C55E' }} />
           Datos personales
         </h2>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+          <div style={{ position: 'relative', width: 64, height: 64, flexShrink: 0 }}>
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={avatarUrl}
+                alt="Foto de perfil"
+                style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }}
+              />
+            ) : (
+              <div style={{
+                width: 64, height: 64, borderRadius: '50%',
+                background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#22C55E', fontWeight: 700, fontSize: 20,
+              }}>
+                <Camera style={{ width: 22, height: 22 }} />
+              </div>
+            )}
+            <label
+              htmlFor="avatar-input"
+              style={{
+                position: 'absolute', bottom: -2, right: -2, width: 26, height: 26, borderRadius: '50%',
+                background: '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', border: '2px solid #252525',
+              }}
+              title="Cambiar foto de perfil"
+            >
+              {subiendoAvatar ? <Loader2 style={{ width: 12, height: 12, color: '#fff' }} className="animate-spin" /> : <Camera style={{ width: 12, height: 12, color: '#fff' }} />}
+            </label>
+            <input
+              id="avatar-input"
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              disabled={subiendoAvatar}
+              onChange={(e) => { const file = e.target.files?.[0]; if (file) subirAvatar(file); e.target.value = '' }}
+            />
+          </div>
+          <div>
+            <p className="font-ui text-white" style={{ fontSize: 13, fontWeight: 600 }}>Foto de perfil</p>
+            <p className="font-body" style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
+              Visible para los participantes en tus sorteos.
+            </p>
+          </div>
+        </div>
+
         <form onSubmit={perfilForm.handleSubmit(guardarPerfil)} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
@@ -192,6 +266,13 @@ export default function ConfiguracionPage() {
           <div>
             <label className="font-ui" style={labelStyle}>Teléfono WhatsApp</label>
             <input placeholder="10 dígitos" style={inputStyle} {...perfilForm.register('telefono')} />
+          </div>
+          <div>
+            <label className="font-ui" style={labelStyle}>Red social (para verificación)</label>
+            <input placeholder="@usuario o enlace de Instagram, Facebook, TikTok..." style={inputStyle} {...perfilForm.register('redSocial')} />
+            <p className="font-body" style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 6, lineHeight: 1.5 }}>
+              Compártela con nuestro equipo para verificar tu cuenta y mostrar la insignia de "Perfil verificado".
+            </p>
           </div>
           <button type="submit" disabled={cargando} className="font-ui" style={btnPrimary}>
             {cargando ? <Loader2 style={{ width: 15, height: 15 }} className="animate-spin" /> : <Save style={{ width: 15, height: 15 }} />}
