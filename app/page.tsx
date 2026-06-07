@@ -16,7 +16,7 @@ export default async function HomePage() {
 
   // Fetch marca (logo, favicon, topbar, cta banner)
   const { data: marca } = await sb.from('marca')
-    .select('logo_url, favicon_url, cta_banner_url, topbar_activo, topbar_ubicacion, topbar_telefono, topbar_correo, topbar_redes, topbar_bg_color, topbar_text_color, topbar_icon_color')
+    .select('logo_url, favicon_url, cta_banner_url, topbar_activo, topbar_ubicacion, topbar_telefono, topbar_correo, topbar_redes, topbar_bg_color, topbar_text_color, topbar_icon_color, footer_bg_color, footer_text_color, footer_texto, footer_telefono, footer_correo, footer_redes, footer_links')
     .eq('id', 1).single()
 
   // Fetch all active sorteos
@@ -75,7 +75,7 @@ export default async function HomePage() {
         />
         <SorteosGrid sorteos={sorteosConVendidos} />
       </main>
-      <Footer />
+      <Footer logoUrl={marca?.logo_url} footer={marca} />
     </div>
   )
 }

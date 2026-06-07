@@ -6,9 +6,11 @@ import { toast } from 'sonner'
 import {
   Upload, Trash2, Loader2, ImageIcon, Info,
   Plus, X, MapPin, Phone, Mail, BarChart2,
+  PanelBottom, FileText, Link2,
 } from 'lucide-react'
 
 interface RedSocial { red: string; url: string }
+interface FooterLink { label: string; url: string }
 
 interface Marca {
   logo_url: string | null
@@ -21,6 +23,13 @@ interface Marca {
   topbar_bg_color:   string
   topbar_text_color: string
   topbar_icon_color: string
+  footer_bg_color:   string
+  footer_text_color: string
+  footer_texto:      string | null
+  footer_telefono:   string | null
+  footer_correo:     string | null
+  footer_redes:      RedSocial[]
+  footer_links:      FooterLink[]
 }
 
 const REDES_OPCIONES = [
@@ -334,12 +343,234 @@ function TopbarSection({ marca, onChange }: { marca: Marca; onChange: (m: Marca)
   )
 }
 
+function FooterSection({ marca, onChange }: { marca: Marca; onChange: (m: Marca) => void }) {
+  const [saving, setSaving] = useState(false)
+  const [redes, setRedes]   = useState<RedSocial[]>(marca.footer_redes ?? [])
+  const [links, setLinks]   = useState<FooterLink[]>(marca.footer_links ?? [])
+  const [form, setForm]     = useState({
+    footer_bg_color:   marca.footer_bg_color   ?? '#1c1c1c',
+    footer_text_color: marca.footer_text_color ?? '#9ca3af',
+    footer_texto:      marca.footer_texto      ?? '',
+    footer_telefono:   marca.footer_telefono   ?? '',
+    footer_correo:     marca.footer_correo     ?? '',
+  })
+
+  const addRed    = () => setRedes(r => [...r, { red: 'facebook', url: '' }])
+  const removeRed = (i: number) => setRedes(r => r.filter((_, idx) => idx !== i))
+  const updateRed = (i: number, field: 'red' | 'url', val: string) =>
+    setRedes(r => r.map((item, idx) => idx === i ? { ...item, [field]: val } : item))
+
+  const addLink    = () => setLinks(l => [...l, { label: '', url: '' }])
+  const removeLink = (i: number) => setLinks(l => l.filter((_, idx) => idx !== i))
+  const updateLink = (i: number, field: 'label' | 'url', val: string) =>
+    setLinks(l => l.map((item, idx) => idx === i ? { ...item, [field]: val } : item))
+
+  const handleSave = async () => {
+    setSaving(true)
+    const payload = { ...form, footer_redes: redes, footer_links: links }
+    const res = await fetch('/api/admin/footer', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    setSaving(false)
+    if (!res.ok) { toast.error('Error al guardar'); return }
+    toast.success('Pie de página actualizado')
+    onChange({ ...marca, ...payload })
+  }
+
+  return (
+    <div className={`${card} space-y-6`}>
+      <div>
+        <h2 className="font-ui font-semibold text-brand-text text-lg flex items-center gap-2">
+          <PanelBottom className="w-5 h-5 text-primary" />
+          Pie de página
+        </h2>
+        <p className="text-brand-muted text-sm mt-0.5">
+          Personaliza el contenido y la apariencia del pie de página. El logo es el mismo configurado arriba.
+        </p>
+      </div>
+
+      {/* Texto libre */}
+      <div>
+        <label className="text-xs font-ui font-semibold text-brand-muted mb-1 flex items-center gap-1.5">
+          <FileText className="w-3.5 h-3.5" /> Texto libre / descripción
+        </label>
+        <textarea
+          value={form.footer_texto}
+          onChange={e => setForm(f => ({ ...f, footer_texto: e.target.value }))}
+          placeholder="La plataforma de sorteos y rifas virtuales más confiable de México."
+          rows={3}
+          className={`${darkInput} resize-none`}
+        />
+      </div>
+
+      {/* Contacto */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {([
+          { key: 'footer_telefono' as const, label: 'Teléfono', icon: Phone, ph: '+52 33 1738 5212' },
+          { key: 'footer_correo'   as const, label: 'Correo',   icon: Mail,  ph: 'hola@rifandomas.com' },
+        ]).map(({ key, label, icon: Icon, ph }) => (
+          <div key={key}>
+            <label className="text-xs font-ui font-semibold text-brand-muted mb-1 flex items-center gap-1.5">
+              <Icon className="w-3.5 h-3.5" /> {label}
+            </label>
+            <input
+              value={form[key]}
+              onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+              placeholder={ph}
+              className={darkInput}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Colors */}
+      <div>
+        <label className="text-xs font-ui font-semibold text-brand-muted uppercase tracking-wide mb-3 block">
+          Colores
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          {([
+            { key: 'footer_bg_color'   as const, label: 'Fondo' },
+            { key: 'footer_text_color' as const, label: 'Texto' },
+          ]).map(({ key, label }) => (
+            <div key={key}>
+              <label className="text-xs font-ui text-brand-muted mb-1.5 block">{label}</label>
+              <div className="flex items-center gap-2 border border-brand-border rounded-xl px-3 py-2 bg-[#161616]">
+                <label className="flex-shrink-0 cursor-pointer">
+                  <span className="block w-7 h-7 rounded-md border border-white/20" style={{ background: form[key] }} />
+                  <input type="color" value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} className="sr-only" />
+                </label>
+                <input
+                  type="text"
+                  value={form[key]}
+                  onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                  className="flex-1 text-sm font-mono text-white bg-transparent focus:outline-none"
+                  maxLength={7}
+                  placeholder="#000000"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Live preview */}
+        <div className="rounded-lg overflow-hidden border border-brand-border">
+          <div className="px-4 py-4 text-xs" style={{ background: form.footer_bg_color, color: form.footer_text_color }}>
+            <p className="font-ui font-semibold text-white mb-1">RIFANDO<span style={{ color: '#DC2626' }}>MAS</span></p>
+            <p>{form.footer_texto || 'La plataforma de sorteos y rifas virtuales más confiable de México.'}</p>
+          </div>
+          <div className="bg-brand-card px-3 py-1.5 text-[10px] text-brand-muted text-center font-ui">
+            Vista previa
+          </div>
+        </div>
+      </div>
+
+      {/* Social */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-xs font-ui font-semibold text-brand-muted uppercase tracking-wide">
+            Redes sociales
+          </label>
+          <button onClick={addRed}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-ui font-semibold hover:bg-primary/20 transition-colors">
+            <Plus className="w-3.5 h-3.5" /> Agregar red
+          </button>
+        </div>
+
+        {redes.length === 0 && (
+          <p className="text-brand-muted text-sm text-center py-4 border-2 border-dashed border-brand-border rounded-xl">
+            Sin redes sociales. Haz clic en "Agregar red" para comenzar.
+          </p>
+        )}
+
+        <div className="space-y-2">
+          {redes.map((r, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <select
+                value={r.red}
+                onChange={e => updateRed(i, 'red', e.target.value)}
+                className="border border-white/10 rounded-xl px-3 py-2 text-sm text-white bg-[#161616] focus:outline-none focus:border-primary w-36 flex-shrink-0"
+              >
+                {REDES_OPCIONES.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+              <input
+                value={r.url}
+                onChange={e => updateRed(i, 'url', e.target.value)}
+                placeholder="https://..."
+                className={`flex-1 border border-white/10 rounded-xl px-3 py-2 text-sm text-white bg-[#161616] focus:outline-none focus:border-primary placeholder:text-white/30`}
+              />
+              <button onClick={() => removeRed(i)}
+                className="p-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors flex-shrink-0">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Links personalizados */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-xs font-ui font-semibold text-brand-muted uppercase tracking-wide flex items-center gap-1.5">
+            <Link2 className="w-3.5 h-3.5" /> Enlaces personalizados
+          </label>
+          <button onClick={addLink}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-ui font-semibold hover:bg-primary/20 transition-colors">
+            <Plus className="w-3.5 h-3.5" /> Agregar enlace
+          </button>
+        </div>
+
+        {links.length === 0 && (
+          <p className="text-brand-muted text-sm text-center py-4 border-2 border-dashed border-brand-border rounded-xl">
+            Sin enlaces personalizados. Haz clic en "Agregar enlace" para comenzar.
+          </p>
+        )}
+
+        <div className="space-y-2">
+          {links.map((l, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                value={l.label}
+                onChange={e => updateLink(i, 'label', e.target.value)}
+                placeholder="Texto a mostrar"
+                className="w-40 flex-shrink-0 border border-white/10 rounded-xl px-3 py-2 text-sm text-white bg-[#161616] focus:outline-none focus:border-primary placeholder:text-white/30"
+              />
+              <input
+                value={l.url}
+                onChange={e => updateLink(i, 'url', e.target.value)}
+                placeholder="https://..."
+                className="flex-1 border border-white/10 rounded-xl px-3 py-2 text-sm text-white bg-[#161616] focus:outline-none focus:border-primary placeholder:text-white/30"
+              />
+              <button onClick={() => removeLink(i)}
+                className="p-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors flex-shrink-0">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex justify-end pt-2 border-t border-brand-border">
+        <button onClick={handleSave} disabled={saving}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-ui font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60">
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+          Guardar pie de página
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminMarcaPage() {
   const [marca, setMarca] = useState<Marca>({
     logo_url: null, favicon_url: null,
     topbar_activo: true, topbar_ubicacion: null,
     topbar_telefono: null, topbar_correo: null, topbar_redes: [],
     topbar_bg_color: '#1c1c1c', topbar_text_color: '#ffffff', topbar_icon_color: '#ffffff',
+    footer_bg_color: '#1c1c1c', footer_text_color: '#9ca3af', footer_texto: null,
+    footer_telefono: null, footer_correo: null, footer_redes: [], footer_links: [],
   })
   const [loading, setLoading] = useState(true)
 
@@ -353,6 +584,10 @@ export default function AdminMarcaPage() {
           topbar_bg_color:   d.topbar_bg_color   ?? '#1c1c1c',
           topbar_text_color: d.topbar_text_color ?? '#ffffff',
           topbar_icon_color: d.topbar_icon_color ?? '#ffffff',
+          footer_bg_color:   d.footer_bg_color   ?? '#1c1c1c',
+          footer_text_color: d.footer_text_color ?? '#9ca3af',
+          footer_redes:      d.footer_redes      ?? [],
+          footer_links:      d.footer_links      ?? [],
         })
         setLoading(false)
       })
@@ -381,6 +616,8 @@ export default function AdminMarcaPage() {
         onDeleted={() => setMarca(p => ({ ...p, favicon_url: null }))} />
 
       <TopbarSection marca={marca} onChange={setMarca} />
+
+      <FooterSection marca={marca} onChange={setMarca} />
 
       <div className="rounded-xl p-4 text-sm" style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', color: '#fbbf24' }}>
         <strong>Nota:</strong> Requiere el bucket{' '}
