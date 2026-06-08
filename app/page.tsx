@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/public/Navbar'
 import { HeroSection } from '@/components/public/HeroSection'
 import { SorteosGrid } from '@/components/public/SorteosGrid'
+import { VerificadorBoleto } from '@/components/public/VerificadorBoleto'
 import { Footer } from '@/components/public/Footer'
 import type { Database } from '@/types/database.types'
 
@@ -74,6 +75,7 @@ export default async function HomePage() {
           ctaBannerUrl={marca?.cta_banner_url ?? null}
         />
         <SorteosGrid sorteos={sorteosConVendidos} />
+        <VerificadorBoleto sorteos={sorteoTyped.map((s) => ({ id: s.id, nombre: s.nombre }))} />
       </main>
       <Footer logoUrl={marca?.logo_url} footer={marca} />
     </div>

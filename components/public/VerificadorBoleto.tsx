@@ -1,106 +1,117 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Search, Loader2 } from 'lucide-react'
+
+interface SorteoOpcion {
+  id: string
+  nombre: string
+}
 
 interface ResultadoBoleto {
   numero: string
-  estatus: string
-  sorteo: string
-  titular: string | null
+  nombre?: string
+  estatus?: 'pagado' | 'pendiente_pago'
+  disponible?: boolean
 }
 
-export function VerificadorBoleto() {
-  const supabase = createClient()
-  const sb = supabase as any
+export function VerificadorBoleto({ sorteos }: { sorteos: SorteoOpcion[] }) {
+  const [sorteoId, setSorteoId] = useState(sorteos[0]?.id ?? '')
   const [numero, setNumero] = useState('')
   const [buscando, setBuscando] = useState(false)
   const [resultado, setResultado] = useState<ResultadoBoleto | null>(null)
-  const [noEncontrado, setNoEncontrado] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const buscar = async () => {
-    if (!numero.trim()) return
+    if (!sorteoId || !numero.trim()) return
     setBuscando(true)
     setResultado(null)
-    setNoEncontrado(false)
+    setError(null)
 
-    const { data } = await sb
-      .from('boletos')
-      .select('numero, estatus, sorteo_id, pedido_id, sorteos(nombre), pedidos(cliente_nombre, cliente_apellidos)')
-      .eq('numero', numero.padStart(4, '0'))
-      .single()
-
-    setBuscando(false)
-    if (!data) { setNoEncontrado(true); return }
-
-    setResultado({
-      numero: data.numero,
-      estatus: data.estatus,
-      sorteo: data.sorteos?.nombre ?? 'Desconocido',
-      titular: data.pedidos ? `${data.pedidos.cliente_nombre} ${data.pedidos.cliente_apellidos}` : null,
-    })
+    try {
+      const params = new URLSearchParams({ sorteo_id: sorteoId, numero: numero.trim() })
+      const res = await fetch(`/api/verificar-boleto?${params.toString()}`)
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data?.error ?? 'No se pudo verificar el boleto.')
+      } else {
+        setResultado(data)
+      }
+    } catch {
+      setError('No se pudo verificar el boleto. Intenta de nuevo.')
+    } finally {
+      setBuscando(false)
+    }
   }
 
-  const estatusBadgeVariant = (estatus: string) => {
-    if (estatus === 'pagado') return 'pagado'
-    if (estatus === 'reservado') return 'pendiente'
-    return 'borrador'
-  }
+  if (!sorteos.length) return null
 
   return (
-    <section id="verificador" className="py-24 bg-white border-y border-brand-border">
+    <section id="verificador" className="py-16" style={{ background: '#1c1c1c', borderTop: '1px solid #3a3a3a' }}>
       <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
         <p className="text-primary text-sm font-ui font-semibold uppercase tracking-widest mb-3">Transparencia total</p>
-        <h2 className="font-title text-5xl sm:text-6xl text-brand-text mb-4">VERIFICA TU BOLETO</h2>
-        <p className="text-brand-muted font-body mb-8">
-          Ingresa el número de tu boleto para ver su estatus actual en tiempo real.
+        <h2 className="font-title text-white" style={{ fontSize: 'clamp(1.6rem, 4vw, 2.5rem)', letterSpacing: '0.02em', marginBottom: 8 }}>
+          VERIFICA TU BOLETO
+        </h2>
+        <p className="font-body mx-auto mb-8" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 'clamp(13px, 2vw, 15px)', maxWidth: 480 }}>
+          Selecciona tu sorteo, ingresa el número de tu boleto y conoce su estatus al instante.
         </p>
 
-        <div className="flex gap-3 max-w-sm mx-auto">
+        <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+          <Select value={sorteoId} onValueChange={setSorteoId}>
+            <SelectTrigger className="sm:w-1/2">
+              <SelectValue placeholder="Elige un sorteo" />
+            </SelectTrigger>
+            <SelectContent>
+              {sorteos.map((s) => (
+                <SelectItem key={s.id} value={s.id}>{s.nombre}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Input
             placeholder="Ej: 0042"
             value={numero}
             onChange={(e) => setNumero(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && buscar()}
             maxLength={6}
-            className="text-center text-lg font-ui tracking-widest"
+            className="text-center text-lg font-ui tracking-widest sm:w-1/2"
           />
-          <Button onClick={buscar} disabled={buscando || !numero} className="gap-2">
-            {buscando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            Buscar
-          </Button>
         </div>
 
-        {noEncontrado && (
-          <div className="mt-6 p-4 rounded-xl border border-brand-border bg-brand-card text-brand-muted font-body text-sm">
-            No se encontró ningún boleto con ese número.
+        <Button onClick={buscar} disabled={buscando || !numero.trim() || !sorteoId} className="gap-2 mt-4">
+          {buscando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+          Verificar
+        </Button>
+
+        {error && (
+          <div className="mt-6 p-4 rounded-xl border text-sm font-body" style={{ borderColor: '#3a3a3a', background: '#252525', color: 'rgba(255,255,255,0.6)' }}>
+            {error}
           </div>
         )}
 
         {resultado && (
-          <div className="mt-6 p-6 rounded-2xl border border-brand-border bg-white shadow-sm text-left space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="font-title text-3xl text-brand-text">#{resultado.numero}</span>
-              <Badge variant={estatusBadgeVariant(resultado.estatus) as any} className="capitalize">
-                {resultado.estatus}
-              </Badge>
-            </div>
-            <div className="space-y-2 text-sm font-body">
-              <div className="flex justify-between">
-                <span className="text-brand-muted">Sorteo:</span>
-                <span className="text-brand-text font-medium">{resultado.sorteo}</span>
-              </div>
-              {resultado.titular && (
-                <div className="flex justify-between">
-                  <span className="text-brand-muted">Titular:</span>
-                  <span className="text-brand-text font-medium">{resultado.titular}</span>
-                </div>
+          <div className="mt-6 p-6 rounded-2xl border text-left" style={{ borderColor: '#3a3a3a', background: '#252525' }}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-title text-3xl text-white">#{resultado.numero}</span>
+              {resultado.estatus && (
+                <Badge variant={resultado.estatus === 'pagado' ? 'pagado' : 'pendiente'} className="capitalize">
+                  {resultado.estatus === 'pagado' ? 'Pagado' : 'Pendiente de pago'}
+                </Badge>
               )}
             </div>
+            {resultado.disponible ? (
+              <p className="font-body text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                Este boleto aún está disponible — ¡nadie lo ha apartado!
+              </p>
+            ) : resultado.nombre ? (
+              <p className="font-body text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                Apartado por <span className="text-white font-medium">{resultado.nombre}</span>
+              </p>
+            ) : null}
           </div>
         )}
       </div>
