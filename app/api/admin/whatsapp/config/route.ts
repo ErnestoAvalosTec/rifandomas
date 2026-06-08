@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 
+// Evita que Next.js cachee esta ruta como estática y sirva una config vieja
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const supabase = createAdminSupabaseClient()
   const { data } = await (supabase as any)

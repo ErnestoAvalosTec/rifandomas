@@ -32,9 +32,11 @@ export async function sendWhatsAppMessage(
   if (!digits) return { ok: false, error: 'invalid_number' }
   const normalized = digits.length === 10 ? `52${digits}` : digits
 
+  const baseUrl = config.api_url.replace(/\/$/, '')
+
   try {
     const res = await fetch(
-      `${config.api_url}/message/sendText/${config.instance_name}`,
+      `${baseUrl}/message/sendText/${config.instance_name}`,
       {
         method: 'POST',
         headers: {

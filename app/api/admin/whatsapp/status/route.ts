@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 
+// Evita que Next.js cachee esta ruta como estática y sirva un estado viejo
+export const dynamic = 'force-dynamic'
+
 // GET: check the WhatsApp connection state
 export async function GET() {
   const supabase = createAdminSupabaseClient()
@@ -14,10 +17,12 @@ export async function GET() {
     return NextResponse.json({ state: 'unconfigured' })
   }
 
+  const baseUrl = config.api_url.replace(/\/$/, '')
+
   try {
     const res = await fetch(
-      `${config.api_url}/instance/connectionState/${config.instance_name}`,
-      { headers: { apikey: config.api_key } }
+      `${baseUrl}/instance/connectionState/${config.instance_name}`,
+      { headers: { apikey: config.api_key }, cache: 'no-store' }
     )
     if (!res.ok) return NextResponse.json({ state: 'close' })
     const data = await res.json()

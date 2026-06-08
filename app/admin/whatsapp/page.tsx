@@ -42,6 +42,7 @@ export default function AdminWhatsAppPage() {
   const [qrBase64, setQrBase64]   = useState<string | null>(null)
   const [savingCfg, setSavingCfg] = useState(false)
   const [connecting, setConnecting] = useState(false)
+  const [resetting, setResetting]   = useState(false)
   const [showKey, setShowKey]     = useState(false)
   const [testPhone, setTestPhone] = useState('')
   const [testMsg, setTestMsg]     = useState('')
@@ -55,6 +56,26 @@ export default function AdminWhatsAppPage() {
     loadConfig()
     return () => stopTimers()
   }, [])
+
+  // Vigilar la conexión ya establecida: si Evolution API la pierde
+  // ("se conecta y se desconecta"), avisar al admin en lugar de mostrar
+  // "Conectado" desactualizado mientras los envíos fallan en silencio.
+  useEffect(() => {
+    if (status !== 'connected') return
+    const watchdog = setInterval(async () => {
+      try {
+        const res  = await fetch('/api/admin/whatsapp/status')
+        const data = await res.json()
+        if (data.state !== 'open') {
+          setStatus('disconnected')
+          toast.error('Se perdió la conexión con WhatsApp. Vuelve a conectar para que los mensajes se sigan enviando.')
+        }
+      } catch {
+        // Error transitorio de red — no degradar el estado por un solo fallo
+      }
+    }, 30000)
+    return () => clearInterval(watchdog)
+  }, [status])
 
   const stopTimers = () => {
     if (pollRef.current)      clearInterval(pollRef.current)
@@ -116,7 +137,7 @@ export default function AdminWhatsAppPage() {
     }
   }
 
-  const fetchQR = async () => {
+  const fetchQR = async (): Promise<boolean> => {
     setQrError(null)
     try {
       const res  = await fetch('/api/admin/whatsapp/qr')
@@ -126,13 +147,18 @@ export default function AdminWhatsAppPage() {
         setQrBase64(null)
         stopTimers()
         toast.success('¡WhatsApp conectado correctamente!')
+        return true
       } else if (data.base64) {
         setQrBase64(data.base64)
+        return true
       } else if (data.error) {
         setQrError(data.error)
+        return false
       }
+      return false
     } catch {
       setQrError('No se pudo obtener el código QR')
+      return false
     }
   }
 
@@ -142,15 +168,22 @@ export default function AdminWhatsAppPage() {
     setQrBase64(null)
     setQrError(null)
 
-    // Create/ensure the instance exists
+    // Crear la instancia es idempotente (409 = ya existe, lo trata como éxito).
+    // No la borramos aquí: hacerlo automáticamente provoca una condición de
+    // carrera (la instancia recién creada queda en "Connecting" con sesión vieja
+    // y Evolution API responde "Not Found" al pedir el QR). Si hace falta limpiar
+    // una sesión vieja para cambiar de número, usa el botón "Reiniciar instancia".
     await fetch('/api/admin/whatsapp/instance', { method: 'POST' })
 
-    // Small delay so Evolution API has a moment to register the instance
-    await new Promise(r => setTimeout(r, 1200))
-
-    // Fetch QR
-    await fetchQR()
+    // Evolution API puede tardar varios segundos en inicializar una instancia
+    // nueva — reintentamos pedir el QR antes de declarar el error.
+    let listo = false
+    for (let intento = 0; intento < 5 && !listo; intento++) {
+      await new Promise(r => setTimeout(r, 2000))
+      listo = await fetchQR()
+    }
     setConnecting(false)
+    if (!listo) return
 
     // Poll connection state every 5 s
     pollRef.current = setInterval(async () => {
@@ -168,16 +201,43 @@ export default function AdminWhatsAppPage() {
     qrRefreshRef.current = setInterval(fetchQR, 45000)
   }
 
+  // Borra la instancia por completo y crea una nueva desde cero — para cuando
+  // queda atascada con la sesión/credenciales de un número anterior ("Connecting"
+  // permanente, QR "Not Found"). A diferencia de connect(), aquí sí esperamos
+  // varios segundos tras el borrado para que Evolution API termine de limpiarla.
+  const resetInstance = async () => {
+    setResetting(true)
+    setStatus('connecting')
+    setQrBase64(null)
+    setQrError(null)
+    try {
+      await fetch('/api/admin/whatsapp/instance', { method: 'DELETE' })
+      toast('Eliminando la instancia anterior, esto puede tardar unos segundos...')
+      await new Promise(r => setTimeout(r, 8000))
+      await connect()
+    } finally {
+      setResetting(false)
+    }
+  }
+
   const disconnect = async () => {
     stopTimers()
     try {
       const res = await fetch('/api/admin/whatsapp/disconnect', { method: 'DELETE' })
-      if (!res.ok) throw new Error()
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        // Evolution API a veces responde con error HTTP aunque la sesión sí
+        // se cierre (p. ej. código interno 401 "loggedOut") — mostramos el
+        // detalle real para no quedarnos con un mensaje genérico engañoso.
+        toast.error(data.error ? `Error al desconectar: ${data.error}` : 'Error al desconectar')
+        await checkStatus()
+        return
+      }
       setStatus('disconnected')
       setQrBase64(null)
       toast.success('WhatsApp desconectado')
     } catch {
-      toast.error('Error al desconectar')
+      toast.error('No se pudo conectar con el servidor')
     }
   }
 
@@ -244,12 +304,25 @@ export default function AdminWhatsAppPage() {
             <Loader2 className="w-4 h-4 animate-spin text-brand-muted" />
           )}
           {(status === 'disconnected' || status === 'error') && (
-            <button onClick={connect} disabled={connecting} className={BTN_PRIMARY}>
-              {connecting
-                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                : <Wifi className="w-3.5 h-3.5" />}
-              Conectar
-            </button>
+            <>
+              <button onClick={connect} disabled={connecting || resetting} className={BTN_PRIMARY}>
+                {connecting
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  : <Wifi className="w-3.5 h-3.5" />}
+                Conectar
+              </button>
+              <button
+                onClick={resetInstance}
+                disabled={connecting || resetting}
+                title="Bórrala y créala de nuevo — útil para cambiar de número o si se queda atascada en 'Conectando' sin generar QR"
+                className={BTN_OUTLINE}
+              >
+                {resetting
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  : <RefreshCw className="w-3.5 h-3.5" />}
+                Reiniciar instancia
+              </button>
+            </>
           )}
           {status === 'connected' && (
             <>

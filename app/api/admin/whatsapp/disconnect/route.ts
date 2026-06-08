@@ -14,9 +14,11 @@ export async function DELETE() {
     return NextResponse.json({ error: 'WhatsApp no configurado' }, { status: 400 })
   }
 
+  const baseUrl = config.api_url.replace(/\/$/, '')
+
   try {
     const res = await fetch(
-      `${config.api_url}/instance/logout/${config.instance_name}`,
+      `${baseUrl}/instance/logout/${config.instance_name}`,
       {
         method: 'DELETE',
         headers: { apikey: config.api_key },

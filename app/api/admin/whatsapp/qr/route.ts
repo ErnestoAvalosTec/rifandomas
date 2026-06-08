@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 
+// Sin esto, Next.js puede tratar esta ruta como estática (no usa cookies()) y
+// cachear la respuesta — sirviendo siempre el mismo QR/error viejo en cada llamada.
+export const dynamic = 'force-dynamic'
+
 // GET: fetch the QR code base64 from Evolution API
 export async function GET() {
   const supabase = createAdminSupabaseClient()
