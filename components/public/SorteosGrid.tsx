@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { SorteoCard } from './SorteoCard'
 import { FiltroPanel, type Filtros } from './FiltroPanel'
 import { FormularioCompra } from './FormularioCompra'
@@ -65,6 +65,16 @@ export function SorteosGrid({ sorteos }: SorteosGridProps) {
     setPaqueteSeleccionado(paquete)
     setModalOpen(true)
   }
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const sorteoId = (e as CustomEvent<{ sorteoId: string }>).detail?.sorteoId
+      const sorteo = sorteos.find(s => s.id === sorteoId)
+      if (sorteo) handleParticipar(sorteo, { cantidad: 1, label: '1 boleto' })
+    }
+    window.addEventListener('destacado:participar', handler)
+    return () => window.removeEventListener('destacado:participar', handler)
+  }, [sorteos])
 
   // Extract unique categories present in active sorteos
   const categoriasDisponibles = Array.from(new Set(

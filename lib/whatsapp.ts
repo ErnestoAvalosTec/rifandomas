@@ -34,6 +34,12 @@ export async function sendWhatsAppMessage(
 
   const baseUrl = config.api_url.replace(/\/$/, '')
 
+  // Un retraso fijo entre "conectado" y "mensaje enviado" es justo el patrón
+  // que Meta usa para detectar campañas automatizadas y restringir la cuenta.
+  // Variarlo simula el tiempo que tardaría una persona real en escribir —
+  // Evolution API muestra "escribiendo..." al destinatario durante ese lapso.
+  const delay = 1500 + Math.floor(Math.random() * 2500)
+
   try {
     const res = await fetch(
       `${baseUrl}/message/sendText/${config.instance_name}`,
@@ -43,7 +49,7 @@ export async function sendWhatsAppMessage(
           apikey: config.api_key,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ number: normalized, text }),
+        body: JSON.stringify({ number: normalized, text, delay }),
       }
     )
     if (!res.ok) {

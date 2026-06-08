@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import {
   ChevronLeft, ChevronRight,
   Shield, CreditCard, CheckCircle2,
@@ -206,9 +207,15 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
 
         {/* Info */}
         <div className="flex flex-col flex-1 p-1.5 lg:p-4">
-          <h3 className="lg:text-lg" style={{ color: '#fff', fontSize: 12, fontWeight: 800, lineHeight: 1.2, marginBottom: 3 }}>
+          <Link
+            href={`/sorteo/${sorteo.id}`}
+            className="lg:text-lg hover:underline"
+            style={{ color: '#fff', fontSize: 12, fontWeight: 800, lineHeight: 1.2, marginBottom: 3, display: 'block', textDecoration: 'none' }}
+            onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
+            onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
+          >
             {primerPremio?.nombre ?? sorteo.nombre}
-          </h3>
+          </Link>
           {primerPremio?.valor_estimado && (
             <div className="hidden lg:block" style={{ marginBottom: 10 }}>
               <span style={{
@@ -253,7 +260,7 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
 
           {/* CTA */}
           <button
-            onClick={() => document.querySelector('#sorteos')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => window.dispatchEvent(new CustomEvent('destacado:participar', { detail: { sorteoId: sorteo.id } }))}
             style={{
               width: '100%', padding: '7px 0',
               background: '#F97316', color: '#fff',

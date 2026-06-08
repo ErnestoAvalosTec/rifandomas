@@ -62,7 +62,43 @@ export default async function SorteosPage() {
         </div>
       ) : (
         <div className="bg-brand-card border border-brand-border rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* ── Tarjetas móvil ── */}
+          <div className="sm:hidden divide-y divide-brand-border">
+            {sorteos.map((s) => {
+              const vendidos = vendidosPorSorteo[s.id] ?? 0
+              const puedeEditar = s.estatus === 'borrador' || s.estatus === 'rechazado'
+              return (
+                <div key={s.id} className="p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-ui font-semibold text-white text-sm truncate flex-1">{s.nombre}</p>
+                    <Badge variant={s.estatus as any}>{ESTATUS_LABEL[s.estatus]}</Badge>
+                  </div>
+                  {s.estatus === 'rechazado' && s.motivo_rechazo && (
+                    <p className="text-xs text-red-400 truncate">Motivo: {s.motivo_rechazo}</p>
+                  )}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-brand-muted">{formatDate(s.fecha_sorteo)}</span>
+                    <span className="text-xs text-brand-muted">
+                      <span className="text-white font-semibold">{vendidos}</span>/{s.total_numeros} boletos
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <Button asChild variant="secondary" size="sm" className="gap-1.5 flex-1">
+                      <Link href={`/dashboard/sorteos/${s.id}`}><Eye className="w-3.5 h-3.5" />Ver</Link>
+                    </Button>
+                    {puedeEditar && (
+                      <Button asChild variant="secondary" size="sm" className="gap-1.5 flex-1">
+                        <Link href={`/dashboard/sorteos/${s.id}?editar=1`}><Pencil className="w-3.5 h-3.5" />Editar</Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* ── Tabla desktop ── */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-brand-border">

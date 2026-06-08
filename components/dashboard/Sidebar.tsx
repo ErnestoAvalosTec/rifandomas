@@ -107,20 +107,20 @@ export function Sidebar({ userName }: SidebarProps) {
       </aside>
 
       {/* Mobile top bar */}
-      <header className="lg:hidden fixed top-0 inset-x-0 z-30 flex items-center justify-between h-14 px-4 bg-brand-bg border-b border-brand-border">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-            <Ticket className="w-3.5 h-3.5 text-white" />
-          </div>
-          <span className="font-title text-lg text-white">RIFANDO<span className="text-brand-red">MAS</span></span>
-        </div>
+      <header className="lg:hidden fixed top-0 inset-x-0 z-30 flex items-center gap-3 h-14 px-4 bg-brand-bg border-b border-brand-border">
         <button
-          className="p-2 text-brand-muted hover:text-white transition-colors cursor-pointer"
+          className="p-2 -ml-2 text-brand-muted hover:text-white transition-colors cursor-pointer flex-shrink-0"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Menú"
         >
           {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+            <Ticket className="w-3.5 h-3.5 text-white" />
+          </div>
+          <span className="font-title text-lg text-white truncate">RIFANDO<span className="text-brand-red">MAS</span></span>
+        </div>
       </header>
 
       {/* Mobile drawer overlay */}

@@ -119,13 +119,29 @@ export function Footer({ logoUrl, footer }: { logoUrl?: string | null; footer?: 
           </div>
         </div>
 
-        <div className="border-t pt-6 flex flex-col sm:flex-row items-center justify-between gap-2" style={{ borderColor: 'rgba(128,128,128,0.15)' }}>
+        <div
+          className="border-t pt-6 flex flex-col sm:flex-row items-center justify-between gap-3"
+          style={{ borderColor: 'rgba(128,128,128,0.15)' }}
+        >
           <p className="text-xs font-ui" style={{ color: text, opacity: 0.7 }}>
             © {new Date().getFullYear()} RifandoMas. Todos los derechos reservados.
           </p>
-          <p className="text-xs font-ui" style={{ color: text, opacity: 0.7 }}>
-            Hecho con ❤️ en México 🇲🇽
-          </p>
+          <div className="flex items-center gap-4 flex-wrap justify-center">
+            <Link
+              href="/terminos"
+              className="text-xs font-ui hover:text-primary transition-colors"
+              style={{ color: text, opacity: 0.7 }}
+            >
+              Términos y Condiciones
+            </Link>
+            <Link
+              href="/privacidad"
+              className="text-xs font-ui hover:text-primary transition-colors"
+              style={{ color: text, opacity: 0.7 }}
+            >
+              Aviso de Privacidad
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

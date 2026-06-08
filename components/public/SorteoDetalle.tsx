@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
+import { X, ZoomIn } from 'lucide-react'
 import { SorteoCard } from './SorteoCard'
 import { FormularioCompra } from './FormularioCompra'
 import { OrganizadorInfo } from './OrganizadorInfo'
@@ -23,6 +25,109 @@ interface Paquete {
 interface ConteoOrganizador {
   activos: number
   finalizados: number
+}
+
+const LUGAR_LABEL: Record<number, string> = { 1: '1er', 2: '2do', 3: '3er' }
+
+function GaleriaFotos({ premios }: { premios: Database['public']['Tables']['premios']['Row'][] }) {
+  const [lightbox, setLightbox] = useState<string | null>(null)
+
+  const premiosConFotos = premios
+    .filter((p) => p.fotos_urls?.length > 0)
+    .sort((a, b) => a.lugar - b.lugar)
+
+  if (!premiosConFotos.length) return null
+
+  return (
+    <>
+      <div
+        className="max-w-2xl mx-auto px-4 mt-14"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 48 }}
+      >
+        <h2
+          className="font-title text-white text-center mb-8"
+          style={{ fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', letterSpacing: '0.05em' }}
+        >
+          FOTOS DEL PREMIO
+        </h2>
+
+        <div className="space-y-8">
+          {premiosConFotos.map((premio) => (
+            <div key={premio.id}>
+              {premiosConFotos.length > 1 && (
+                <p
+                  className="text-xs font-ui font-semibold uppercase tracking-widest mb-3"
+                  style={{ color: 'rgba(255,255,255,0.4)' }}
+                >
+                  {LUGAR_LABEL[premio.lugar]} Premio — {premio.nombre}
+                </p>
+              )}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {premio.fotos_urls!.map((url, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setLightbox(url)}
+                    className="relative group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    style={{ aspectRatio: '1', borderRadius: 12, overflow: 'hidden', background: '#1a1a1a', display: 'block', width: '100%' }}
+                    aria-label={`Ver foto ${idx + 1} de ${premio.nombre}`}
+                  >
+                    <Image
+                      src={url}
+                      fill
+                      sizes="(max-width: 640px) 45vw, 30vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      alt={`${premio.nombre} — foto ${idx + 1}`}
+                      unoptimized
+                    />
+                    <div
+                      className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      style={{ background: 'rgba(0,0,0,0.45)' }}
+                    >
+                      <ZoomIn className="w-6 h-6 text-white" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.92)' }}
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightbox(null)}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center text-white transition-colors"
+            style={{ background: 'rgba(255,255,255,0.1)' }}
+            aria-label="Cerrar"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <div
+            className="relative w-full max-w-2xl"
+            style={{ maxHeight: '85vh', aspectRatio: '1' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={lightbox}
+              fill
+              sizes="(max-width: 768px) 95vw, 672px"
+              className="object-contain rounded-2xl"
+              alt="Vista ampliada"
+              unoptimized
+            />
+          </div>
+        </div>
+      )}
+    </>
+  )
 }
 
 export function SorteoDetalle({ sorteo, organizador, conteoOrganizador }: { sorteo: Sorteo; organizador?: Organizador | null; conteoOrganizador?: ConteoOrganizador }) {
@@ -70,6 +175,8 @@ export function SorteoDetalle({ sorteo, organizador, conteoOrganizador }: { sort
       <div className="max-w-sm mx-auto px-4">
         <SorteoCard sorteo={sorteo} onParticipar={handleParticipar} />
       </div>
+
+      <GaleriaFotos premios={sorteo.premios} />
 
       {organizador && (
         <OrganizadorInfo organizador={organizador} conteo={conteoOrganizador ?? { activos: 0, finalizados: 0 }} />

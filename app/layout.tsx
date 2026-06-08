@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Montserrat, Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
+import { WhatsAppFloat } from '@/components/public/WhatsAppFloat'
+import { CookieConsent } from '@/components/public/CookieConsent'
 
 const montserrat = Montserrat({
   weight: ['400', '500', '600', '700', '800'],
@@ -37,6 +39,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es">
       <body className={`${montserrat.variable} ${inter.variable} font-body bg-brand-bg text-brand-text antialiased`}>
         {children}
+        <WhatsAppFloat />
+        <CookieConsent />
         <Toaster theme="light" position="top-right" richColors />
       </body>
     </html>

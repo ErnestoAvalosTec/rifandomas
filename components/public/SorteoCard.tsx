@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils'
-import { Clock, Ticket, ChevronRight, Share2 } from 'lucide-react'
+import { Clock, Ticket, ChevronRight, Share2, Banknote } from 'lucide-react'
 import type { Database } from '@/types/database.types'
 
 type Sorteo = Database['public']['Tables']['sorteos']['Row'] & {
@@ -222,6 +222,23 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
             )}
           </div>
 
+          {/* Badge intercambiable — móvil */}
+          {premioActual?.intercambiable_efectivo && (
+            <div style={{ marginBottom: 5 }}>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 3,
+                background: 'rgba(34,197,94,0.18)',
+                border: '1px solid rgba(34,197,94,0.35)',
+                color: '#86EFAC',
+                borderRadius: 4, padding: '3px 6px',
+                fontSize: 8, fontWeight: 700, lineHeight: 1,
+              }}>
+                <Banknote style={{ width: 9, height: 9 }} />
+                O equivalente en efectivo
+              </span>
+            </div>
+          )}
+
           {/* Barra de progreso + vendidos */}
           <div style={{ marginBottom: 5 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
@@ -408,18 +425,31 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
                 </p>
               </div>
             </div>
-            {premioActual?.valor_estimado ? (
-              <div style={{ marginBottom: 10 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 10, minHeight: 28 }}>
+              {premioActual?.valor_estimado ? (
                 <span style={{
                   display: 'inline-flex', alignItems: 'center', gap: 4,
                   background: '#F97316', color: '#fff',
                   borderRadius: 999, padding: '4px 10px',
                   fontSize: 11, fontWeight: 700,
                 }}>
-                  🏷️ Valor: {formatCurrency(premioActual.valor_estimado)}
+                  Valor: {formatCurrency(premioActual.valor_estimado)}
                 </span>
-              </div>
-            ) : <div style={{ marginBottom: 10, height: 24 }} />}
+              ) : null}
+              {premioActual?.intercambiable_efectivo && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  background: 'rgba(34,197,94,0.18)',
+                  border: '1px solid rgba(34,197,94,0.4)',
+                  color: '#86EFAC',
+                  borderRadius: 999, padding: '4px 10px',
+                  fontSize: 10, fontWeight: 700,
+                }}>
+                  <Banknote style={{ width: 12, height: 12 }} />
+                  O equivalente en efectivo
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Progress */}

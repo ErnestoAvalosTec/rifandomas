@@ -96,6 +96,9 @@ export interface Database {
           descripcion: string | null
           imagen_url: string | null
           valor_estimado: number | null
+          categoria: string | null
+          intercambiable_efectivo: boolean
+          fotos_urls: string[]
         }
         Insert: {
           id?: string
@@ -105,12 +108,18 @@ export interface Database {
           descripcion?: string | null
           imagen_url?: string | null
           valor_estimado?: number | null
+          categoria?: string | null
+          intercambiable_efectivo?: boolean
+          fotos_urls?: string[]
         }
         Update: {
           nombre?: string
           descripcion?: string | null
           imagen_url?: string | null
           valor_estimado?: number | null
+          categoria?: string | null
+          intercambiable_efectivo?: boolean
+          fotos_urls?: string[]
         }
       }
       boletos: {

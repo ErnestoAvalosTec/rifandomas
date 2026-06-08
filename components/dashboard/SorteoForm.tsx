@@ -6,22 +6,26 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Trash2, Loader2, Upload } from 'lucide-react'
+import { Plus, Trash2, Loader2, ImagePlus, X, Banknote } from 'lucide-react'
 import type { Database } from '@/types/database.types'
 
 type SorteoRow = Database['public']['Tables']['sorteos']['Row']
 
 const DESCRIPCION_MAX = 80
+const MAX_FOTOS = 6
 
 const premioSchema = z.object({
   nombre: z.string().min(2),
   descripcion: z.string().max(DESCRIPCION_MAX, `Máximo ${DESCRIPCION_MAX} caracteres`).optional(),
   valor_estimado: z.coerce.number().min(0).optional(),
   imagen_url: z.string().optional(),
+  intercambiable_efectivo: z.boolean().default(false),
+  fotos_urls: z.array(z.string()).default([]),
 })
 
 const cuentaSchema = z.object({
@@ -44,7 +48,14 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
-type PremioInicial = { nombre: string; descripcion?: string | null; valor_estimado?: number | null; imagen_url?: string | null }
+type PremioInicial = {
+  nombre: string
+  descripcion?: string | null
+  valor_estimado?: number | null
+  imagen_url?: string | null
+  intercambiable_efectivo?: boolean | null
+  fotos_urls?: string[] | null
+}
 
 type CuentaExistente = { id: string; banco: string; clabe: string; titular: string; activo: boolean }
 
@@ -64,6 +75,7 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
   const [digitosLoteria, setDigitosLoteria] = useState<number>(3)
   const [cuentasExistentes, setCuentasExistentes] = useState<CuentaExistente[]>([])
   const [cuentaSeleccionadaId, setCuentaSeleccionadaId] = useState<string | null>(null)
+  const [uploading, setUploading] = useState<Record<number, boolean>>({})
 
   const isEdit = !!sorteo
 
@@ -78,8 +90,15 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
       promo_activa: sorteo?.promo_activa ?? false,
       promo_tipo: sorteo?.promo_tipo ?? undefined,
       premios: premiosIniciales?.length
-        ? premiosIniciales.map((p) => ({ nombre: p.nombre, descripcion: p.descripcion ?? '', valor_estimado: p.valor_estimado ?? 0, imagen_url: p.imagen_url ?? '' }))
-        : [{ nombre: '', descripcion: '', valor_estimado: 0, imagen_url: '' }],
+        ? premiosIniciales.map((p) => ({
+            nombre: p.nombre,
+            descripcion: p.descripcion ?? '',
+            valor_estimado: p.valor_estimado ?? 0,
+            imagen_url: p.imagen_url ?? '',
+            intercambiable_efectivo: p.intercambiable_efectivo ?? false,
+            fotos_urls: p.fotos_urls ?? [],
+          }))
+        : [{ nombre: '', descripcion: '', valor_estimado: 0, imagen_url: '', intercambiable_efectivo: false, fotos_urls: [] }],
       cuentas: [],
     },
   })
@@ -111,14 +130,51 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
     setValue('total_numeros', Math.pow(10, d))
   }
 
-  const uploadImagen = async (file: File, index: number) => {
-    const ext = file.name.split('.').pop()
-    const path = `premios/${userId}/${Date.now()}.${ext}`
-    const { data, error } = await supabase.storage.from('premios').upload(path, file, { upsert: true })
-    if (error) { toast.error('Error al subir imagen'); return }
-    const { data: { publicUrl } } = supabase.storage.from('premios').getPublicUrl(data.path)
-    setValue(`premios.${index}.imagen_url`, publicUrl)
-    toast.success('Imagen subida')
+  const uploadFoto = async (files: FileList, premioIndex: number) => {
+    const current = watch(`premios.${premioIndex}.fotos_urls`) ?? []
+    const disponibles = MAX_FOTOS - current.length
+    if (disponibles <= 0) { toast.error(`Máximo ${MAX_FOTOS} fotos por premio`); return }
+
+    setUploading((prev) => ({ ...prev, [premioIndex]: true }))
+    const filesToUpload = Array.from(files).slice(0, disponibles)
+    const nuevasUrls: string[] = []
+
+    for (const file of filesToUpload) {
+      const ext = file.name.split('.').pop()
+      const path = `premios/${userId}/fotos/${Date.now()}_${Math.random().toString(36).slice(2, 7)}.${ext}`
+      const { data, error } = await supabase.storage.from('premios').upload(path, file, { upsert: true })
+      if (error) { toast.error(`Error al subir ${file.name}`); continue }
+      const { data: { publicUrl } } = supabase.storage.from('premios').getPublicUrl(data.path)
+      nuevasUrls.push(publicUrl)
+    }
+
+    if (nuevasUrls.length) {
+      const updated = [...current, ...nuevasUrls]
+      setValue(`premios.${premioIndex}.fotos_urls`, updated, { shouldDirty: true })
+      // Primera foto = portada de la tarjeta
+      if (!watch(`premios.${premioIndex}.imagen_url`) || current.length === 0) {
+        setValue(`premios.${premioIndex}.imagen_url`, updated[0])
+      }
+      toast.success(`${nuevasUrls.length} foto${nuevasUrls.length > 1 ? 's' : ''} agregada${nuevasUrls.length > 1 ? 's' : ''}`)
+    }
+
+    setUploading((prev) => ({ ...prev, [premioIndex]: false }))
+  }
+
+  const removeFoto = (premioIndex: number, fotoIndex: number) => {
+    const current = watch(`premios.${premioIndex}.fotos_urls`) ?? []
+    const removedUrl = current[fotoIndex]
+    const updated = current.filter((_, j) => j !== fotoIndex)
+    setValue(`premios.${premioIndex}.fotos_urls`, updated, { shouldDirty: true })
+    // Si era la portada, actualizar con la siguiente disponible
+    if (watch(`premios.${premioIndex}.imagen_url`) === removedUrl) {
+      setValue(`premios.${premioIndex}.imagen_url`, updated[0] ?? '')
+    }
+  }
+
+  const setPortada = (premioIndex: number, url: string) => {
+    setValue(`premios.${premioIndex}.imagen_url`, url)
+    toast.success('Foto establecida como portada')
   }
 
   const onSubmit = async (values: FormValues) => {
@@ -186,35 +242,33 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
           descripcion: p.descripcion,
           imagen_url: p.imagen_url,
           valor_estimado: p.valor_estimado,
+          intercambiable_efectivo: p.intercambiable_efectivo ?? false,
+          fotos_urls: p.fotos_urls ?? [],
         }))
       )
       if (premiosError) throw premiosError
 
       if (cuentaSeleccionadaId) {
         await sb.from('cuentas_deposito').update({ activo: false }).eq('usuario_id', userId)
-        const { error: cuentasError } = await sb.from('cuentas_deposito').update({ activo: true }).eq('id', cuentaSeleccionadaId)
-        if (cuentasError) throw cuentasError
+        await sb.from('cuentas_deposito').update({ activo: true }).eq('id', cuentaSeleccionadaId)
       } else if (values.cuentas.length) {
         await sb.from('cuentas_deposito').update({ activo: false }).eq('usuario_id', userId)
-        const { error: cuentasError } = await sb.from('cuentas_deposito').insert(
+        await sb.from('cuentas_deposito').insert(
           values.cuentas.map((c, i) => ({ usuario_id: userId, banco: c.banco, clabe: c.clabe, titular: c.titular, activo: i === 0 }))
         )
-        if (cuentasError) throw cuentasError
       }
 
-      toast.success(adminMode && !isEdit ? 'Sorteo publicado exitosamente.' : adminMode && isEdit ? 'Sorteo actualizado.' : 'Sorteo enviado a revisión. El administrador lo aprobará pronto.')
+      toast.success(
+        adminMode && !isEdit ? 'Sorteo publicado exitosamente.' :
+        adminMode && isEdit  ? 'Sorteo actualizado.' :
+        'Sorteo enviado a revisión. El administrador lo aprobará pronto.'
+      )
       router.push(adminMode ? '/admin/sorteos' : '/dashboard/sorteos')
       router.refresh()
     } catch (err: unknown) {
-      const supabaseErr = err as { code?: string; message?: string; details?: string; hint?: string }
-      console.error('[SorteoForm] Error al guardar:', {
-        code: supabaseErr?.code,
-        message: supabaseErr?.message,
-        details: supabaseErr?.details,
-        hint: supabaseErr?.hint,
-        raw: err,
-      })
-      toast.error(`Error al guardar el sorteo. ${supabaseErr?.message ?? ''}`)
+      const e = err as { code?: string; message?: string }
+      console.error('[SorteoForm] Error al guardar:', e)
+      toast.error(`Error al guardar el sorteo. ${e?.message ?? ''}`)
     } finally {
       setGuardando(false)
     }
@@ -222,6 +276,8 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-2xl">
+
+      {/* ── Información del sorteo ── */}
       <div className="bg-brand-card border border-brand-border rounded-2xl p-6 space-y-4">
         <h2 className="font-ui font-semibold text-brand-text">Información del sorteo</h2>
         <div className="space-y-1.5">
@@ -231,7 +287,11 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
         </div>
         <div className="space-y-1.5">
           <Label>Descripción (opcional)</Label>
-          <textarea className="flex w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-[80px] resize-none" placeholder="Descripción corta del sorteo..." {...register('descripcion')} />
+          <textarea
+            className="flex w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-[80px] resize-none"
+            placeholder="Descripción corta del sorteo..."
+            {...register('descripcion')}
+          />
         </div>
         <div className="space-y-1.5">
           <Label>Fecha tentativa del sorteo</Label>
@@ -244,13 +304,13 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
           <input
             type="checkbox"
             checked={esLoteria}
-            onChange={e => toggleLoteria(e.target.checked)}
+            onChange={(e) => toggleLoteria(e.target.checked)}
             className="mt-0.5 w-4 h-4 accent-primary cursor-pointer flex-shrink-0"
           />
           <div>
             <p className="text-sm font-ui font-semibold text-brand-text">Basado en Lotería Nacional</p>
             <p className="text-xs text-brand-muted mt-0.5 leading-relaxed">
-              El ganador se determina con los últimos dígitos del sorteo de la Lotería Nacional. El sistema generará todas las combinaciones posibles.
+              El ganador se determina con los últimos dígitos del sorteo de la Lotería Nacional.
             </p>
           </div>
         </label>
@@ -259,7 +319,7 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
           <div className="space-y-3">
             <Label>¿Cuántos dígitos tendrá el número ganador?</Label>
             <div className="grid grid-cols-3 gap-3">
-              {([2, 3, 4] as const).map(d => (
+              {([2, 3, 4] as const).map((d) => (
                 <button
                   key={d}
                   type="button"
@@ -288,6 +348,7 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
             {errors.total_numeros && <p className="text-xs text-red-400">{errors.total_numeros.message}</p>}
           </div>
         )}
+
         <div className="space-y-1.5">
           <Label>Precio por boleto (MXN)</Label>
           <div className="relative">
@@ -298,45 +359,182 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
         </div>
       </div>
 
+      {/* ── Premios ── */}
       <div className="bg-brand-card border border-brand-border rounded-2xl p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-ui font-semibold text-brand-text">Premios (máx. 3)</h2>
           {premioFields.length < 3 && (
-            <Button type="button" variant="outline" size="sm" onClick={() => appendPremio({ nombre: '', descripcion: '', valor_estimado: 0, imagen_url: '' })} className="gap-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => appendPremio({ nombre: '', descripcion: '', valor_estimado: 0, imagen_url: '', intercambiable_efectivo: false, fotos_urls: [] })}
+              className="gap-1.5"
+            >
               <Plus className="w-3.5 h-3.5" />Agregar
             </Button>
           )}
         </div>
-        {premioFields.map((field, i) => (
-          <div key={field.id} className="p-4 rounded-xl border border-brand-border/60 bg-brand-border/10 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-ui text-primary font-semibold">{i + 1}° Premio</span>
-              {i > 0 && <button type="button" onClick={() => removePremio(i)} className="text-brand-muted hover:text-red-400 transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>}
-            </div>
-            <Input placeholder="Nombre del premio" {...register(`premios.${i}.nombre`)} />
-            <div className="space-y-1">
-              <Input placeholder={`Descripción breve (máx. ${DESCRIPCION_MAX} caracteres)`} maxLength={DESCRIPCION_MAX} {...register(`premios.${i}.descripcion`)} />
-              <p className="text-right text-xs text-brand-muted font-ui">
-                {watch(`premios.${i}.descripcion`)?.length ?? 0}/{DESCRIPCION_MAX}
-              </p>
-              {errors.premios?.[i]?.descripcion && <p className="text-xs text-red-400">{errors.premios[i]?.descripcion?.message}</p>}
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+
+        {premioFields.map((field, i) => {
+          const fotosUrls = watch(`premios.${i}.fotos_urls`) ?? []
+          const portadaUrl = watch(`premios.${i}.imagen_url`) ?? ''
+          const isUploading = uploading[i] ?? false
+
+          return (
+            <div key={field.id} className="p-4 rounded-xl border border-brand-border/60 bg-brand-border/10 space-y-4">
+              {/* Encabezado del premio */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-ui text-primary font-semibold">{i + 1}° Premio</span>
+                {i > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => removePremio(i)}
+                    className="text-brand-muted hover:text-red-400 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Nombre */}
+              <Input placeholder="Nombre del premio" {...register(`premios.${i}.nombre`)} />
+
+              {/* Descripción */}
+              <div className="space-y-1">
+                <Input
+                  placeholder={`Descripción breve (máx. ${DESCRIPCION_MAX} caracteres)`}
+                  maxLength={DESCRIPCION_MAX}
+                  {...register(`premios.${i}.descripcion`)}
+                />
+                <p className="text-right text-xs text-brand-muted font-ui">
+                  {watch(`premios.${i}.descripcion`)?.length ?? 0}/{DESCRIPCION_MAX}
+                </p>
+                {errors.premios?.[i]?.descripcion && (
+                  <p className="text-xs text-red-400">{errors.premios[i]?.descripcion?.message}</p>
+                )}
+              </div>
+
+              {/* Valor estimado */}
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted text-sm">$</span>
-                <Input type="number" placeholder="Valor estimado" className="pl-7" {...register(`premios.${i}.valor_estimado`)} />
+                <Input
+                  type="number"
+                  placeholder="Valor estimado del premio"
+                  className="pl-7"
+                  {...register(`premios.${i}.valor_estimado`)}
+                />
               </div>
-              <label className="flex items-center gap-2 h-10 px-3 rounded-lg border border-brand-border bg-brand-card cursor-pointer hover:border-primary/50 transition-colors text-xs text-brand-muted font-ui">
-                <Upload className="w-3.5 h-3.5" />
-                Subir imagen
-                <input type="file" accept="image/*" className="sr-only" onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadImagen(file, i) }} />
+
+              {/* Intercambiable por efectivo */}
+              <label className="flex items-start gap-3 p-3 rounded-xl border border-brand-border bg-brand-card cursor-pointer hover:border-primary/40 transition-colors">
+                <input
+                  type="checkbox"
+                  {...register(`premios.${i}.intercambiable_efectivo`)}
+                  className="mt-0.5 w-4 h-4 accent-primary cursor-pointer flex-shrink-0"
+                />
+                <div>
+                  <p className="text-sm font-ui font-semibold text-brand-text flex items-center gap-1.5">
+                    <Banknote className="w-4 h-4 text-primary" />
+                    Intercambiable por efectivo
+                  </p>
+                  <p className="text-xs text-brand-muted mt-0.5 leading-relaxed">
+                    El ganador podrá elegir recibir el valor del premio en efectivo en lugar del objeto físico.
+                    Se mostrará un aviso en las tarjetas públicas del sorteo.
+                  </p>
+                </div>
               </label>
+
+              {/* Fotos del premio */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">
+                    Fotos del premio{' '}
+                    <span className="text-brand-muted font-normal">
+                      ({fotosUrls.length}/{MAX_FOTOS})
+                    </span>
+                  </Label>
+                  {fotosUrls.length < MAX_FOTOS && (
+                    <label className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-brand-border bg-brand-card cursor-pointer hover:border-primary/50 transition-colors text-xs text-brand-muted font-ui">
+                      {isUploading
+                        ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        : <ImagePlus className="w-3.5 h-3.5" />
+                      }
+                      {isUploading ? 'Subiendo...' : 'Agregar fotos'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="sr-only"
+                        disabled={isUploading}
+                        onChange={(e) => { if (e.target.files?.length) uploadFoto(e.target.files, i) }}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {fotosUrls.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-2">
+                    {fotosUrls.map((url, fIdx) => {
+                      const esPortada = url === portadaUrl
+                      return (
+                        <div key={fIdx} className="relative group">
+                          <div
+                            className="relative aspect-square rounded-lg overflow-hidden cursor-pointer"
+                            style={{
+                              border: esPortada
+                                ? '2px solid #22C55E'
+                                : '2px solid rgba(255,255,255,0.08)',
+                            }}
+                            onClick={() => !esPortada && setPortada(i, url)}
+                            title={esPortada ? 'Portada de la tarjeta' : 'Clic para usar como portada'}
+                          >
+                            <Image
+                              src={url}
+                              fill
+                              sizes="120px"
+                              className="object-cover"
+                              alt={`Premio ${i + 1} foto ${fIdx + 1}`}
+                              unoptimized
+                            />
+                            {esPortada && (
+                              <div
+                                className="absolute bottom-0 left-0 right-0 text-center py-0.5"
+                                style={{ background: 'rgba(34,197,94,0.85)', fontSize: 9, fontWeight: 700, color: '#fff' }}
+                              >
+                                PORTADA
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeFoto(i, fIdx)}
+                            className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            style={{ background: '#EF4444' }}
+                            title="Eliminar foto"
+                          >
+                            <X className="w-3 h-3 text-white" />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div
+                    className="rounded-xl p-4 text-center text-xs text-brand-muted border-2 border-dashed border-brand-border leading-relaxed"
+                  >
+                    Sin fotos — la primera foto que subas se usará como imagen principal de la tarjeta del sorteo
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
+
         {errors.premios && <p className="text-xs text-red-400">Agrega al menos 1 premio.</p>}
       </div>
 
+      {/* ── Cuentas de depósito ── */}
       <div className="bg-brand-card border border-brand-border rounded-2xl p-6 space-y-4">
         <h2 className="font-ui font-semibold text-brand-text">Cuentas de depósito</h2>
 
@@ -347,7 +545,9 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
               <label
                 key={c.id}
                 className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
-                  cuentaSeleccionadaId === c.id ? 'border-primary bg-primary/10' : 'border-brand-border bg-brand-border/10 hover:border-brand-muted'
+                  cuentaSeleccionadaId === c.id
+                    ? 'border-primary bg-primary/10'
+                    : 'border-brand-border bg-brand-border/10 hover:border-brand-muted'
                 }`}
               >
                 <input
@@ -357,20 +557,27 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
                   className="w-4 h-4 accent-primary cursor-pointer flex-shrink-0"
                 />
                 <div className="min-w-0">
-                  <p className="text-sm font-ui font-semibold text-brand-text truncate">{c.banco} · {c.titular}</p>
+                  <p className="text-sm font-ui font-semibold text-brand-text truncate">
+                    {c.banco} · {c.titular}
+                  </p>
                   <p className="text-xs text-brand-muted font-ui">CLABE •••• {c.clabe.slice(-4)}</p>
                 </div>
               </label>
             ))}
             <label
               className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
-                cuentaSeleccionadaId === null ? 'border-primary bg-primary/10' : 'border-brand-border bg-brand-border/10 hover:border-brand-muted'
+                cuentaSeleccionadaId === null
+                  ? 'border-primary bg-primary/10'
+                  : 'border-brand-border bg-brand-border/10 hover:border-brand-muted'
               }`}
             >
               <input
                 type="radio"
                 checked={cuentaSeleccionadaId === null}
-                onChange={() => { setCuentaSeleccionadaId(null); if (cuentaFields.length === 0) appendCuenta({ banco: '', clabe: '', titular: '' }) }}
+                onChange={() => {
+                  setCuentaSeleccionadaId(null)
+                  if (cuentaFields.length === 0) appendCuenta({ banco: '', clabe: '', titular: '' })
+                }}
                 className="w-4 h-4 accent-primary cursor-pointer flex-shrink-0"
               />
               <span className="flex items-center gap-1.5 text-sm font-ui font-semibold text-brand-text">
@@ -385,7 +592,13 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
             {cuentasExistentes.length > 0 && (
               <div className="flex items-center justify-between">
                 <span className="text-xs text-brand-muted font-ui">Datos de la nueva cuenta</span>
-                <Button type="button" variant="secondary" size="sm" onClick={() => appendCuenta({ banco: '', clabe: '', titular: '' })} className="gap-1.5">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => appendCuenta({ banco: '', clabe: '', titular: '' })}
+                  className="gap-1.5"
+                >
                   <Plus className="w-3.5 h-3.5" />Agregar otra
                 </Button>
               </div>
@@ -395,25 +608,42 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-ui text-brand-muted">Cuenta {i + 1}</span>
                   {(cuentasExistentes.length > 0 || i > 0) && (
-                    <button type="button" onClick={() => removeCuenta(i)} className="text-brand-muted hover:text-red-400 transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+                    <button
+                      type="button"
+                      onClick={() => removeCuenta(i)}
+                      className="text-brand-muted hover:text-red-400 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Input placeholder="Banco (ej: BBVA)" {...register(`cuentas.${i}.banco`)} />
                   <Input placeholder="Titular" {...register(`cuentas.${i}.titular`)} />
                 </div>
-                <Input placeholder="CLABE interbancaria (18 dígitos)" maxLength={18} {...register(`cuentas.${i}.clabe`)} />
-                {errors.cuentas?.[i]?.clabe && <p className="text-xs text-red-400">{errors.cuentas[i]?.clabe?.message}</p>}
+                <Input
+                  placeholder="CLABE interbancaria (18 dígitos)"
+                  maxLength={18}
+                  {...register(`cuentas.${i}.clabe`)}
+                />
+                {errors.cuentas?.[i]?.clabe && (
+                  <p className="text-xs text-red-400">{errors.cuentas[i]?.clabe?.message}</p>
+                )}
               </div>
             ))}
           </div>
         )}
       </div>
 
+      {/* ── Botones ── */}
       <div className="flex gap-3">
-        <Button type="button" variant="outline" className="flex-1" onClick={() => router.back()}>Cancelar</Button>
+        <Button type="button" variant="outline" className="flex-1" onClick={() => router.back()}>
+          Cancelar
+        </Button>
         <Button type="submit" className="flex-1" disabled={guardando}>
-          {guardando ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Guardando...</> : isEdit ? 'Actualizar Sorteo' : adminMode ? 'Publicar Sorteo' : 'Enviar a Revisión'}
+          {guardando ? (
+            <><Loader2 className="w-4 h-4 animate-spin mr-2" />Guardando...</>
+          ) : isEdit ? 'Actualizar Sorteo' : adminMode ? 'Publicar Sorteo' : 'Enviar a Revisión'}
         </Button>
       </div>
     </form>

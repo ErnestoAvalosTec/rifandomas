@@ -85,43 +85,74 @@ export default function AdminOrdenesPage() {
         ) : !ordenesFiltradas.length ? (
           <div className="p-12 text-center text-brand-muted font-body">No hay órdenes que coincidan con la búsqueda.</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-brand-border">
-                  {['Cliente', 'Teléfono', 'Sorteo', 'Números', 'Monto', 'Estatus', 'Fecha'].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs text-brand-muted font-ui uppercase tracking-wide whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {ordenesFiltradas.map((o) => (
-                  <tr key={o.id} className="border-b border-brand-border/50 last:border-0 hover:bg-brand-border/20 transition-colors">
-                    <td className="px-4 py-3 font-ui text-white whitespace-nowrap">
-                      {o.cliente_nombre} {o.cliente_apellidos}
-                      {o.cliente_estado && <span className="text-brand-muted font-normal"> · {o.cliente_estado}</span>}
-                    </td>
-                    <td className="px-4 py-3 text-brand-muted whitespace-nowrap">{o.cliente_telefono}</td>
-                    <td className="px-4 py-3 text-brand-muted max-w-[180px] truncate" title={o.sorteos?.nombre ?? '—'}>
-                      {o.sorteos?.nombre ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-brand-muted max-w-[140px]">
-                      <span className="text-xs leading-relaxed">
-                        {o.numeros?.length ? o.numeros.join(', ') : '—'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-white font-ui whitespace-nowrap">{formatCurrency(o.monto_total)}</td>
-                    <td className="px-4 py-3">
-                      <Badge variant={o.estatus as any}>{o.estatus}</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-brand-muted whitespace-nowrap text-xs">
-                      {new Date(o.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </td>
+          <>
+            {/* ── Tarjetas móvil ── */}
+            <div className="sm:hidden divide-y divide-brand-border">
+              {ordenesFiltradas.map((o) => (
+                <div key={o.id} className="p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-ui font-semibold text-white text-sm truncate">
+                        {o.cliente_nombre} {o.cliente_apellidos}
+                      </p>
+                      {o.cliente_estado && <p className="text-xs text-brand-muted">{o.cliente_estado}</p>}
+                    </div>
+                    <Badge variant={o.estatus as any}>{o.estatus}</Badge>
+                  </div>
+                  <p className="text-xs text-brand-muted truncate">{o.sorteos?.nombre ?? '—'}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-brand-muted">{o.cliente_telefono}</span>
+                    <span className="font-ui font-semibold text-white text-sm">{formatCurrency(o.monto_total)}</span>
+                  </div>
+                  {o.numeros?.length > 0 && (
+                    <p className="text-xs text-brand-muted">
+                      <span className="text-brand-text font-ui">Núms:</span> {o.numeros.join(', ')}
+                    </p>
+                  )}
+                  <p className="text-xs text-brand-muted">
+                    {new Date(o.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* ── Tabla desktop ── */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-brand-border">
+                    {['Cliente', 'Teléfono', 'Sorteo', 'Números', 'Monto', 'Estatus', 'Fecha'].map((h) => (
+                      <th key={h} className="text-left px-4 py-3 text-xs text-brand-muted font-ui uppercase tracking-wide whitespace-nowrap">{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {ordenesFiltradas.map((o) => (
+                    <tr key={o.id} className="border-b border-brand-border/50 last:border-0 hover:bg-brand-border/20 transition-colors">
+                      <td className="px-4 py-3 font-ui text-white whitespace-nowrap">
+                        {o.cliente_nombre} {o.cliente_apellidos}
+                        {o.cliente_estado && <span className="text-brand-muted font-normal"> · {o.cliente_estado}</span>}
+                      </td>
+                      <td className="px-4 py-3 text-brand-muted whitespace-nowrap">{o.cliente_telefono}</td>
+                      <td className="px-4 py-3 text-brand-muted max-w-[180px] truncate" title={o.sorteos?.nombre ?? '—'}>
+                        {o.sorteos?.nombre ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-brand-muted max-w-[140px]">
+                        <span className="text-xs leading-relaxed">
+                          {o.numeros?.length ? o.numeros.join(', ') : '—'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-white font-ui whitespace-nowrap">{formatCurrency(o.monto_total)}</td>
+                      <td className="px-4 py-3"><Badge variant={o.estatus as any}>{o.estatus}</Badge></td>
+                      <td className="px-4 py-3 text-brand-muted whitespace-nowrap text-xs">
+                        {new Date(o.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

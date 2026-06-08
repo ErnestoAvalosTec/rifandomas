@@ -8,9 +8,10 @@ import { Button } from '@/components/ui/button'
 import { formatDate, formatCurrency } from '@/lib/utils'
 import {
   CheckCircle2, XCircle, ChevronDown, ChevronUp, Pencil,
-  PauseCircle, Trash2, PlayCircle, Plus, Loader2, Tag,
+  PauseCircle, Trash2, PlayCircle, Plus, Loader2, Tag, MoreHorizontal,
 } from 'lucide-react'
 import Link from 'next/link'
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import type { Database } from '@/types/database.types'
 
 type SorteoRow = Database['public']['Tables']['sorteos']['Row']
@@ -203,17 +204,19 @@ export default function AdminSorteosPage() {
             <div key={s.id} className="bg-brand-card border border-brand-border rounded-2xl overflow-hidden">
 
               {/* ── Header row ── */}
-              <div className="flex items-center justify-between p-5 gap-4">
+              <div className="flex items-center justify-between p-4 sm:p-5 gap-3">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <h3 className="font-ui font-semibold text-brand-text">{s.nombre}</h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-ui font-semibold text-brand-text text-sm sm:text-base">{s.nombre}</h3>
                     <Badge variant={s.estatus as any}>{s.estatus}</Badge>
                   </div>
                   <p className="text-xs text-brand-muted mt-1 font-body">
-                    {s.perfiles?.nombre} {s.perfiles?.apellidos} · {formatDate(s.fecha_sorteo)} · {s.total_numeros} números · {formatCurrency(s.precio_unitario)}/boleto
+                    {s.perfiles?.nombre} {s.perfiles?.apellidos} · {formatDate(s.fecha_sorteo)} · {s.total_numeros} núms · {formatCurrency(s.precio_unitario)}/bol
                   </p>
                 </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0 flex-wrap justify-end">
+
+                {/* Acciones desktop */}
+                <div className="hidden sm:flex items-center gap-1.5 flex-shrink-0 flex-wrap justify-end">
                   {s.estatus === 'pendiente' && (
                     <>
                       <Button size="sm" onClick={() => aprobar(s)} className="gap-1.5">
@@ -246,6 +249,55 @@ export default function AdminSorteosPage() {
                       </Button>
                     </>
                   )}
+                  <button onClick={() => toggleExpand(s.id)} className="p-1 text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
+                    {expandido === s.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                {/* Acciones móvil — dropdown + expand */}
+                <div className="flex sm:hidden items-center gap-1 flex-shrink-0">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="icon" variant="ghost" className="w-8 h-8">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {s.estatus === 'pendiente' && (
+                        <>
+                          <DropdownMenuItem onClick={() => aprobar(s)}>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Aprobar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setRechazando(rechazando === s.id ? null : s.id)}>
+                            <XCircle className="w-3.5 h-3.5 text-red-400" />Rechazar
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      {s.estatus === 'pausado' && (
+                        <DropdownMenuItem onClick={() => reactivar(s.id)}>
+                          <PlayCircle className="w-3.5 h-3.5 text-green-400" />Reactivar
+                        </DropdownMenuItem>
+                      )}
+                      {s.estatus !== 'eliminado' && (
+                        <>
+                          {(s.estatus === 'pendiente' || s.estatus === 'pausado') && <DropdownMenuSeparator />}
+                          <DropdownMenuItem asChild>
+                            <Link href={`/admin/sorteos/${s.id}/editar`} className="flex items-center gap-2">
+                              <Pencil className="w-3.5 h-3.5" />Editar
+                            </Link>
+                          </DropdownMenuItem>
+                          {s.estatus !== 'pausado' && (
+                            <DropdownMenuItem onClick={() => { setAccionPendiente({ id: s.id, tipo: 'pausado' }); setMotivoAccion('') }}>
+                              <PauseCircle className="w-3.5 h-3.5 text-yellow-400" />Pausar
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={() => { setAccionPendiente({ id: s.id, tipo: 'eliminado' }); setMotivoAccion('') }}>
+                            <Trash2 className="w-3.5 h-3.5 text-red-400" />Eliminar
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <button onClick={() => toggleExpand(s.id)} className="p-1 text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
                     {expandido === s.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>

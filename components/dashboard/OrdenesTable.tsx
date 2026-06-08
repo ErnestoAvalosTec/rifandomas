@@ -66,12 +66,20 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
 
   const cambiarEstatus = async (id: string, estatus: 'pagado' | 'cancelado') => {
     const { error } = await sb.from('pedidos').update({ estatus }).eq('id', id)
-    if (!error) {
-      setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estatus } : p))
-      toast.success(estatus === 'pagado' ? 'Pedido marcado como pagado' : 'Pedido cancelado')
+    if (error) { toast.error('Error al actualizar el pedido'); return }
+
+    // Sincronizar boletos: el verificador público lee boletos.estatus, no pedidos.estatus
+    if (estatus === 'pagado') {
+      await sb.from('boletos').update({ estatus: 'pagado' }).eq('pedido_id', id)
     } else {
-      toast.error('Error al actualizar el pedido')
+      // Cancelado: liberar los números para que otros puedan comprarlos
+      await sb.from('boletos')
+        .update({ estatus: 'disponible', pedido_id: null })
+        .eq('pedido_id', id)
     }
+
+    setPedidos((prev) => prev.map((p) => p.id === id ? { ...p, estatus } : p))
+    toast.success(estatus === 'pagado' ? 'Pedido marcado como pagado' : 'Pedido cancelado')
   }
 
   const enviarRecordatorio = async (p: Pedido) => {
@@ -159,7 +167,70 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
         </div>
       ) : (
         <div className="bg-brand-card border border-brand-border rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* ── Tarjetas móvil ── */}
+          <div className="sm:hidden divide-y divide-brand-border">
+            {pedidosFiltrados.map((p) => {
+              const numeros = p.pedido_boletos.map((pb) => pb.boletos?.numero).filter(Boolean)
+              return (
+                <div key={p.id} className={`p-4 space-y-2 ${isExpirando(p) ? 'bg-red-500/5' : ''}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <button onClick={() => setClienteModal(p)} className="font-ui font-semibold text-white text-sm text-left hover:text-primary transition-colors flex items-center gap-1.5 min-w-0">
+                      <User className="w-3.5 h-3.5 text-brand-muted flex-shrink-0" />
+                      <span className="truncate">{p.cliente_nombre} {p.cliente_apellidos}</span>
+                    </button>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <Badge variant={p.estatus as any}>{p.estatus}</Badge>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="icon" variant="ghost" className="w-7 h-7">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {p.estatus !== 'pagado' && (
+                            <DropdownMenuItem onClick={() => cambiarEstatus(p.id, 'pagado')}>
+                              <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Marcar como pagado
+                            </DropdownMenuItem>
+                          )}
+                          {p.estatus !== 'cancelado' && (
+                            <DropdownMenuItem onClick={() => cambiarEstatus(p.id, 'cancelado')}>
+                              <XCircle className="w-3.5 h-3.5 text-red-400" />Cancelar pedido
+                            </DropdownMenuItem>
+                          )}
+                          {p.estatus === 'pendiente' && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => enviarRecordatorio(p)}>
+                                <MessageCircle className="w-3.5 h-3.5 text-primary" />Enviar recordatorio
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                  <p className="text-xs text-brand-muted truncate">{p.sorteos?.nombre ?? '—'}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-ui font-semibold text-white text-sm">{formatCurrency(p.monto_total)}</span>
+                    {p.estatus === 'pendiente' && (
+                      <span className={`flex items-center gap-1 text-xs font-ui ${isExpirando(p) ? 'text-red-400' : 'text-brand-muted'}`}>
+                        <Clock className="w-3 h-3" />
+                        {formatDistanceToNow(parseISO(p.expires_at), { locale: es, addSuffix: true })}
+                      </span>
+                    )}
+                  </div>
+                  {numeros.length > 0 && (
+                    <p className="text-xs text-brand-muted">
+                      <span className="text-brand-text font-ui">Núms:</span> {numeros.join(', ')}
+                    </p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* ── Tabla desktop ── */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-brand-border">
@@ -175,10 +246,7 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
                     <tr key={p.id} className={`border-b border-brand-border/50 last:border-0 transition-colors ${isExpirando(p) ? 'bg-red-500/5' : 'hover:bg-brand-border/20'}`}>
                       <td className="px-4 py-3 text-brand-muted font-ui text-xs">{p.id.slice(0, 8)}…</td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <button
-                          onClick={() => setClienteModal(p)}
-                          className="font-ui text-white hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer"
-                        >
+                        <button onClick={() => setClienteModal(p)} className="font-ui text-white hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer">
                           <User className="w-3 h-3 text-brand-muted" />
                           {p.cliente_nombre} {p.cliente_apellidos}
                         </button>
@@ -210,22 +278,19 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
                           <DropdownMenuContent align="end">
                             {p.estatus !== 'pagado' && (
                               <DropdownMenuItem onClick={() => cambiarEstatus(p.id, 'pagado')}>
-                                <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-                                Marcar como pagado
+                                <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />Marcar como pagado
                               </DropdownMenuItem>
                             )}
                             {p.estatus !== 'cancelado' && (
                               <DropdownMenuItem onClick={() => cambiarEstatus(p.id, 'cancelado')}>
-                                <XCircle className="w-3.5 h-3.5 text-red-400" />
-                                Cancelar pedido
+                                <XCircle className="w-3.5 h-3.5 text-red-400" />Cancelar pedido
                               </DropdownMenuItem>
                             )}
                             {p.estatus === 'pendiente' && (
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => enviarRecordatorio(p)}>
-                                  <MessageCircle className="w-3.5 h-3.5 text-primary" />
-                                  Enviar recordatorio
+                                  <MessageCircle className="w-3.5 h-3.5 text-primary" />Enviar recordatorio
                                 </DropdownMenuItem>
                               </>
                             )}
