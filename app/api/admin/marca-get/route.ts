@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/supabase/guard'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const authError = await requireAdmin()
   if (authError) return authError
