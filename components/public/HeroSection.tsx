@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   ChevronLeft, ChevronRight,
   Shield, CreditCard, CheckCircle2,
@@ -151,19 +151,53 @@ function HeroSlider({ slides }: { slides: HeroSlide[] }) {
 
 // ─── Featured Sorteo Card ─────────────────────────────────────────────────────
 function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
+  const router = useRouter()
+  const [navigating, setNavigating] = useState(false)
   const primerPremio = sorteo.premios.find(p => p.lugar === 1) ?? sorteo.premios[0]
   const porcentaje = Math.min(100, Math.round((sorteo.boletos_vendidos / sorteo.total_numeros) * 100))
   const t = useCountdown(sorteo.fecha_sorteo)
+
+  const irADetalle = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setNavigating(true)
+    router.push(`/sorteo/${sorteo.id}`)
+  }
 
   return (
     <div
       className="flex flex-col lg:h-full"
       style={{
+        position: 'relative',
         background: '#166534',
         border: '1px solid rgba(255,255,255,0.1)',
         borderRadius: 10, overflow: 'hidden',
       }}
     >
+      {navigating && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 20,
+          background: 'rgba(10,10,10,0.82)',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          gap: 10,
+          animation: 'rf-fadein 0.15s ease',
+        }}>
+          <div style={{
+            width: 30, height: 30,
+            border: '2.5px solid rgba(255,255,255,0.1)',
+            borderTopColor: '#4ADE80',
+            borderRadius: '50%',
+            animation: 'rf-spin 0.75s linear infinite',
+          }} />
+          <span style={{
+            color: 'rgba(255,255,255,0.5)',
+            fontSize: 10, fontWeight: 600,
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+          }}>
+            Cargando
+          </span>
+        </div>
+      )}
       {/* Siempre vertical — en mobile ocupa media pantalla, en lg ocupa el panel derecho */}
       <div className="flex flex-col h-full">
 
@@ -203,19 +237,37 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
               {formatCurrency(sorteo.precio_unitario)}<span style={{ fontWeight: 400, fontSize: 7, marginLeft: 2 }}>/boleto</span>
             </span>
           </div>
+
+          {/* Badge valor estimado — bottom-right (solo móvil; desktop lo muestra en el área de texto) */}
+          {primerPremio?.valor_estimado ? (
+            <div className="lg:hidden" style={{ position: 'absolute', bottom: 5, right: 5 }}>
+              <span style={{
+                background: 'rgba(0,0,0,0.72)',
+                border: '1px solid rgba(249,115,22,0.55)',
+                color: '#fdba74',
+                borderRadius: 4, padding: '2px 5px',
+                fontSize: 8, fontWeight: 700, lineHeight: 1,
+                backdropFilter: 'blur(4px)',
+                display: 'block',
+              }}>
+                {formatCurrency(primerPremio.valor_estimado)}
+              </span>
+            </div>
+          ) : null}
         </div>
 
         {/* Info */}
         <div className="flex flex-col flex-1 p-1.5 lg:p-4">
-          <Link
+          <a
             href={`/sorteo/${sorteo.id}`}
+            onClick={irADetalle}
             className="lg:text-lg hover:underline"
             style={{ color: '#fff', fontSize: 12, fontWeight: 800, lineHeight: 1.2, marginBottom: 3, display: 'block', textDecoration: 'none' }}
             onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
             onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
           >
             {primerPremio?.nombre ?? sorteo.nombre}
-          </Link>
+          </a>
           {primerPremio?.valor_estimado && (
             <div className="hidden lg:block" style={{ marginBottom: 10 }}>
               <span style={{

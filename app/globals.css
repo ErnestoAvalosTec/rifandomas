@@ -169,3 +169,12 @@ input[type=number] {
 @keyframes shimmer {
   100% { transform: translateX(100%); }
 }
+
+@keyframes rf-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rf-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

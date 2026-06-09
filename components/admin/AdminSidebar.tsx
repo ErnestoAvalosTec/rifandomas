@@ -7,17 +7,18 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   Ticket, LayoutDashboard, Users, LogOut, ShoppingCart,
-  ImageIcon, Palette, MessageCircle, Menu, X, ChevronRight,
+  ImageIcon, Palette, MessageCircle, Menu, X, ChevronRight, MessageSquare,
 } from 'lucide-react'
 
 const ADMIN_NAV = [
-  { href: '/admin',           label: 'Panel',      icon: LayoutDashboard, exact: true },
-  { href: '/admin/sorteos',   label: 'Sorteos',    icon: Ticket },
-  { href: '/admin/ordenes',   label: 'Órdenes',    icon: ShoppingCart },
-  { href: '/admin/usuarios',  label: 'Usuarios',   icon: Users },
-  { href: '/admin/hero',      label: 'Hero',       icon: ImageIcon },
-  { href: '/admin/marca',     label: 'Marca',      icon: Palette },
-  { href: '/admin/whatsapp',  label: 'WhatsApp',   icon: MessageCircle },
+  { href: '/admin',              label: 'Panel',      icon: LayoutDashboard, exact: true },
+  { href: '/admin/sorteos',      label: 'Sorteos',    icon: Ticket },
+  { href: '/admin/ordenes',      label: 'Órdenes',    icon: ShoppingCart },
+  { href: '/admin/usuarios',     label: 'Usuarios',   icon: Users },
+  { href: '/admin/preguntas',    label: 'Preguntas',  icon: MessageSquare },
+  { href: '/admin/hero',         label: 'Hero',       icon: ImageIcon },
+  { href: '/admin/marca',        label: 'Marca',      icon: Palette },
+  { href: '/admin/whatsapp',     label: 'WhatsApp',   icon: MessageCircle },
 ]
 
 interface AdminSidebarProps {

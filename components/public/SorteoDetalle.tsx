@@ -7,6 +7,8 @@ import { SorteoCard } from './SorteoCard'
 import { FormularioCompra } from './FormularioCompra'
 import { OrganizadorInfo } from './OrganizadorInfo'
 import { anuncioGanador } from '@/lib/sorteoTexto'
+import { SeccionPreguntas } from './SeccionPreguntas'
+import { SorteosRelacionados } from './SorteosRelacionados'
 import type { Database } from '@/types/database.types'
 
 type Sorteo = Database['public']['Tables']['sorteos']['Row'] & {
@@ -181,6 +183,10 @@ export function SorteoDetalle({ sorteo, organizador, conteoOrganizador }: { sort
       {organizador && (
         <OrganizadorInfo organizador={organizador} conteo={conteoOrganizador ?? { activos: 0, finalizados: 0 }} />
       )}
+
+      <SeccionPreguntas sorteoId={sorteo.id} />
+
+      <SorteosRelacionados sorteoId={sorteo.id} />
 
       {paqueteSeleccionado && (
         <FormularioCompra

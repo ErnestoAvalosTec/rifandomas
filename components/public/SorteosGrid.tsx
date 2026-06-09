@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import { SorteoCard } from './SorteoCard'
 import { FiltroPanel, type Filtros } from './FiltroPanel'
 import { FormularioCompra } from './FormularioCompra'
@@ -59,6 +59,11 @@ export function SorteosGrid({ sorteos }: SorteosGridProps) {
   const [sorteoSeleccionado, setSorteoSeleccionado] = useState<Sorteo | null>(null)
   const [paqueteSeleccionado, setPaqueteSeleccionado] = useState<Paquete | null>(null)
   const [filtros, setFiltros] = useState<Filtros>({ categoria: '', precioMin: '', precioMax: '' })
+  const [isPending, startTransition] = useTransition()
+
+  const aplicarFiltro = (newFiltros: Filtros) => {
+    startTransition(() => setFiltros(newFiltros))
+  }
 
   const handleParticipar = (sorteo: Sorteo, paquete: Paquete) => {
     setSorteoSeleccionado(sorteo)
@@ -116,7 +121,7 @@ export function SorteosGrid({ sorteos }: SorteosGridProps) {
         <FiltroPanel
           categoriasDisponibles={categoriasDisponibles}
           filtros={filtros}
-          onChange={setFiltros}
+          onChange={aplicarFiltro}
           resultados={sorteosFiltrados.length}
           total={sorteos.length}
         />
@@ -146,7 +151,7 @@ export function SorteosGrid({ sorteos }: SorteosGridProps) {
                 return (
                   <button
                     key={key || '__todos__'}
-                    onClick={() => setFiltros({ ...filtros, categoria: key })}
+                    onClick={() => aplicarFiltro({ ...filtros, categoria: key })}
                     className="flex flex-col items-center flex-shrink-0 cursor-pointer"
                     style={{ minWidth: 58, gap: 4, background: 'none', border: 'none', padding: '2px 0' }}
                   >
@@ -179,28 +184,66 @@ export function SorteosGrid({ sorteos }: SorteosGridProps) {
             </div>
           </div>
 
-          {sorteosFiltrados.length === 0 ? (
-            <div className="text-center py-20">
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16, marginBottom: 8 }}>
-                Ningún sorteo coincide con los filtros aplicados.
-              </p>
-              <button
-                onClick={() => setFiltros({ categoria: '', precioMin: '', precioMax: '' })}
-                style={{
-                  color: '#4ADE80', fontSize: 13, fontWeight: 600,
-                  background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline',
-                }}
+          <div style={{ position: 'relative' }}>
+
+            {/* Overlay de carga al filtrar */}
+            {isPending && (
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 10,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                animation: 'rf-fadein 0.15s ease',
+                pointerEvents: 'none',
+              }}>
+                <div style={{
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', gap: 10,
+                  background: 'rgba(28,28,28,0.82)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 12, padding: '18px 28px',
+                }}>
+                  <div style={{
+                    width: 28, height: 28,
+                    border: '2.5px solid rgba(255,255,255,0.1)',
+                    borderTopColor: '#4ADE80',
+                    borderRadius: '50%',
+                    animation: 'rf-spin 0.75s linear infinite',
+                  }} />
+                  <span style={{
+                    color: 'rgba(255,255,255,0.5)',
+                    fontSize: 10, fontWeight: 600,
+                    letterSpacing: '0.08em', textTransform: 'uppercase',
+                  }}>Filtrando</span>
+                </div>
+              </div>
+            )}
+
+            {sorteosFiltrados.length === 0 ? (
+              <div className="text-center py-20">
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16, marginBottom: 8 }}>
+                  Ningún sorteo coincide con los filtros aplicados.
+                </p>
+                <button
+                  onClick={() => aplicarFiltro({ categoria: '', precioMin: '', precioMax: '' })}
+                  style={{
+                    color: '#4ADE80', fontSize: 13, fontWeight: 600,
+                    background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline',
+                  }}
+                >
+                  Limpiar filtros
+                </button>
+              </div>
+            ) : (
+              <div
+                className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 items-start"
+                style={{ opacity: isPending ? 0.45 : 1, transition: 'opacity 0.2s ease' }}
               >
-                Limpiar filtros
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 items-start">
-              {sorteosFiltrados.map(sorteo => (
-                <SorteoCard key={sorteo.id} sorteo={sorteo} onParticipar={handleParticipar} />
-              ))}
-            </div>
-          )}
+                {sorteosFiltrados.map(sorteo => (
+                  <SorteoCard key={sorteo.id} sorteo={sorteo} onParticipar={handleParticipar} />
+                ))}
+              </div>
+            )}
+
+          </div>
 
         </div>
       </section>

@@ -69,6 +69,35 @@ function buildPaquetes(sorteo: Sorteo): Paquete[] {
   ]
 }
 
+function NavLoadingOverlay({ radius }: { radius: number }) {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, zIndex: 20,
+      background: 'rgba(10,10,10,0.82)',
+      borderRadius: radius,
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      gap: 10,
+      animation: 'rf-fadein 0.15s ease',
+    }}>
+      <div style={{
+        width: 30, height: 30,
+        border: '2.5px solid rgba(255,255,255,0.1)',
+        borderTopColor: '#4ADE80',
+        borderRadius: '50%',
+        animation: 'rf-spin 0.75s linear infinite',
+      }} />
+      <span style={{
+        color: 'rgba(255,255,255,0.5)',
+        fontSize: 10, fontWeight: 600,
+        letterSpacing: '0.08em', textTransform: 'uppercase',
+      }}>
+        Cargando
+      </span>
+    </div>
+  )
+}
+
 export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
   const router = useRouter()
   const premios = sorteo.premios?.slice().sort((a, b) => a.lugar - b.lugar) ?? []
@@ -76,6 +105,7 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
   const [paqueteSeleccionado, setPaqueteSeleccionado] = useState<Paquete>(paquetes[1] ?? paquetes[0])
   const [premioIndex, setPremioIndex] = useState(0)
   const [visible, setVisible] = useState(true)
+  const [navigating, setNavigating] = useState(false)
   const countdown = useCountdown(sorteo.fecha_sorteo)
   const vendidos = sorteo.boletos_vendidos ?? 0
   const porcentaje = Math.round((vendidos / sorteo.total_numeros) * 100)
@@ -91,6 +121,7 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
 
   const irADetalle = (e: React.MouseEvent) => {
     e.stopPropagation()
+    setNavigating(true)
     router.push(`/sorteo/${sorteo.id}`)
   }
 
@@ -132,7 +163,8 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
   return (
     <>
       {/* ── MOBILE COMPACT (muestra 2 por fila en celular) ── */}
-      <div className="sm:hidden rounded-xl overflow-hidden border border-white/10" style={{ background: '#166534' }}>
+      <div className="sm:hidden rounded-xl overflow-hidden border border-white/10" style={{ background: '#166534', position: 'relative' }}>
+        {navigating && <NavLoadingOverlay radius={12} />}
         {/* Imagen — tappable para cambiar premio */}
         <div
           className="relative w-full"
@@ -170,6 +202,20 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
           }}>
             {formatCurrency(sorteo.precio_unitario)}
           </span>
+
+          {/* Badge valor estimado — esquina inferior derecha */}
+          {premioActual?.valor_estimado ? (
+            <span className="absolute bottom-1.5 right-1.5" style={{
+              background: 'rgba(0,0,0,0.72)',
+              border: '1px solid rgba(249,115,22,0.55)',
+              color: '#fdba74',
+              borderRadius: 4, padding: '2px 5px',
+              fontSize: 8, fontWeight: 700, lineHeight: 1,
+              backdropFilter: 'blur(4px)',
+            }}>
+              {formatCurrency(premioActual.valor_estimado)}
+            </span>
+          ) : null}
 
           {/* Contador — esquina superior derecha */}
           {totalPremios > 1 && (
@@ -328,6 +374,7 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
 
       {/* Main card */}
       <div className="card-premio" style={{ position: 'relative', zIndex: 3, marginTop: 0 }}>
+        {navigating && <NavLoadingOverlay radius={20} />}
 
         {/* ── FLOATING IMAGE (outside the card, above it) ── */}
         <div style={fadeOpacity}>

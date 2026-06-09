@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Ticket, Plus, ShoppingCart, Settings,
-  LogOut, Menu, X, ChevronRight,
+  LogOut, Menu, X, ChevronRight, MessageSquare,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/sorteos',   icon: Ticket,          label: 'Mis Sorteos' },
   { href: '/dashboard/sorteos/nuevo', icon: Plus,        label: 'Crear Sorteo' },
   { href: '/dashboard/ordenes',   icon: ShoppingCart,    label: 'Órdenes' },
+  { href: '/dashboard/preguntas', icon: MessageSquare,   label: 'Preguntas' },
   { href: '/dashboard/configuracion', icon: Settings,    label: 'Configuración' },
 ]
 
