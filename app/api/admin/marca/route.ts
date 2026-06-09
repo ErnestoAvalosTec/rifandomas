@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/supabase/guard'
 
 const BUCKET = 'brand'
+const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon'])
+const ALLOWED_EXTS  = new Set(['jpg', 'jpeg', 'png', 'webp', 'svg', 'ico'])
 
 const TIPO_TO_FIELD: Record<string, string> = {
   logo:       'logo_url',
@@ -16,6 +19,9 @@ const TIPO_TO_PATH: Record<string, string> = {
 }
 
 export async function POST(req: NextRequest) {
+  const authError = await requireAdmin()
+  if (authError) return authError
+
   const supabase = createAdminSupabaseClient() as any
   const formData = await req.formData()
   const file = formData.get('file') as File | null
@@ -25,7 +31,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Faltan parámetros' }, { status: 400 })
   }
 
-  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'png'
+  const ext = (file.name.split('.').pop() ?? '').toLowerCase()
+  if (!ALLOWED_TYPES.has(file.type) || !ALLOWED_EXTS.has(ext)) {
+    return NextResponse.json({ error: 'Solo se permiten imágenes (jpg, png, webp, svg, ico).' }, { status: 400 })
+  }
   const path = `${TIPO_TO_PATH[tipo]}.${ext}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
@@ -51,6 +60,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const authError = await requireAdmin()
+  if (authError) return authError
+
   const supabase = createAdminSupabaseClient() as any
   const { tipo } = await req.json() as { tipo: string }
 

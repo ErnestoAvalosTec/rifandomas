@@ -4,7 +4,7 @@ import { createAdminSupabaseClient } from '@/lib/supabase/server'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { sorteo_id, usuario_id, cliente_nombre, cliente_apellidos, cliente_telefono, cliente_estado, monto_total, numeros } = body
+    const { sorteo_id, cliente_nombre, cliente_apellidos, cliente_telefono, cliente_estado, monto_total, numeros } = body
 
     if (!sorteo_id || !cliente_nombre || !cliente_telefono || !numeros?.length) {
       return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
@@ -41,10 +41,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: errReserva.message }, { status: 500 })
     }
 
+    const { data: sorteoData } = await supabase
+      .from('sorteos')
+      .select('usuario_id')
+      .eq('id', sorteo_id)
+      .single()
+
     const { data: cuenta } = await supabase
       .from('cuentas_deposito')
       .select('banco, clabe, titular')
-      .eq('usuario_id', usuario_id)
+      .eq('usuario_id', sorteoData?.usuario_id)
       .eq('activo', true)
       .limit(1)
       .single()

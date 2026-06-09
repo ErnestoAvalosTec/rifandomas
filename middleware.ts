@@ -5,20 +5,20 @@ import type { NextRequest } from 'next/server'
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const isDashboard = req.nextUrl.pathname.startsWith('/dashboard')
   const isAdmin = req.nextUrl.pathname.startsWith('/admin')
 
-  if ((isDashboard || isAdmin) && !session) {
+  if ((isDashboard || isAdmin) && !user) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  if (isAdmin && session) {
+  if (isAdmin && user) {
     const { data: perfil } = await supabase
       .from('perfiles')
       .select('rol')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single()
 
     if (perfil?.rol !== 'admin') {

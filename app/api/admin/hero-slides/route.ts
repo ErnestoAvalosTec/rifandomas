@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/supabase/guard'
 
 const BUCKET = 'hero-slides'
+const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+const ALLOWED_EXTS  = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif'])
 
 export async function GET() {
+  const authError = await requireAdmin()
+  if (authError) return authError
+
   const supabase = createAdminSupabaseClient() as any
   const { data, error } = await supabase
     .from('hero_slides')
@@ -14,6 +20,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const authError = await requireAdmin()
+  if (authError) return authError
+
   const supabase = createAdminSupabaseClient() as any
   const formData = await req.formData()
   const file = formData.get('file') as File | null
@@ -22,7 +31,10 @@ export async function POST(req: NextRequest) {
 
   if (!file) return NextResponse.json({ error: 'No se recibió archivo' }, { status: 400 })
 
-  const ext = file.name.split('.').pop() ?? 'jpg'
+  const ext = (file.name.split('.').pop() ?? '').toLowerCase()
+  if (!ALLOWED_TYPES.has(file.type) || !ALLOWED_EXTS.has(ext)) {
+    return NextResponse.json({ error: 'Solo se permiten imágenes (jpg, png, webp, gif).' }, { status: 400 })
+  }
   const path = `slide-${Date.now()}.${ext}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
@@ -45,6 +57,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const authError = await requireAdmin()
+  if (authError) return authError
+
   const supabase = createAdminSupabaseClient() as any
   const body = await req.json()
   const { id, ...updates } = body
@@ -62,6 +77,9 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const authError = await requireAdmin()
+  if (authError) return authError
+
   const supabase = createAdminSupabaseClient() as any
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'Falta id' }, { status: 400 })

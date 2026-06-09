@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/supabase/guard'
 
 // Evita que Next.js cachee esta ruta como estática y sirva un estado viejo
 export const dynamic = 'force-dynamic'
 
 // GET: check the WhatsApp connection state
 export async function GET() {
+  const authError = await requireAdmin()
+  if (authError) return authError
+
   const supabase = createAdminSupabaseClient()
   const { data: config } = await (supabase as any)
     .from('whatsapp_config')

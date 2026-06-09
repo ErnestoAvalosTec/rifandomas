@@ -7,13 +7,13 @@ type PerfilRow = Database['public']['Tables']['perfiles']['Row']
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) redirect('/login')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: perfilData } = await supabase
     .from('perfiles')
     .select('rol, nombre')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single()
 
   const perfil = perfilData as Pick<PerfilRow, 'rol' | 'nombre'> | null

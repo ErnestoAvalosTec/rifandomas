@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/supabase/guard'
 
 export async function POST(req: NextRequest) {
+  const authError = await requireAdmin()
+  if (authError) return authError
+
   try {
     const { sorteoId, totalNumeros } = await req.json()
     if (!sorteoId || !totalNumeros) {

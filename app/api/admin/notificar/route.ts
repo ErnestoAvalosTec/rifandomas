@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendWhatsAppMessage } from '@/lib/whatsapp'
+import { requireAdmin } from '@/lib/supabase/guard'
 
 function buildMessage(nombre: string, sorteoNombre: string, accion: string, motivo: string): string {
   const base = `Hola ${nombre} 👋, te informamos que tu sorteo en *RifandoPlus* ha recibido una actualización.\n\n*Sorteo:* ${sorteoNombre}`
@@ -14,6 +15,9 @@ function buildMessage(nombre: string, sorteoNombre: string, accion: string, moti
 }
 
 export async function POST(req: NextRequest) {
+  const authError = await requireAdmin()
+  if (authError) return authError
+
   try {
     const { telefono, nombre, sorteoNombre, motivo, accion } = await req.json()
     if (!telefono) return NextResponse.json({ success: false, error: 'Sin teléfono' })

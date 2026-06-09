@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { Ticket, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 
 const schema = z.object({
   nombre:    z.string().min(2, 'Mínimo 2 caracteres'),
@@ -54,23 +55,33 @@ const errorStyle: React.CSSProperties = {
   marginTop: 4,
 }
 
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''
+
 export default function RegistroPage() {
   const supabase = createClient()
   const router = useRouter()
   const [cargando, setCargando] = useState(false)
   const [verPassword, setVerPassword] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const turnstileRef = useRef<TurnstileInstance>(null)
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegistroForm>({
     resolver: zodResolver(schema),
   })
 
   const onSubmit = async (data: RegistroForm) => {
+    if (TURNSTILE_SITE_KEY && !captchaToken) {
+      toast.error('Completa la verificación de seguridad.')
+      return
+    }
+
     setCargando(true)
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
+        captchaToken: captchaToken ?? undefined,
         data: {
           nombre: data.nombre,
           apellidos: data.apellidos,
@@ -82,6 +93,8 @@ export default function RegistroPage() {
 
     if (authError || !authData.user) {
       toast.error(authError?.message ?? 'Error al crear la cuenta.')
+      turnstileRef.current?.reset()
+      setCaptchaToken(null)
       setCargando(false)
       return
     }
@@ -256,22 +269,36 @@ export default function RegistroPage() {
               {errors.confirm && <p className="font-body" style={errorStyle}>{errors.confirm.message}</p>}
             </div>
 
+            {/* CAPTCHA */}
+            {TURNSTILE_SITE_KEY && (
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={TURNSTILE_SITE_KEY}
+                  onSuccess={(token) => setCaptchaToken(token)}
+                  onExpire={() => setCaptchaToken(null)}
+                  onError={() => setCaptchaToken(null)}
+                  options={{ theme: 'dark' }}
+                />
+              </div>
+            )}
+
             {/* Submit */}
             <button
               type="submit"
-              disabled={cargando}
+              disabled={cargando || (!!TURNSTILE_SITE_KEY && !captchaToken)}
               className="font-ui"
               style={{
                 width: '100%',
                 padding: '12px 0',
-                background: cargando ? 'rgba(34,197,94,0.6)' : '#22C55E',
+                background: (cargando || (!!TURNSTILE_SITE_KEY && !captchaToken)) ? 'rgba(34,197,94,0.6)' : '#22C55E',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 10,
                 fontSize: 14,
                 fontWeight: 700,
                 letterSpacing: '0.04em',
-                cursor: cargando ? 'not-allowed' : 'pointer',
+                cursor: (cargando || (!!TURNSTILE_SITE_KEY && !captchaToken)) ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
