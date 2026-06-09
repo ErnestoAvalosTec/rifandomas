@@ -144,7 +144,7 @@ function LoginModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               ref={turnstileRef}
               siteKey={TURNSTILE_SITE_KEY}
               onSuccess={setCaptchaToken}
-              options={{ size: 'invisible' }}
+              onExpire={() => setCaptchaToken(null)}
             />
           )}
 
