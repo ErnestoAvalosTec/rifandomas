@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -9,6 +9,9 @@ import { z } from 'zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { Ticket, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''
 
 const schema = z.object({
   email: z.string().email('Correo inválido'),
@@ -35,6 +38,8 @@ export default function LoginPage() {
   const router = useRouter()
   const [cargando, setCargando] = useState(false)
   const [verPassword, setVerPassword] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const turnstileRef = useRef<TurnstileInstance>(null)
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
     resolver: zodResolver(schema),
@@ -42,12 +47,20 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginForm) => {
     setCargando(true)
+
+    const options = TURNSTILE_SITE_KEY && captchaToken
+      ? { options: { captchaToken } }
+      : {}
+
     const { error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
+      ...options,
     })
 
     if (error) {
+      turnstileRef.current?.reset()
+      setCaptchaToken(null)
       if (error.message?.toLowerCase().includes('email not confirmed')) {
         toast.error('Confirma tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.')
       } else {
@@ -168,22 +181,32 @@ export default function LoginPage() {
               )}
             </div>
 
+            {/* Turnstile invisible */}
+            {TURNSTILE_SITE_KEY && (
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={TURNSTILE_SITE_KEY}
+                onSuccess={setCaptchaToken}
+                options={{ size: 'invisible' }}
+              />
+            )}
+
             {/* Submit */}
             <button
               type="submit"
-              disabled={cargando}
+              disabled={cargando || (!!TURNSTILE_SITE_KEY && !captchaToken)}
               className="font-ui"
               style={{
                 width: '100%',
                 padding: '12px 0',
-                background: cargando ? 'rgba(34,197,94,0.6)' : '#22C55E',
+                background: (cargando || (!!TURNSTILE_SITE_KEY && !captchaToken)) ? 'rgba(34,197,94,0.6)' : '#22C55E',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 10,
                 fontSize: 14,
                 fontWeight: 700,
                 letterSpacing: '0.04em',
-                cursor: cargando ? 'not-allowed' : 'pointer',
+                cursor: (cargando || (!!TURNSTILE_SITE_KEY && !captchaToken)) ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

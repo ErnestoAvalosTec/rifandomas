@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -8,6 +8,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import Image from 'next/image'
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''
 import { Menu, X, User, Ticket, Eye, EyeOff, Loader2, MapPin, Phone, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,6 +49,8 @@ function LoginModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const router = useRouter()
   const [cargando, setCargando] = useState(false)
   const [verPassword, setVerPassword] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const turnstileRef = useRef<TurnstileInstance>(null)
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -53,12 +58,20 @@ function LoginModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 
   const onSubmit = async (data: LoginForm) => {
     setCargando(true)
+
+    const options = TURNSTILE_SITE_KEY && captchaToken
+      ? { options: { captchaToken } }
+      : {}
+
     const { error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
+      ...options,
     })
 
     if (error) {
+      turnstileRef.current?.reset()
+      setCaptchaToken(null)
       toast.error('Correo o contraseña incorrectos.')
       setCargando(false)
       return
@@ -81,7 +94,7 @@ function LoginModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v && !cargando) { reset(); onClose() } }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v && !cargando) { reset(); setCaptchaToken(null); onClose() } }}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="font-title text-3xl">
@@ -126,7 +139,21 @@ function LoginModal({ open, onClose }: { open: boolean; onClose: () => void }) {
             {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
           </div>
 
-          <Button type="submit" size="lg" className="w-full" disabled={cargando}>
+          {TURNSTILE_SITE_KEY && (
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={TURNSTILE_SITE_KEY}
+              onSuccess={setCaptchaToken}
+              options={{ size: 'invisible' }}
+            />
+          )}
+
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            disabled={cargando || (!!TURNSTILE_SITE_KEY && !captchaToken)}
+          >
             {cargando
               ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Ingresando...</>
               : 'Ingresar'}
