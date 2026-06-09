@@ -2,14 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Ticket, Plus, ShoppingCart, Settings,
   LogOut, Menu, X, ChevronRight,
 } from 'lucide-react'
-import { toast } from 'sonner'
 
 const NAV_ITEMS = [
   { href: '/dashboard',           icon: LayoutDashboard, label: 'Inicio',        exact: true },
@@ -25,15 +23,11 @@ interface SidebarProps {
 
 export function Sidebar({ userName }: SidebarProps) {
   const pathname = usePathname()
-  const router = useRouter()
-  const supabase = createClient()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const logout = async () => {
-    await supabase.auth.signOut()
-    toast.success('Sesión cerrada')
-    router.push('/')
-    router.refresh()
+    await fetch('/api/auth/logout', { method: 'POST' })
+    window.location.href = '/login'
   }
 
   const isActive = (item: typeof NAV_ITEMS[0]) =>

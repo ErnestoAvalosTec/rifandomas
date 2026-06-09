@@ -95,13 +95,15 @@ export function AdminSidebar({ userName, logoUrl }: AdminSidebarProps) {
         {userName && (
           <p className="text-xs text-brand-muted font-ui px-3 mb-2 truncate">{userName}</p>
         )}
-        <Link
-          href="/login"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-ui font-medium text-brand-muted hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
-        >
-          <LogOut className="w-4 h-4" />
-          Cerrar sesión
-        </Link>
+        <form action="/api/auth/logout" method="POST">
+          <button
+            type="submit"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-ui font-medium text-brand-muted hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+          >
+            <LogOut className="w-4 h-4" />
+            Cerrar sesión
+          </button>
+        </form>
       </div>
     </nav>
   )
