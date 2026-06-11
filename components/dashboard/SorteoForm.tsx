@@ -72,7 +72,13 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
   const router = useRouter()
   const [guardando, setGuardando] = useState(false)
   const [esLoteria, setEsLoteria] = useState<boolean>((sorteo as any)?.es_loteria ?? false)
-  const [digitosLoteria, setDigitosLoteria] = useState<number>(3)
+  const [digitosLoteria, setDigitosLoteria] = useState<number>(() => {
+    if ((sorteo as any)?.es_loteria && sorteo?.total_numeros) {
+      const d = Math.round(Math.log10(sorteo.total_numeros))
+      if (d === 2 || d === 3 || d === 4) return d
+    }
+    return 3
+  })
   const [cuentasExistentes, setCuentasExistentes] = useState<CuentaExistente[]>([])
   const [cuentaSeleccionadaId, setCuentaSeleccionadaId] = useState<string | null>(null)
   const [uploading, setUploading] = useState<Record<number, boolean>>({})

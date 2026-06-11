@@ -11,6 +11,7 @@ type EstatusBoleto = Database['public']['Tables']['boletos']['Row']['estatus']
 interface SelectorNumerosProps {
   sorteoId: string
   totalNumeros: number
+  esLoteria?: boolean
   seleccionados: string[]
   onSeleccionChange: (numeros: string[]) => void
   maxSeleccion: number
@@ -19,6 +20,7 @@ interface SelectorNumerosProps {
 export function SelectorNumeros({
   sorteoId,
   totalNumeros,
+  esLoteria = false,
   seleccionados,
   onSeleccionChange,
   maxSeleccion,
@@ -27,6 +29,8 @@ export function SelectorNumeros({
   const [boletos, setBoletos] = useState<Map<string, EstatusBoleto>>(new Map())
   const [cargando, setCargando] = useState(true)
   const [busqueda, setBusqueda] = useState('')
+
+  const digits = esLoteria ? Math.round(Math.log10(totalNumeros)) : String(totalNumeros).length
 
   useEffect(() => {
     const cargar = async () => {
@@ -40,15 +44,15 @@ export function SelectorNumeros({
       if (data) {
         data.forEach((b: { numero: string; estatus: EstatusBoleto }) => mapa.set(b.numero, b.estatus))
       }
-      for (let i = 1; i <= totalNumeros; i++) {
-        const num = String(i).padStart(4, '0')
+      for (let i = 0; i < totalNumeros; i++) {
+        const num = String(esLoteria ? i : i + 1).padStart(digits, '0')
         if (!mapa.has(num)) mapa.set(num, 'disponible')
       }
       setBoletos(mapa)
       setCargando(false)
     }
     cargar()
-  }, [sorteoId, totalNumeros])
+  }, [sorteoId, totalNumeros, esLoteria, digits])
 
   useEffect(() => {
     const channel = supabase
@@ -101,9 +105,8 @@ export function SelectorNumeros({
     )
   }
 
-  const digits = String(totalNumeros).length
   const numeros = Array.from({ length: totalNumeros }, (_, i) =>
-    String(i + 1).padStart(digits, '0')
+    String(esLoteria ? i : i + 1).padStart(digits, '0')
   )
 
   const search = busqueda.trim()

@@ -326,6 +326,7 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
                 <SelectorNumeros
                   sorteoId={sorteo.id}
                   totalNumeros={sorteo.total_numeros}
+                  esLoteria={!!(sorteo as any).es_loteria}
                   seleccionados={numerosSeleccionados}
                   onSeleccionChange={setNumerosSeleccionados}
                   maxSeleccion={cantidad}
