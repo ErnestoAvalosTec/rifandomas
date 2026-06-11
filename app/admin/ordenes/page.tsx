@@ -3,8 +3,15 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { MultiSelectFilter } from '@/components/ui/multi-select-filter'
 import { formatCurrency } from '@/lib/utils'
 import { Search } from 'lucide-react'
+
+const ESTATUS_OPTIONS = [
+  { value: 'pendiente', label: 'Pendiente' },
+  { value: 'pagado', label: 'Pagado' },
+  { value: 'cancelado', label: 'Cancelado' },
+]
 
 interface Orden {
   id: string
@@ -22,7 +29,8 @@ interface Orden {
 export default function AdminOrdenesPage() {
   const [ordenes, setOrdenes] = useState<Orden[]>([])
   const [busqueda, setBusqueda] = useState('')
-  const [filtroEstatus, setFiltroEstatus] = useState<string>('todos')
+  const [filtrosEstatus, setFiltrosEstatus] = useState<string[]>([])
+  const [filtrosSorteo, setFiltrosSorteo] = useState<string[]>([])
   const [cargando, setCargando] = useState(true)
 
   useEffect(() => {
@@ -36,18 +44,29 @@ export default function AdminOrdenesPage() {
     cargar()
   }, [])
 
+  const sorteoOptions = useMemo(() => {
+    const map = new Map<string, string>()
+    ordenes.forEach((o) => { if (o.sorteos) map.set(o.sorteos.id, o.sorteos.nombre) })
+    return Array.from(map, ([value, label]) => ({ value, label }))
+  }, [ordenes])
+
   const ordenesFiltradas = useMemo(() => {
     const q = busqueda.toLowerCase().trim()
     return ordenes.filter((o) => {
-      const matchEstatus = filtroEstatus === 'todos' || o.estatus === filtroEstatus
-      if (!matchEstatus) return false
+      const matchEstatus = filtrosEstatus.length === 0 || filtrosEstatus.includes(o.estatus)
+      const matchSorteo = filtrosSorteo.length === 0 || (!!o.sorteos && filtrosSorteo.includes(o.sorteos.id))
+      if (!matchEstatus || !matchSorteo) return false
       if (!q) return true
       const nombreCliente = `${o.cliente_nombre} ${o.cliente_apellidos}`.toLowerCase()
       const nombreSorteo = (o.sorteos?.nombre ?? '').toLowerCase()
-      const idSorteo = (o.sorteos?.id ?? '').toLowerCase()
-      return nombreCliente.includes(q) || nombreSorteo.includes(q) || idSorteo.includes(q)
+      return (
+        nombreCliente.includes(q) ||
+        nombreSorteo.includes(q) ||
+        o.cliente_telefono.toLowerCase().includes(q) ||
+        o.id.toLowerCase().includes(q)
+      )
     })
-  }, [ordenes, busqueda, filtroEstatus])
+  }, [ordenes, busqueda, filtrosEstatus, filtrosSorteo])
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -56,26 +75,31 @@ export default function AdminOrdenesPage() {
         <p className="text-brand-muted font-body text-sm mt-1">{ordenes.length} órdenes en total</p>
       </div>
 
-      <div className="flex gap-3 mb-6 flex-wrap">
-        <div className="relative flex-1 min-w-[220px]">
+      <div className="flex flex-col gap-3 mb-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex gap-2 flex-wrap">
+          <MultiSelectFilter
+            options={ESTATUS_OPTIONS}
+            selected={filtrosEstatus}
+            onChange={setFiltrosEstatus}
+            allLabel="Todos los estatus"
+          />
+          {sorteoOptions.length > 1 && (
+            <MultiSelectFilter
+              options={sorteoOptions}
+              selected={filtrosSorteo}
+              onChange={setFiltrosSorteo}
+              allLabel="Todos los sorteos"
+            />
+          )}
+        </div>
+        <div className="relative flex-1 lg:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted" />
           <Input
-            placeholder="Buscar por cliente, sorteo o ID de sorteo..."
+            placeholder="Buscar por cliente, sorteo, teléfono o folio..."
             className="pl-9"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
-        </div>
-        <div className="flex gap-2">
-          {['todos', 'pendiente', 'pagado', 'cancelado'].map((e) => (
-            <button
-              key={e}
-              onClick={() => setFiltroEstatus(e)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-ui capitalize cursor-pointer transition-colors ${filtroEstatus === e ? 'bg-primary text-white' : 'bg-brand-card border border-brand-border text-brand-muted hover:text-white'}`}
-            >
-              {e}
-            </button>
-          ))}
         </div>
       </div>
 
