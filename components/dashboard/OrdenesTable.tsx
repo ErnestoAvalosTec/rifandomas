@@ -10,12 +10,13 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { MultiSelectFilter } from '@/components/ui/multi-select-filter'
 import { Input } from '@/components/ui/input'
 import { formatCurrency } from '@/lib/utils'
-import { Download, Clock, MoreHorizontal, CheckCircle2, XCircle, MessageCircle, User, Search, MapPin, Phone, Ticket, Hash } from 'lucide-react'
+import { Download, Clock, MoreHorizontal, CheckCircle2, XCircle, MessageCircle, User, Search, MapPin, Phone, Ticket, Hash, Tag } from 'lucide-react'
 import { formatDistanceToNow, parseISO, differenceInHours } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 interface Pedido {
   id: string
+  referencia: string | null
   cliente_nombre: string
   cliente_apellidos: string
   cliente_telefono: string
@@ -143,7 +144,8 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
         nombreCliente.includes(q) ||
         nombreSorteo.includes(q) ||
         p.cliente_telefono.toLowerCase().includes(q) ||
-        p.id.toLowerCase().includes(q)
+        p.id.toLowerCase().includes(q) ||
+        (p.referencia ?? '').toLowerCase().includes(q)
       )
     })
   }, [pedidos, filtrosEstatus, filtrosSorteo, busqueda])
@@ -174,7 +176,7 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
           <div className="relative flex-1 lg:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted" />
             <Input
-              placeholder="Buscar por cliente, sorteo, teléfono o folio..."
+              placeholder="Buscar por cliente, sorteo, teléfono, folio o referencia..."
               className="pl-9"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
@@ -399,6 +401,16 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
                   )
                 })()}
               </div>
+
+              {/* Referencia de transferencia */}
+              {clienteModal.referencia && (
+                <div className="flex items-center justify-between gap-2 pt-1">
+                  <p className="flex items-center gap-1 text-[11px] text-brand-muted font-ui uppercase tracking-wide">
+                    <Tag className="w-3 h-3" />Referencia
+                  </p>
+                  <p className="text-brand-gold font-ui font-semibold text-sm tracking-widest">{clienteModal.referencia}</p>
+                </div>
+              )}
 
               {/* Folio */}
               <div className="flex items-center justify-between gap-2 pt-1">

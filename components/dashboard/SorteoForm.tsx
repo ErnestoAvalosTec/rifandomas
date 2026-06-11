@@ -11,10 +11,13 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Trash2, Loader2, ImagePlus, X, Banknote } from 'lucide-react'
+import { Plus, Trash2, Loader2, ImagePlus, X, Banknote, Image as ImageIcon, Upload } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { CATEGORIAS } from '@/lib/utils'
 import type { Database } from '@/types/database.types'
 
 type SorteoRow = Database['public']['Tables']['sorteos']['Row']
+type ImagenPredeterminada = Database['public']['Tables']['imagenes_predeterminadas']['Row']
 
 const DESCRIPCION_MAX = 80
 const MAX_FOTOS = 6
@@ -23,7 +26,7 @@ const premioSchema = z.object({
   nombre: z.string().min(2),
   descripcion: z.string().max(DESCRIPCION_MAX, `Máximo ${DESCRIPCION_MAX} caracteres`).optional(),
   valor_estimado: z.coerce.number().min(0).optional(),
-  imagen_url: z.string().optional(),
+  imagen_url: z.string().min(1, 'Selecciona una portada'),
   intercambiable_efectivo: z.boolean().default(false),
   fotos_urls: z.array(z.string()).default([]),
 })
@@ -82,6 +85,10 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
   const [cuentasExistentes, setCuentasExistentes] = useState<CuentaExistente[]>([])
   const [cuentaSeleccionadaId, setCuentaSeleccionadaId] = useState<string | null>(null)
   const [uploading, setUploading] = useState<Record<number, boolean>>({})
+  const [uploadingPortada, setUploadingPortada] = useState<Record<number, boolean>>({})
+  const [galeriaAbierta, setGaleriaAbierta] = useState<number | null>(null)
+  const [categoriaGaleria, setCategoriaGaleria] = useState<string>(CATEGORIAS[0])
+  const [imagenesGaleria, setImagenesGaleria] = useState<ImagenPredeterminada[]>([])
 
   const isEdit = !!sorteo
 
@@ -125,6 +132,20 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
     cargarCuentas()
   }, [userId])
 
+  const cargarGaleria = async (categoria: string) => {
+    const { data } = await sb
+      .from('imagenes_predeterminadas')
+      .select('*')
+      .eq('categoria', categoria)
+      .eq('activo', true)
+      .order('orden', { ascending: true })
+    setImagenesGaleria(data ?? [])
+  }
+
+  useEffect(() => {
+    if (galeriaAbierta !== null) cargarGaleria(categoriaGaleria)
+  }, [galeriaAbierta, categoriaGaleria])
+
   const toggleLoteria = (checked: boolean) => {
     setEsLoteria(checked)
     if (checked) setValue('total_numeros', Math.pow(10, digitosLoteria))
@@ -157,10 +178,6 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
     if (nuevasUrls.length) {
       const updated = [...current, ...nuevasUrls]
       setValue(`premios.${premioIndex}.fotos_urls`, updated, { shouldDirty: true })
-      // Primera foto = portada de la tarjeta
-      if (!watch(`premios.${premioIndex}.imagen_url`) || current.length === 0) {
-        setValue(`premios.${premioIndex}.imagen_url`, updated[0])
-      }
       toast.success(`${nuevasUrls.length} foto${nuevasUrls.length > 1 ? 's' : ''} agregada${nuevasUrls.length > 1 ? 's' : ''}`)
     }
 
@@ -169,18 +186,29 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
 
   const removeFoto = (premioIndex: number, fotoIndex: number) => {
     const current = watch(`premios.${premioIndex}.fotos_urls`) ?? []
-    const removedUrl = current[fotoIndex]
     const updated = current.filter((_, j) => j !== fotoIndex)
     setValue(`premios.${premioIndex}.fotos_urls`, updated, { shouldDirty: true })
-    // Si era la portada, actualizar con la siguiente disponible
-    if (watch(`premios.${premioIndex}.imagen_url`) === removedUrl) {
-      setValue(`premios.${premioIndex}.imagen_url`, updated[0] ?? '')
-    }
   }
 
-  const setPortada = (premioIndex: number, url: string) => {
-    setValue(`premios.${premioIndex}.imagen_url`, url)
-    toast.success('Foto establecida como portada')
+  const seleccionarPortadaGaleria = (premioIndex: number, url: string) => {
+    setValue(`premios.${premioIndex}.imagen_url`, url, { shouldDirty: true, shouldValidate: true })
+    setGaleriaAbierta(null)
+    toast.success('Portada seleccionada')
+  }
+
+  const uploadPortadaPersonalizada = async (file: File, premioIndex: number) => {
+    setUploadingPortada((prev) => ({ ...prev, [premioIndex]: true }))
+    const ext = file.name.split('.').pop()
+    const path = `premios/${userId}/portada/${Date.now()}_${Math.random().toString(36).slice(2, 7)}.${ext}`
+    const { data, error } = await supabase.storage.from('premios').upload(path, file, { upsert: true })
+    if (error) {
+      toast.error('Error al subir la imagen')
+    } else {
+      const { data: { publicUrl } } = supabase.storage.from('premios').getPublicUrl(data.path)
+      setValue(`premios.${premioIndex}.imagen_url`, publicUrl, { shouldDirty: true, shouldValidate: true })
+      toast.success('Portada actualizada')
+    }
+    setUploadingPortada((prev) => ({ ...prev, [premioIndex]: false }))
   }
 
   const onSubmit = async (values: FormValues) => {
@@ -386,6 +414,7 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
           const fotosUrls = watch(`premios.${i}.fotos_urls`) ?? []
           const portadaUrl = watch(`premios.${i}.imagen_url`) ?? ''
           const isUploading = uploading[i] ?? false
+          const isUploadingPortada = uploadingPortada[i] ?? false
 
           return (
             <div key={field.id} className="p-4 rounded-xl border border-brand-border/60 bg-brand-border/10 space-y-4">
@@ -451,13 +480,67 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
                 </div>
               </label>
 
-              {/* Fotos del premio */}
+              {/* Portada */}
+              <div className="space-y-2">
+                <Label className="text-xs">Portada</Label>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="relative w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-brand-card"
+                    style={{ border: '2px solid rgba(255,255,255,0.08)' }}
+                  >
+                    {portadaUrl ? (
+                      <Image
+                        src={portadaUrl}
+                        fill
+                        sizes="96px"
+                        className="object-cover"
+                        alt={`Portada del premio ${i + 1}`}
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon className="w-6 h-6 text-brand-muted" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2 flex-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 justify-center"
+                      onClick={() => setGaleriaAbierta(i)}
+                    >
+                      <ImageIcon className="w-3.5 h-3.5" />Elegir de galería
+                    </Button>
+                    <label className="flex items-center justify-center gap-1.5 h-9 px-3 rounded-lg border border-brand-border bg-brand-card cursor-pointer hover:border-primary/50 transition-colors text-xs text-brand-muted font-ui">
+                      {isUploadingPortada
+                        ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        : <Upload className="w-3.5 h-3.5" />
+                      }
+                      {isUploadingPortada ? 'Subiendo...' : 'Subir personalizada'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        disabled={isUploadingPortada}
+                        onChange={(e) => { if (e.target.files?.[0]) uploadPortadaPersonalizada(e.target.files[0], i) }}
+                      />
+                    </label>
+                  </div>
+                </div>
+                {errors.premios?.[i]?.imagen_url && (
+                  <p className="text-xs text-red-400">{errors.premios[i]?.imagen_url?.message}</p>
+                )}
+              </div>
+
+              {/* Fotos reales del producto */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs">
-                    Fotos del premio{' '}
+                    Fotos reales del producto{' '}
                     <span className="text-brand-muted font-normal">
-                      ({fotosUrls.length}/{MAX_FOTOS})
+                      (opcional, {fotosUrls.length}/{MAX_FOTOS})
                     </span>
                   </Label>
                   {fotosUrls.length < MAX_FOTOS && (
@@ -481,55 +564,38 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
 
                 {fotosUrls.length > 0 ? (
                   <div className="grid grid-cols-3 gap-2">
-                    {fotosUrls.map((url, fIdx) => {
-                      const esPortada = url === portadaUrl
-                      return (
-                        <div key={fIdx} className="relative group">
-                          <div
-                            className="relative aspect-square rounded-lg overflow-hidden cursor-pointer"
-                            style={{
-                              border: esPortada
-                                ? '2px solid #22C55E'
-                                : '2px solid rgba(255,255,255,0.08)',
-                            }}
-                            onClick={() => !esPortada && setPortada(i, url)}
-                            title={esPortada ? 'Portada de la tarjeta' : 'Clic para usar como portada'}
-                          >
-                            <Image
-                              src={url}
-                              fill
-                              sizes="120px"
-                              className="object-cover"
-                              alt={`Premio ${i + 1} foto ${fIdx + 1}`}
-                              unoptimized
-                            />
-                            {esPortada && (
-                              <div
-                                className="absolute bottom-0 left-0 right-0 text-center py-0.5"
-                                style={{ background: 'rgba(34,197,94,0.85)', fontSize: 9, fontWeight: 700, color: '#fff' }}
-                              >
-                                PORTADA
-                              </div>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeFoto(i, fIdx)}
-                            className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                            style={{ background: '#EF4444' }}
-                            title="Eliminar foto"
-                          >
-                            <X className="w-3 h-3 text-white" />
-                          </button>
+                    {fotosUrls.map((url, fIdx) => (
+                      <div key={fIdx} className="relative group">
+                        <div
+                          className="relative aspect-square rounded-lg overflow-hidden"
+                          style={{ border: '2px solid rgba(255,255,255,0.08)' }}
+                        >
+                          <Image
+                            src={url}
+                            fill
+                            sizes="120px"
+                            className="object-cover"
+                            alt={`Premio ${i + 1} foto ${fIdx + 1}`}
+                            unoptimized
+                          />
                         </div>
-                      )
-                    })}
+                        <button
+                          type="button"
+                          onClick={() => removeFoto(i, fIdx)}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                          style={{ background: '#EF4444' }}
+                          title="Eliminar foto"
+                        >
+                          <X className="w-3 h-3 text-white" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div
                     className="rounded-xl p-4 text-center text-xs text-brand-muted border-2 border-dashed border-brand-border leading-relaxed"
                   >
-                    Sin fotos — la primera foto que subas se usará como imagen principal de la tarjeta del sorteo
+                    Fotos opcionales del producto real para mostrar en la galería pública del sorteo
                   </div>
                 )}
               </div>
@@ -652,6 +718,48 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
           ) : isEdit ? 'Actualizar Sorteo' : adminMode ? 'Publicar Sorteo' : 'Enviar a Revisión'}
         </Button>
       </div>
+
+      {/* ── Selector de portada predeterminada ── */}
+      <Dialog open={galeriaAbierta !== null} onOpenChange={(open) => !open && setGaleriaAbierta(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Elegir portada de la galería</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Categoría</Label>
+              <select
+                value={categoriaGaleria}
+                onChange={(e) => setCategoriaGaleria(e.target.value)}
+                className="flex h-10 w-full rounded-lg border border-brand-border bg-brand-border/30 px-3 py-2 text-sm text-white font-body focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary transition-colors duration-200"
+              >
+                {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+
+            {imagenesGaleria.length > 0 ? (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {imagenesGaleria.map((img) => (
+                  <button
+                    key={img.id}
+                    type="button"
+                    onClick={() => galeriaAbierta !== null && seleccionarPortadaGaleria(galeriaAbierta, img.url)}
+                    className="relative aspect-square rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                    style={{ border: '2px solid rgba(255,255,255,0.08)' }}
+                    title={img.nombre ?? 'Seleccionar'}
+                  >
+                    <Image src={img.url} fill sizes="120px" className="object-cover" alt={img.nombre ?? 'Imagen predeterminada'} unoptimized />
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl p-6 text-center text-xs text-brand-muted border-2 border-dashed border-brand-border leading-relaxed">
+                No hay imágenes disponibles en esta categoría todavía.
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </form>
   )
 }

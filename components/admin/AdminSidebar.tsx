@@ -5,9 +5,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { useOrdenesBadge } from '@/hooks/useOrdenesBadge'
 import {
   Ticket, LayoutDashboard, Users, LogOut, ShoppingCart,
   ImageIcon, Palette, MessageCircle, Menu, X, ChevronRight, MessageSquare,
+  Images,
 } from 'lucide-react'
 
 const ADMIN_NAV = [
@@ -17,6 +19,7 @@ const ADMIN_NAV = [
   { href: '/admin/usuarios',     label: 'Usuarios',   icon: Users },
   { href: '/admin/preguntas',    label: 'Preguntas',  icon: MessageSquare },
   { href: '/admin/hero',         label: 'Hero',       icon: ImageIcon },
+  { href: '/admin/portadas',     label: 'Portadas',   icon: Images },
   { href: '/admin/marca',        label: 'Marca',      icon: Palette },
   { href: '/admin/whatsapp',     label: 'WhatsApp',   icon: MessageCircle },
 ]
@@ -29,6 +32,7 @@ interface AdminSidebarProps {
 export function AdminSidebar({ userName, logoUrl }: AdminSidebarProps) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const badgeOrdenes = useOrdenesBadge('/admin/ordenes')
 
   const isActive = (item: typeof ADMIN_NAV[0]) =>
     item.exact ? pathname === item.href : pathname.startsWith(item.href)
@@ -84,6 +88,11 @@ export function AdminSidebar({ userName, logoUrl }: AdminSidebarProps) {
               >
                 <Icon className={cn('w-4 h-4 flex-shrink-0', active ? 'text-primary' : '')} />
                 <span className="flex-1">{item.label}</span>
+                {item.href === '/admin/ordenes' && badgeOrdenes > 0 && (
+                  <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-brand-red text-white text-[11px] font-bold leading-none">
+                    {badgeOrdenes > 99 ? '99+' : badgeOrdenes}
+                  </span>
+                )}
                 {active && <ChevronRight className="w-3 h-3" />}
               </Link>
             </li>

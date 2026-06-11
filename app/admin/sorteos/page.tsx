@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { formatDate, formatCurrency } from '@/lib/utils'
+import { formatDate, formatCurrency, CATEGORIAS } from '@/lib/utils'
 import {
   CheckCircle2, XCircle, ChevronDown, ChevronUp, Pencil,
   PauseCircle, Trash2, PlayCircle, Plus, Loader2, Tag, MoreHorizontal,
@@ -33,19 +33,6 @@ interface PremioLocal {
 }
 
 const FILTROS: Estatus[] = ['pendiente', 'activo', 'pausado', 'rechazado', 'finalizado', 'eliminado']
-
-const CATEGORIAS = [
-  'Vehículos',
-  'Motocicletas',
-  'Electrónica',
-  'Efectivo',
-  'Electrodomésticos',
-  'Viajes',
-  'Joyería',
-  'Deportes',
-  'Inmuebles',
-  'Otro',
-]
 
 const LUGAR_LABEL: Record<number, string> = { 1: '1er Premio', 2: '2do Premio', 3: '3er Premio' }
 
@@ -149,8 +136,17 @@ export default function AdminSorteosPage() {
     if (!accionPendiente) return
     if (!motivoAccion.trim()) { toast.error('Escribe el motivo'); return }
     const sorteo = sorteos.find(s => s.id === accionPendiente.id)
-    const { error } = await sb.from('sorteos').update({ estatus: accionPendiente.tipo, motivo_rechazo: motivoAccion }).eq('id', accionPendiente.id)
-    if (error) { toast.error('Error al aplicar la acción'); return }
+    if (accionPendiente.tipo === 'eliminado') {
+      const res = await fetch('/api/admin/eliminar-sorteo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sorteoId: accionPendiente.id, motivo: motivoAccion }),
+      })
+      if (!res.ok) { toast.error('Error al aplicar la acción'); return }
+    } else {
+      const { error } = await sb.from('sorteos').update({ estatus: accionPendiente.tipo, motivo_rechazo: motivoAccion }).eq('id', accionPendiente.id)
+      if (error) { toast.error('Error al aplicar la acción'); return }
+    }
     if (sorteo?.perfiles?.telefono) {
       await fetch('/api/admin/notificar', {
         method: 'POST',

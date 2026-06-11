@@ -60,6 +60,7 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
   const [enviando, setEnviando] = useState(false)
   const [pedidoExitoso, setPedidoExitoso] = useState(false)
   const [datosCliente, setDatosCliente] = useState<ClienteForm | null>(null)
+  const [referenciaPedido, setReferenciaPedido] = useState<string | null>(null)
 
   const monto = cantidad * sorteo.precio_unitario
 
@@ -80,6 +81,7 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
     setNumerosSeleccionados([])
     setPedidoExitoso(false)
     setDatosCliente(null)
+    setReferenciaPedido(null)
     onClose()
   }
 
@@ -116,7 +118,8 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
       }
       if (!res.ok) throw new Error(json.error ?? 'No se pudo crear el pedido.')
 
-      const { pedidoId, cuenta } = json
+      const { pedidoId, referencia, cuenta } = json
+      setReferenciaPedido(referencia ?? null)
       await fetch('/api/whatsapp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -131,6 +134,7 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
           clabe: cuenta?.clabe ?? 'Ver en plataforma',
           titular: cuenta?.titular ?? 'Ver en plataforma',
           pedidoId,
+          referencia,
         }),
       })
       setPedidoExitoso(true)
@@ -155,9 +159,20 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
             <CheckCircle2 className="w-16 h-16 text-brand-green mx-auto mb-4" />
             <h2 className="font-title text-4xl text-white mb-2">¡PEDIDO REGISTRADO!</h2>
             <p className="text-brand-muted font-body mb-2">Revisa tu WhatsApp — te enviamos los datos de pago.</p>
-            <p className="text-xs text-brand-muted font-body mb-6">
+            <p className="text-xs text-brand-muted font-body mb-4">
               Tienes <strong className="text-brand-gold">48 horas</strong> para realizar la transferencia.
             </p>
+            {referenciaPedido && (
+              <div
+                className="inline-flex flex-col items-center gap-1 mx-auto mb-6 px-4 py-3 rounded-xl border"
+                style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.1)' }}
+              >
+                <span className="text-[11px] text-brand-muted font-ui uppercase tracking-wide">
+                  Usa esta referencia al transferir
+                </span>
+                <span className="font-title text-2xl text-primary tracking-widest">{referenciaPedido}</span>
+              </div>
+            )}
             <Button onClick={handleClose} size="lg" className="w-full">Cerrar</Button>
           </div>
         ) : (

@@ -13,9 +13,14 @@ export async function POST(request: Request) {
     clabe: string
     titular: string
     pedidoId: string
+    referencia?: string | null
   }
 
-  const { telefono, nombre, sorteoNombre, numeros, fechaSorteo, montoTotal, banco, clabe, titular, pedidoId } = body
+  const { telefono, nombre, sorteoNombre, numeros, fechaSorteo, montoTotal, banco, clabe, titular, pedidoId, referencia } = body
+
+  const lineaReferencia = referencia
+    ? `\n📝 Concepto/Referencia: *${referencia}*\n_Usa esta referencia al hacer tu transferencia para que podamos identificar tu pago más rápido._\n`
+    : ''
 
   const mensaje = `Hola ${nombre} 👋, tu pedido en *Rifando+* fue registrado 🎉
 
@@ -28,7 +33,7 @@ Realiza tu transferencia en las próximas *48 horas*:
 🏦 Banco: ${banco}
 💳 CLABE: ${clabe}
 👤 Titular: ${titular}
-
+${lineaReferencia}
 ⚠️ Sin pago en 48 hrs los números se liberan automáticamente.
 ¡Mucha suerte! 🍀 — Rifando+`.trim()
 

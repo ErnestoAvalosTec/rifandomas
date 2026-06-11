@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { useOrdenesBadge } from '@/hooks/useOrdenesBadge'
 import {
   LayoutDashboard, Ticket, Plus, ShoppingCart, Settings,
   LogOut, Menu, X, ChevronRight, MessageSquare,
@@ -25,6 +26,7 @@ interface SidebarProps {
 export function Sidebar({ userName }: SidebarProps) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const badgeOrdenes = useOrdenesBadge('/dashboard/ordenes')
 
   const logout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -74,6 +76,11 @@ export function Sidebar({ userName }: SidebarProps) {
               >
                 <Icon className={cn('w-4 h-4 flex-shrink-0', active ? 'text-primary' : '')} />
                 <span className="flex-1">{item.label}</span>
+                {item.href === '/dashboard/ordenes' && badgeOrdenes > 0 && (
+                  <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-brand-red text-white text-[11px] font-bold leading-none">
+                    {badgeOrdenes > 99 ? '99+' : badgeOrdenes}
+                  </span>
+                )}
                 {active && <ChevronRight className="w-3 h-3" />}
               </Link>
             </li>

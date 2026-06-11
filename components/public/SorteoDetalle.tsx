@@ -35,7 +35,11 @@ function GaleriaFotos({ premios }: { premios: Database['public']['Tables']['prem
   const [lightbox, setLightbox] = useState<string | null>(null)
 
   const premiosConFotos = premios
-    .filter((p) => p.fotos_urls?.length > 0)
+    .map((p) => ({
+      ...p,
+      fotos_urls: (p.fotos_urls ?? []).filter((url) => url !== p.imagen_url),
+    }))
+    .filter((p) => p.fotos_urls.length > 0)
     .sort((a, b) => a.lugar - b.lugar)
 
   if (!premiosConFotos.length) return null
@@ -65,7 +69,7 @@ function GaleriaFotos({ premios }: { premios: Database['public']['Tables']['prem
                 </p>
               )}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {premio.fotos_urls!.map((url, idx) => (
+                {premio.fotos_urls.map((url, idx) => (
                   <button
                     key={idx}
                     type="button"

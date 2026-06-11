@@ -15,6 +15,7 @@ export interface Database {
           calificacion: number
           red_social_verificacion: string | null
           verificado: boolean
+          ultima_revision_ordenes: string
           created_at: string
         }
         Insert: {
@@ -28,6 +29,7 @@ export interface Database {
           calificacion?: number
           red_social_verificacion?: string | null
           verificado?: boolean
+          ultima_revision_ordenes?: string
           created_at?: string
         }
         Update: {
@@ -40,6 +42,7 @@ export interface Database {
           calificacion?: number
           red_social_verificacion?: string | null
           verificado?: boolean
+          ultima_revision_ordenes?: string
         }
       }
       sorteos: {
@@ -155,6 +158,7 @@ export interface Database {
           monto_total: number
           estatus: 'pendiente' | 'pagado' | 'cancelado'
           whatsapp_enviado: boolean
+          referencia: string | null
           created_at: string
           expires_at: string
         }
@@ -170,12 +174,14 @@ export interface Database {
           monto_total: number
           estatus?: 'pendiente' | 'pagado' | 'cancelado'
           whatsapp_enviado?: boolean
+          referencia?: string | null
           created_at?: string
           expires_at?: string
         }
         Update: {
           estatus?: 'pendiente' | 'pagado' | 'cancelado'
           whatsapp_enviado?: boolean
+          referencia?: string | null
         }
       }
       pedido_boletos: {
@@ -190,6 +196,33 @@ export interface Database {
           boleto_id: string
         }
         Update: Record<string, never>
+      }
+      imagenes_predeterminadas: {
+        Row: {
+          id: string
+          categoria: string
+          nombre: string | null
+          url: string
+          orden: number
+          activo: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          categoria: string
+          nombre?: string | null
+          url: string
+          orden?: number
+          activo?: boolean
+          created_at?: string
+        }
+        Update: {
+          categoria?: string
+          nombre?: string | null
+          url?: string
+          orden?: number
+          activo?: boolean
+        }
       }
       cuentas_deposito: {
         Row: {
