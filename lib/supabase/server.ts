@@ -14,6 +14,13 @@ export function createAdminSupabaseClient(): SupabaseClient<Database> {
   return createSupabaseClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
+    {
+      auth: { autoRefreshToken: false, persistSession: false },
+      // Next.js cachea por defecto los fetch() que hace supabase-js (incluso con
+      // dynamic = 'force-dynamic'), guardando respuestas en .next/cache/fetch-cache
+      // y sirviendo datos viejos para siempre. Forzamos no-store para leer la BD
+      // siempre en tiempo real (estatus de boletos/pedidos, etc).
+      global: { fetch: (input, init) => fetch(input, { ...init, cache: 'no-store' }) },
+    }
   )
 }
