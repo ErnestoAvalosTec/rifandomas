@@ -33,3 +33,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# imagenes de referencia (no subir a git para no aumentar el peso del repo)
+imagenes/*

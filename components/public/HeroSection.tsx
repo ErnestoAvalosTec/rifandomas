@@ -238,22 +238,19 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
             </span>
           </div>
 
-          {/* Badge valor estimado — bottom-right (solo móvil; desktop lo muestra en el área de texto) */}
-          {primerPremio?.valor_estimado ? (
-            <div className="lg:hidden" style={{ position: 'absolute', bottom: 5, right: 5 }}>
-              <span style={{
-                background: 'rgba(0,0,0,0.72)',
-                border: '1px solid rgba(249,115,22,0.55)',
-                color: '#fdba74',
-                borderRadius: 4, padding: '2px 5px',
-                fontSize: 8, fontWeight: 700, lineHeight: 1,
-                backdropFilter: 'blur(4px)',
-                display: 'block',
-              }}>
-                {formatCurrency(primerPremio.valor_estimado)}
-              </span>
-            </div>
-          ) : null}
+          {/* Badge total de boletos — esquina superior derecha (solo móvil; desktop lo muestra en el área de texto) */}
+          <div className="lg:hidden" style={{ position: 'absolute', top: 5, right: 5 }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 2,
+              background: 'rgba(0,0,0,0.6)', color: '#fff',
+              borderRadius: 4, padding: '2px 5px',
+              fontSize: 8, fontWeight: 700, lineHeight: 1,
+              backdropFilter: 'blur(4px)',
+            }}>
+              <Ticket style={{ width: 8, height: 8 }} />
+              {sorteo.total_numeros.toLocaleString('es-MX')}
+            </span>
+          </div>
         </div>
 
         {/* Info */}
@@ -285,7 +282,7 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
           <div className="hidden lg:block" style={{ marginBottom: 10 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
               <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>
-                {sorteo.boletos_vendidos.toLocaleString('es-MX')} vendidos
+                {sorteo.boletos_vendidos.toLocaleString('es-MX')} de {sorteo.total_numeros.toLocaleString('es-MX')} vendidos
               </span>
               <span style={{ fontSize: 11, color: '#4ADE80', fontWeight: 700 }}>{porcentaje}%</span>
             </div>

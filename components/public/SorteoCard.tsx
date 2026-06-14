@@ -200,7 +200,7 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
             fontSize: 9, fontWeight: 800, lineHeight: 1,
             boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
           }}>
-            {formatCurrency(sorteo.precio_unitario)}
+            {formatCurrency(sorteo.precio_unitario)}<span style={{ fontWeight: 400, fontSize: 7, marginLeft: 2 }}>/boleto</span>
           </span>
 
           {/* Badge valor estimado — esquina inferior derecha */}
@@ -213,7 +213,7 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
               fontSize: 8, fontWeight: 700, lineHeight: 1,
               backdropFilter: 'blur(4px)',
             }}>
-              {formatCurrency(premioActual.valor_estimado)}
+              Valor: {formatCurrency(premioActual.valor_estimado)}
             </span>
           ) : null}
 
@@ -288,7 +288,7 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
           {/* Barra de progreso + vendidos */}
           <div style={{ marginBottom: 5 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-              <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 9 }}>{vendidos.toLocaleString('es-MX')} vend.</span>
+              <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 9 }}>{vendidos.toLocaleString('es-MX')}/{sorteo.total_numeros.toLocaleString('es-MX')} vend.</span>
               <span style={{ color: '#86EFAC', fontSize: 9, fontWeight: 700 }}>{porcentaje}%</span>
             </div>
             <div style={{ height: 3, background: 'rgba(0,0,0,0.3)', borderRadius: 2, overflow: 'hidden' }}>
@@ -503,7 +503,7 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
           <div style={{ marginBottom: 10 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
               <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 10, fontWeight: 500 }}>
-                {vendidos.toLocaleString('es-MX')} vendidos
+                {vendidos.toLocaleString('es-MX')} de {sorteo.total_numeros.toLocaleString('es-MX')} vendidos
               </span>
               <span style={{ color: '#86EFAC', fontSize: 10, fontWeight: 600 }}>
                 {porcentaje}% vendido
@@ -585,15 +585,20 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
             </button>
           </div>
 
-          {/* Footer */}
-          <p style={{
-            textAlign: 'center', fontSize: 10,
-            color: '#86EFAC', marginTop: 6,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
-            fontWeight: 500,
-          }}>
-            ✓ {formatCurrency(sorteo.precio_unitario)} por boleto · Precio fijo
-          </p>
+          {/* Footer — chip de precio por boleto */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              background: 'rgba(34,197,94,0.12)',
+              border: '1px solid rgba(34,197,94,0.3)',
+              color: '#86EFAC',
+              borderRadius: 999, padding: '5px 12px',
+              fontSize: 11, fontWeight: 700,
+            }}>
+              <Ticket style={{ width: 12, height: 12 }} />
+              {formatCurrency(sorteo.precio_unitario)} por boleto · Precio fijo
+            </span>
+          </div>
         </div>
       </div>
     </div>

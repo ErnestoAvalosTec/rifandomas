@@ -62,23 +62,25 @@ export function VerificadorBoleto({ sorteos }: { sorteos: SorteoOpcion[] }) {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-          <Select value={sorteoId} onValueChange={setSorteoId}>
-            <SelectTrigger className="sm:w-1/2">
-              <SelectValue placeholder="Elige un sorteo" />
-            </SelectTrigger>
-            <SelectContent>
-              {sorteos.map((s) => (
-                <SelectItem key={s.id} value={s.id}>{s.nombre}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {sorteos.length > 1 && (
+            <Select value={sorteoId} onValueChange={setSorteoId}>
+              <SelectTrigger className="sm:w-1/2">
+                <SelectValue placeholder="Elige un sorteo" />
+              </SelectTrigger>
+              <SelectContent>
+                {sorteos.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>{s.nombre}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <Input
             placeholder="Ej: 0042"
             value={numero}
             onChange={(e) => setNumero(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && buscar()}
             maxLength={6}
-            className="text-center text-lg font-ui tracking-widest sm:w-1/2"
+            className={`text-center text-lg font-ui tracking-widest ${sorteos.length > 1 ? 'sm:w-1/2' : 'w-full'}`}
           />
         </div>
 

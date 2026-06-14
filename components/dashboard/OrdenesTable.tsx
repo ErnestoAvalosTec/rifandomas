@@ -240,7 +240,12 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
                       </DropdownMenu>
                     </div>
                   </div>
-                  <p className="text-xs text-brand-muted truncate">{p.sorteos?.nombre ?? '—'}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs text-brand-muted truncate">{p.sorteos?.nombre ?? '—'}</p>
+                    {p.referencia && (
+                      <span className="text-brand-gold font-ui font-semibold text-xs tracking-widest flex-shrink-0">{p.referencia}</span>
+                    )}
+                  </div>
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-ui font-semibold text-white text-sm">{formatCurrency(p.monto_total)}</span>
                     {p.estatus === 'pendiente' && (
@@ -265,7 +270,7 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-brand-border">
-                  {['Folio', 'Cliente', 'Teléfono', 'Sorteo', 'Números', 'Monto', 'Estatus', 'Expira', 'Acciones'].map((h) => (
+                  {['Folio', 'Referencia', 'Cliente', 'Teléfono', 'Sorteo', 'Números', 'Monto', 'Estatus', 'Expira', 'Acciones'].map((h) => (
                     <th key={h} className="text-left px-4 py-3 text-xs text-brand-muted font-ui uppercase tracking-wide whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -276,6 +281,13 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
                   return (
                     <tr key={p.id} className={`border-b border-brand-border/50 last:border-0 transition-colors ${isExpirando(p) ? 'bg-red-500/5' : 'hover:bg-brand-border/20'}`}>
                       <td className="px-4 py-3 text-brand-muted font-ui text-xs">{p.id.slice(0, 8)}…</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {p.referencia ? (
+                          <span className="text-brand-gold font-ui font-semibold text-xs tracking-widest">{p.referencia}</span>
+                        ) : (
+                          <span className="text-brand-muted text-xs">—</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <button onClick={() => setClienteModal(p)} className="font-ui text-white hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer">
                           <User className="w-3 h-3 text-brand-muted" />

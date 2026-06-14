@@ -9,6 +9,7 @@ import { OrganizadorInfo } from './OrganizadorInfo'
 import { anuncioGanador } from '@/lib/sorteoTexto'
 import { SeccionPreguntas } from './SeccionPreguntas'
 import { SorteosRelacionados } from './SorteosRelacionados'
+import { VerificadorBoleto } from './VerificadorBoleto'
 import type { Database } from '@/types/database.types'
 
 type Sorteo = Database['public']['Tables']['sorteos']['Row'] & {
@@ -191,6 +192,8 @@ export function SorteoDetalle({ sorteo, organizador, conteoOrganizador }: { sort
       <SeccionPreguntas sorteoId={sorteo.id} />
 
       <SorteosRelacionados sorteoId={sorteo.id} />
+
+      <VerificadorBoleto sorteos={[{ id: sorteo.id, nombre: sorteo.nombre }]} />
 
       {paqueteSeleccionado && (
         <FormularioCompra

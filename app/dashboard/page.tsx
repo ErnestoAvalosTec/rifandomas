@@ -19,18 +19,16 @@ export default async function DashboardPage() {
     .select('id, nombre, estatus, total_numeros, created_at')
     .eq('usuario_id', session.user.id)
     .order('created_at', { ascending: false })
-    .limit(5)
 
   const sorteos = (sorteosData ?? []) as Pick<SorteoRow, 'id' | 'nombre' | 'estatus' | 'total_numeros' | 'created_at'>[]
   const sorteoIds = sorteos.map((s) => s.id)
+  const sorteosRecientes = sorteos.slice(0, 5)
 
   const { data: pedidosData } = sorteoIds.length
     ? await supabase
         .from('pedidos')
         .select('id, monto_total, estatus, created_at')
         .in('sorteo_id', sorteoIds)
-        .order('created_at', { ascending: false })
-        .limit(5)
     : { data: [] }
 
   const pedidos = (pedidosData ?? []) as Pick<PedidoRow, 'id' | 'monto_total' | 'estatus' | 'created_at'>[]
@@ -79,7 +77,7 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {sorteos.map((s) => (
+            {sorteosRecientes.map((s) => (
               <div key={s.id} className="flex items-center justify-between py-2 border-b border-brand-border last:border-0">
                 <div>
                   <p className="text-sm font-ui text-white">{s.nombre}</p>

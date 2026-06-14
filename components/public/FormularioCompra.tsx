@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -63,6 +63,17 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
   const [referenciaPedido, setReferenciaPedido] = useState<string | null>(null)
 
   const monto = cantidad * sorteo.precio_unitario
+
+  // Evita que el usuario cierre/recargue la pestaña mientras se procesa el pedido
+  useEffect(() => {
+    if (!enviando) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [enviando])
 
   const { register, handleSubmit, formState: { errors }, setValue } = useForm<ClienteForm>({
     resolver: zodResolver(schemaCliente),
@@ -154,6 +165,33 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        {enviando && (
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 100,
+            background: 'rgba(10,10,10,0.88)',
+            borderRadius: 16,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: 14, padding: 24, textAlign: 'center',
+            animation: 'rf-fadein 0.15s ease',
+          }}>
+            <div style={{
+              width: 40, height: 40,
+              border: '3px solid rgba(255,255,255,0.15)',
+              borderTopColor: '#4ADE80',
+              borderRadius: '50%',
+              animation: 'rf-spin 0.75s linear infinite',
+            }} />
+            <div>
+              <p style={{ color: '#fff', fontSize: 15, fontWeight: 700, marginBottom: 4 }}>
+                Procesando tu pedido...
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12 }}>
+                No cierres ni recargues esta ventana.
+              </p>
+            </div>
+          </div>
+        )}
         {pedidoExitoso ? (
           <div className="text-center py-8">
             <CheckCircle2 className="w-16 h-16 text-brand-green mx-auto mb-4" />
