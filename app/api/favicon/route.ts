@@ -16,5 +16,5 @@ export async function GET() {
   }
 
   // Fallback — redirige al favicon estático por defecto
-  return NextResponse.redirect(new URL('/favicon.ico', process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'))
+  return NextResponse.redirect(new URL('/favicon.ico', process.env.NEXT_PUBLIC_SITE_URL ?? 'https://rifandomas.com.mx'))
 }

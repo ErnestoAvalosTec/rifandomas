@@ -36,7 +36,7 @@ export async function publicarEnFacebook(sorteo: any, premios: any[]): Promise<{
     return { ok: false, error: 'Facebook no está configurado en el servidor' }
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://rifandomas.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://rifandomas.com.mx'
   const params = new URLSearchParams({
     message: buildFacebookMessage(sorteo, premios),
     link: `${siteUrl}/sorteo/${sorteo.id}`,
