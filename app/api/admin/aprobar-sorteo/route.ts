@@ -1,23 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/supabase/guard'
+import { publicarEnFacebook } from '@/lib/facebook'
 
 export async function POST(req: NextRequest) {
   const authError = await requireAdmin()
   if (authError) return authError
 
   try {
-    const { sorteoId, totalNumeros } = await req.json()
+    const { sorteoId, totalNumeros, publicarEnFacebook: publicar } = await req.json()
     if (!sorteoId || !totalNumeros) {
       return NextResponse.json({ error: 'Faltan parámetros' }, { status: 400 })
     }
 
     const supabase = createAdminSupabaseClient()
 
-    // Leer flag de lotería del sorteo
+    // Leer datos del sorteo (incluye flag de lotería y premios para el post de Facebook)
     const { data: sorteoData } = await (supabase as any)
       .from('sorteos')
-      .select('es_loteria')
+      .select('id, nombre, descripcion, precio_unitario, fecha_sorteo, total_numeros, es_loteria, premios(*)')
       .eq('id', sorteoId)
       .single()
 
@@ -55,7 +56,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: errSorteo.message }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true })
+    let facebook: { ok: boolean; error?: string } | undefined
+    if (publicar && sorteoData) {
+      facebook = await publicarEnFacebook(sorteoData, sorteoData.premios ?? [])
+    }
+
+    return NextResponse.json({ success: true, facebook })
   } catch (err) {
     console.error('[aprobar-sorteo] unexpected:', err)
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })

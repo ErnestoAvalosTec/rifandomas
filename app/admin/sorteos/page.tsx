@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { formatDate, formatCurrency, CATEGORIAS } from '@/lib/utils'
 import {
   CheckCircle2, XCircle, ChevronDown, ChevronUp, Pencil,
-  PauseCircle, Trash2, PlayCircle, Plus, Loader2, Tag, MoreHorizontal,
+  PauseCircle, Trash2, PlayCircle, Plus, Loader2, Tag, MoreHorizontal, Facebook,
 } from 'lucide-react'
 import Link from 'next/link'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
@@ -48,6 +48,10 @@ export default function AdminSorteosPage() {
   const [premiosPorSorteo, setPremiosPorSorteo] = useState<Record<string, PremioLocal[]>>({})
   const [categoriasDraft, setCategoriasDraft]   = useState<Record<string, string>>({})
   const [guardandoCats, setGuardandoCats]       = useState(false)
+
+  // Publicar en Facebook al aprobar (por sorteo, default activado)
+  const [publicarFacebook, setPublicarFacebook] = useState<Record<string, boolean>>({})
+  const [publicandoFb, setPublicandoFb] = useState<string | null>(null)
 
   // Reject / action state
   const [motivoRechazo, setMotivoRechazo]     = useState('')
@@ -106,12 +110,35 @@ export default function AdminSorteosPage() {
     const res = await fetch('/api/admin/aprobar-sorteo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sorteoId: sorteo.id, totalNumeros: sorteo.total_numeros }),
+      body: JSON.stringify({
+        sorteoId: sorteo.id,
+        totalNumeros: sorteo.total_numeros,
+        publicarEnFacebook: publicarFacebook[sorteo.id] ?? true,
+      }),
     })
     const json = await res.json()
     if (!res.ok) { toast.error(`Error al aprobar: ${json.error ?? ''}`); return }
     toast.success(`Sorteo "${sorteo.nombre}" aprobado y ${sorteo.total_numeros} boletos generados.`)
+    if (json.facebook?.ok) {
+      toast.success('Publicado en la página de Facebook.')
+    } else if (json.facebook && !json.facebook.ok) {
+      toast.warning(`No se pudo publicar en Facebook: ${json.facebook.error ?? ''}`)
+    }
     setSorteos(prev => prev.filter(s => s.id !== sorteo.id))
+  }
+
+  // ── Publicar sorteo activo en Facebook ──────────────────────────────────────
+  const publicarSorteoActivo = async (sorteo: SorteoConPerfil) => {
+    setPublicandoFb(sorteo.id)
+    const res = await fetch('/api/admin/publicar-facebook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sorteoId: sorteo.id }),
+    })
+    const json = await res.json()
+    setPublicandoFb(null)
+    if (!res.ok) { toast.error(`No se pudo publicar en Facebook: ${json.error ?? ''}`); return }
+    toast.success(`Sorteo "${sorteo.nombre}" publicado en Facebook.`)
   }
 
   // ── Reject ────────────────────────────────────────────────────────────────
@@ -228,6 +255,12 @@ export default function AdminSorteosPage() {
                       <PlayCircle className="w-3.5 h-3.5" />Reactivar
                     </Button>
                   )}
+                  {s.estatus === 'activo' && (
+                    <Button size="sm" variant="secondary" disabled={publicandoFb === s.id} onClick={() => publicarSorteoActivo(s)} className="gap-1.5 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 hover:text-blue-400">
+                      {publicandoFb === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Facebook className="w-3.5 h-3.5" />}
+                      Publicar en Facebook
+                    </Button>
+                  )}
                   {s.estatus !== 'eliminado' && (
                     <>
                       <Link href={`/admin/sorteos/${s.id}/editar`}>
@@ -274,9 +307,15 @@ export default function AdminSorteosPage() {
                           <PlayCircle className="w-3.5 h-3.5 text-green-400" />Reactivar
                         </DropdownMenuItem>
                       )}
+                      {s.estatus === 'activo' && (
+                        <DropdownMenuItem disabled={publicandoFb === s.id} onClick={() => publicarSorteoActivo(s)}>
+                          {publicandoFb === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Facebook className="w-3.5 h-3.5 text-blue-400" />}
+                          Publicar en Facebook
+                        </DropdownMenuItem>
+                      )}
                       {s.estatus !== 'eliminado' && (
                         <>
-                          {(s.estatus === 'pendiente' || s.estatus === 'pausado') && <DropdownMenuSeparator />}
+                          {(s.estatus === 'pendiente' || s.estatus === 'pausado' || s.estatus === 'activo') && <DropdownMenuSeparator />}
                           <DropdownMenuItem asChild>
                             <Link href={`/admin/sorteos/${s.id}/editar`} className="flex items-center gap-2">
                               <Pencil className="w-3.5 h-3.5" />Editar
@@ -299,6 +338,22 @@ export default function AdminSorteosPage() {
                   </button>
                 </div>
               </div>
+
+              {/* ── Publicar en Facebook (solo pendientes) ── */}
+              {s.estatus === 'pendiente' && (
+                <div className="px-4 sm:px-5 pb-4 -mt-1">
+                  <label className="flex items-center gap-2 text-xs text-brand-muted font-ui cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={publicarFacebook[s.id] ?? true}
+                      onChange={e => setPublicarFacebook(prev => ({ ...prev, [s.id]: e.target.checked }))}
+                      className="w-3.5 h-3.5 rounded border-brand-border accent-primary cursor-pointer"
+                    />
+                    <Facebook className="w-3.5 h-3.5" />
+                    Publicar en Facebook al aprobar
+                  </label>
+                </div>
+              )}
 
               {/* ── Expanded panel ── */}
               {expandido === s.id && (
