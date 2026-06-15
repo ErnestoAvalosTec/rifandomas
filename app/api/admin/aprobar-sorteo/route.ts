@@ -59,6 +59,12 @@ export async function POST(req: NextRequest) {
     let facebook: { ok: boolean; error?: string } | undefined
     if (publicar && sorteoData) {
       facebook = await publicarEnFacebook(sorteoData, sorteoData.premios ?? [])
+      if (facebook.ok) {
+        await (supabase as any)
+          .from('sorteos')
+          .update({ facebook_publicado_at: new Date().toISOString() })
+          .eq('id', sorteoId)
+      }
     }
 
     return NextResponse.json({ success: true, facebook })

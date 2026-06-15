@@ -30,6 +30,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: facebook.error }, { status: 500 })
     }
 
+    await (supabase as any)
+      .from('sorteos')
+      .update({ facebook_publicado_at: new Date().toISOString() })
+      .eq('id', sorteoId)
+
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('[publicar-facebook] unexpected:', err)

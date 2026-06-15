@@ -60,6 +60,7 @@ export interface Database {
           estatus: 'borrador' | 'pendiente' | 'activo' | 'pausado' | 'finalizado' | 'rechazado' | 'eliminado'
           motivo_rechazo: string | null
           destacado_orden: number | null
+          facebook_publicado_at: string | null
           created_at: string
           updated_at: string
         }
@@ -89,6 +90,7 @@ export interface Database {
           estatus?: 'borrador' | 'pendiente' | 'activo' | 'pausado' | 'finalizado' | 'rechazado' | 'eliminado'
           motivo_rechazo?: string | null
           destacado_orden?: number | null
+          facebook_publicado_at?: string | null
           updated_at?: string
         }
       }

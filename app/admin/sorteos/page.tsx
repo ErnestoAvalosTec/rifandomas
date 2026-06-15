@@ -139,6 +139,7 @@ export default function AdminSorteosPage() {
     setPublicandoFb(null)
     if (!res.ok) { toast.error(`No se pudo publicar en Facebook: ${json.error ?? ''}`); return }
     toast.success(`Sorteo "${sorteo.nombre}" publicado en Facebook.`)
+    setSorteos(prev => prev.map(s => s.id === sorteo.id ? { ...s, facebook_publicado_at: new Date().toISOString() } : s))
   }
 
   // ── Reject ────────────────────────────────────────────────────────────────
@@ -232,6 +233,14 @@ export default function AdminSorteosPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-ui font-semibold text-brand-text text-sm sm:text-base">{s.nombre}</h3>
                     <Badge variant={s.estatus as any}>{s.estatus}</Badge>
+                    {s.facebook_publicado_at && (
+                      <span
+                        title={`Publicado en Facebook el ${formatDate(s.facebook_publicado_at)}`}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-ui font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                      >
+                        <Facebook className="w-2.5 h-2.5" />FB
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-brand-muted mt-1 font-body">
                     {s.perfiles?.nombre} {s.perfiles?.apellidos} · {formatDate(s.fecha_sorteo)} · {s.total_numeros} núms · {formatCurrency(s.precio_unitario)}/bol
