@@ -17,7 +17,7 @@ interface Slide {
 interface SorteoSimple {
   id: string
   nombre: string
-  destacado: boolean
+  destacado_orden: number | null
 }
 
 const darkInput = 'w-full border border-white/10 rounded-xl px-3 py-2 text-sm text-white bg-[#161616] focus:outline-none focus:border-primary placeholder:text-white/30'
@@ -29,7 +29,7 @@ export default function AdminHeroPage() {
 
   const [slides, setSlides]                   = useState<Slide[]>([])
   const [sorteos, setSorteos]                 = useState<SorteoSimple[]>([])
-  const [destacadoId, setDestacadoId]         = useState<string>('')
+  const [destacadoIds, setDestacadoIds]       = useState<string[]>(['', '', ''])
   const [savingDestacado, setSavingDestacado] = useState(false)
   const [uploading, setUploading]             = useState(false)
   const [nuevoTitulo, setNuevoTitulo]         = useState('')
@@ -47,13 +47,18 @@ export default function AdminHeroPage() {
   const loadSorteos = async () => {
     const { data } = await sb
       .from('sorteos')
-      .select('id, nombre, destacado')
+      .select('id, nombre, destacado_orden')
       .eq('estatus', 'activo')
       .order('created_at', { ascending: false })
     const list = (data ?? []) as SorteoSimple[]
     setSorteos(list)
-    const found = list.find((s: SorteoSimple) => s.destacado)
-    if (found) setDestacadoId(found.id)
+    const ids = ['', '', '']
+    list.forEach((s) => {
+      if (s.destacado_orden && s.destacado_orden >= 1 && s.destacado_orden <= 3) {
+        ids[s.destacado_orden - 1] = s.id
+      }
+    })
+    setDestacadoIds(ids)
   }
 
   const loadCtaBanner = async () => {
@@ -162,10 +167,10 @@ export default function AdminHeroPage() {
     const res = await fetch('/api/admin/sorteo-destacado', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sorteoId: destacadoId || null }),
+      body: JSON.stringify({ sorteoIds: destacadoIds.map(id => id || null) }),
     })
     if (!res.ok) { toast.error('Error al guardar'); setSavingDestacado(false); return }
-    toast.success('Sorteo destacado actualizado')
+    toast.success('Sorteos destacados actualizados')
     setSavingDestacado(false)
     loadSorteos()
   }
@@ -188,6 +193,19 @@ export default function AdminHeroPage() {
         <p className="text-brand-muted text-xs font-body mb-5">
           Las imágenes se muestran en el orden indicado. Activa o desactiva slides sin eliminarlos.
         </p>
+
+        {/* Spec hint */}
+        <div className="rounded-xl p-3 flex gap-2 mb-5" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)' }}>
+          <Info className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#60a5fa' }} />
+          <div>
+            <p className="text-sm font-semibold" style={{ color: '#93c5fd' }}>
+              Resolución recomendada: 1400 × 600 px
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: '#7dd3fc' }}>
+              Proporción 14:6 · PNG, JPG o WebP
+            </p>
+          </div>
+        </div>
 
         {/* Upload */}
         <div className="flex gap-3 items-end mb-6 flex-wrap">
@@ -232,7 +250,7 @@ export default function AdminHeroPage() {
                 className="flex items-center gap-3 border border-brand-border rounded-xl p-3"
                 style={{ opacity: slide.activo ? 1 : 0.5 }}
               >
-                <div className="w-24 h-16 rounded-lg overflow-hidden bg-brand-card flex-shrink-0 relative">
+                <div className="w-28 rounded-lg overflow-hidden bg-brand-card flex-shrink-0 relative" style={{ aspectRatio: '14 / 6' }}>
                   <Image src={slide.imagen_url} alt={slide.titulo ?? 'slide'} fill style={{ objectFit: 'cover' }} />
                 </div>
 
@@ -289,17 +307,17 @@ export default function AdminHeroPage() {
           <Info className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#60a5fa' }} />
           <div>
             <p className="text-sm font-semibold" style={{ color: '#93c5fd' }}>
-              Resolución recomendada: 1200 × 120 px
+              Resolución recomendada: 1200 × 400 px
             </p>
             <p className="text-xs mt-0.5" style={{ color: '#7dd3fc' }}>
-              Proporción 10:1 — banner horizontal muy ancho · PNG, JPG o WebP · Máx 2 MB
+              Proporción 3:1 — banner horizontal · PNG, JPG o WebP · Máx 2 MB
             </p>
           </div>
         </div>
 
         {/* Preview */}
         {ctaBannerUrl && (
-          <div className="relative w-full rounded-xl overflow-hidden border border-brand-border mb-4" style={{ height: 80 }}>
+          <div className="relative w-full rounded-xl overflow-hidden border border-brand-border mb-4" style={{ aspectRatio: '3 / 1' }}>
             <Image src={ctaBannerUrl} alt="Banner CTA" fill style={{ objectFit: 'cover' }} unoptimized />
           </div>
         )}
@@ -338,29 +356,39 @@ export default function AdminHeroPage() {
       <div className={card}>
         <h2 className="font-ui font-semibold text-brand-text text-lg mb-1 flex items-center gap-2">
           <Star className="w-5 h-5 text-yellow-400" />
-          Sorteo destacado de la semana
+          Sorteos destacados
         </h2>
         <p className="text-brand-muted text-xs font-body mb-5">
-          El sorteo elegido aparece en el panel derecho del hero. Solo uno puede estar activo a la vez.
+          Hasta 3 sorteos. El destacado 1 aparece en el panel del hero en escritorio; los 3 se muestran como tarjetas debajo del slider en móvil. Las posiciones vacías muestran una tarjeta de &quot;¿Quieres ser destacado?&quot;.
         </p>
 
         {sorteos.length === 0 ? (
           <p className="text-brand-muted text-sm py-4">No hay sorteos activos en este momento.</p>
         ) : (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="flex items-center gap-3 p-3 border border-brand-border rounded-xl cursor-pointer hover:border-primary/40 transition-colors">
-                <input type="radio" name="destacado" value="" checked={destacadoId === ''} onChange={() => setDestacadoId('')} className="accent-primary" />
-                <span className="text-sm text-brand-muted font-ui">Sin sorteo destacado</span>
-              </label>
-              {sorteos.map(s => (
-                <label key={s.id} className="flex items-center gap-3 p-3 border border-brand-border rounded-xl cursor-pointer hover:border-primary/40 transition-colors">
-                  <input type="radio" name="destacado" value={s.id} checked={destacadoId === s.id} onChange={() => setDestacadoId(s.id)} className="accent-primary" />
-                  <span className="text-sm text-brand-text font-ui">{s.nombre}</span>
-                  {s.destacado && (
-                    <span className="ml-auto text-[10px] font-semibold bg-yellow-400/15 text-yellow-400 border border-yellow-400/30 px-2 py-0.5 rounded-full">Actual</span>
-                  )}
-                </label>
+            <div className="grid sm:grid-cols-3 gap-3">
+              {[0, 1, 2].map((slot) => (
+                <div key={slot}>
+                  <label className="text-xs font-ui font-semibold text-brand-muted mb-1 block">
+                    Destacado {slot + 1}
+                  </label>
+                  <select
+                    value={destacadoIds[slot]}
+                    onChange={e => setDestacadoIds(prev => {
+                      const next = [...prev]
+                      next[slot] = e.target.value
+                      return next
+                    })}
+                    className={darkInput}
+                  >
+                    <option value="">Sin sorteo destacado</option>
+                    {sorteos
+                      .filter(s => destacadoIds[slot] === s.id || !destacadoIds.includes(s.id))
+                      .map(s => (
+                        <option key={s.id} value={s.id}>{s.nombre}</option>
+                      ))}
+                  </select>
+                </div>
               ))}
             </div>
             <button
@@ -369,7 +397,7 @@ export default function AdminHeroPage() {
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-ui font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60"
             >
               {savingDestacado ? <Loader2 className="w-4 h-4 animate-spin" /> : <Star className="w-4 h-4" />}
-              Guardar destacado
+              Guardar destacados
             </button>
           </div>
         )}

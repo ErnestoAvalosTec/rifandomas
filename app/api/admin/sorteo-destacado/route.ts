@@ -7,16 +7,19 @@ export async function POST(req: NextRequest) {
   if (authError) return authError
 
   const supabase = createAdminSupabaseClient() as any
-  const { sorteoId } = await req.json()
+  const { sorteoIds } = await req.json() as { sorteoIds: (string | null)[] }
 
-  // Remove current destacado
-  await supabase.from('sorteos').update({ destacado: false } as any).eq('destacado', true as any)
+  // Limpiar posiciones actuales
+  await supabase.from('sorteos').update({ destacado_orden: null } as any).not('destacado_orden', 'is', null)
 
-  if (sorteoId) {
+  // Asignar las nuevas posiciones (1, 2, 3)
+  for (let i = 0; i < Math.min(sorteoIds?.length ?? 0, 3); i++) {
+    const id = sorteoIds[i]
+    if (!id) continue
     const { error } = await supabase
       .from('sorteos')
-      .update({ destacado: true } as any)
-      .eq('id', sorteoId)
+      .update({ destacado_orden: i + 1 } as any)
+      .eq('id', id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   }
 

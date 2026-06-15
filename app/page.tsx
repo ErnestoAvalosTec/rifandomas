@@ -44,9 +44,9 @@ export default async function HomePage() {
     sb.from('sorteos')
       .select('id, nombre, precio_unitario, total_numeros, fecha_sorteo, premios(lugar, nombre, imagen_url, valor_estimado)')
       .eq('estatus', 'activo')
-      .eq('destacado', true)
-      .limit(1)
-      .single(),
+      .not('destacado_orden', 'is', null)
+      .order('destacado_orden', { ascending: true })
+      .limit(3),
   ])
 
   const vendidosPorSorteo: Record<string, number> = {}
@@ -59,11 +59,12 @@ export default async function HomePage() {
     boletos_vendidos: vendidosPorSorteo[s.id] ?? 0,
   }))
 
-  // Build sorteo destacado with boletos count
-  const destacadoRaw = destacadoResult.data ?? null
-  const sorteoDestacado = destacadoRaw
-    ? { ...destacadoRaw, boletos_vendidos: vendidosPorSorteo[destacadoRaw.id] ?? 0 }
-    : null
+  // Build sorteos destacados (hasta 3) con su conteo de boletos vendidos
+  const destacadosRaw = (destacadoResult.data ?? []) as any[]
+  const sorteosDestacados = destacadosRaw.map((d) => ({
+    ...d,
+    boletos_vendidos: vendidosPorSorteo[d.id] ?? 0,
+  }))
 
   return (
     <div className="min-h-screen bg-brand-bg">
@@ -71,7 +72,7 @@ export default async function HomePage() {
       <main>
         <HeroSection
           slides={slidesResult.data ?? []}
-          sorteoDestacado={sorteoDestacado}
+          sorteosDestacados={sorteosDestacados}
           ctaBannerUrl={marca?.cta_banner_url ?? null}
         />
         <SorteosGrid sorteos={sorteosConVendidos} />

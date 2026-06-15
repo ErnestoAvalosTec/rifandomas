@@ -59,6 +59,7 @@ export interface Database {
           promo_config: Json | null
           estatus: 'borrador' | 'pendiente' | 'activo' | 'pausado' | 'finalizado' | 'rechazado' | 'eliminado'
           motivo_rechazo: string | null
+          destacado_orden: number | null
           created_at: string
           updated_at: string
         }
@@ -87,6 +88,7 @@ export interface Database {
           promo_config?: Json | null
           estatus?: 'borrador' | 'pendiente' | 'activo' | 'pausado' | 'finalizado' | 'rechazado' | 'eliminado'
           motivo_rechazo?: string | null
+          destacado_orden?: number | null
           updated_at?: string
         }
       }
