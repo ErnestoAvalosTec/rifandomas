@@ -7,14 +7,14 @@ export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default async function Image() {
-  const supabase = createAdminSupabaseClient()
+  const supabase = createAdminSupabaseClient() as any
   const { data: marca } = await supabase
     .from('marca')
     .select('logo_url')
     .eq('id', 1)
     .single()
 
-  const logoUrl = marca?.logo_url ?? null
+  const logoUrl = (marca as { logo_url: string | null } | null)?.logo_url ?? null
 
   return new ImageResponse(
     (
