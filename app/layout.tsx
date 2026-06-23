@@ -20,6 +20,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://rifandomas.com.mx'),
   title: 'RifandoMas | Sorteos y Rifas Virtuales en México',
   description: 'La plataforma más confiable para sorteos y rifas virtuales en México. Premios de alto valor, pagos seguros y resultados transparentes.',
   keywords: 'rifas, sorteos, México, boletos, premios, RifandoMas',
@@ -31,6 +32,9 @@ export const metadata: Metadata = {
     title: 'RifandoMas | Sorteos y Rifas Virtuales',
     description: 'Participa en los mejores sorteos de México',
     type: 'website',
+    url: 'https://rifandomas.com.mx',
+    siteName: 'RifandoMas',
+    locale: 'es_MX',
   },
 }
 
