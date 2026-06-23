@@ -56,6 +56,40 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 }
 
+function JsonLd({ sorteo, premioPrincipal }: {
+  sorteo: SorteoConPremios
+  premioPrincipal?: PremioRow
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: sorteo.nombre,
+    description: sorteo.descripcion ?? `Participa en el sorteo "${sorteo.nombre}" y gana grandes premios.`,
+    startDate: sorteo.fecha_sorteo,
+    url: `https://rifandomas.com.mx/sorteo/${sorteo.id}`,
+    ...(premioPrincipal?.imagen_url && { image: premioPrincipal.imagen_url }),
+    organizer: {
+      '@type': 'Organization',
+      name: 'RifandoMas',
+      url: 'https://rifandomas.com.mx',
+    },
+    offers: {
+      '@type': 'Offer',
+      price: String(sorteo.precio_unitario),
+      priceCurrency: 'MXN',
+      availability: 'https://schema.org/InStock',
+      url: `https://rifandomas.com.mx/sorteo/${sorteo.id}`,
+    },
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  )
+}
+
 export default async function SorteoPage({ params }: { params: { id: string } }) {
   const sorteo = await getSorteo(params.id)
   if (!sorteo) notFound()
@@ -80,8 +114,11 @@ export default async function SorteoPage({ params }: { params: { id: string } })
     finalizados: sorteosOrganizador?.filter((s: any) => s.estatus === 'finalizado').length ?? 0,
   }
 
+  const premioPrincipal = sorteo.premios?.slice().sort((a, b) => a.lugar - b.lugar)[0]
+
   return (
     <div className="min-h-screen bg-brand-bg">
+      <JsonLd sorteo={sorteo} premioPrincipal={premioPrincipal} />
       <Navbar logoUrl={marca?.logo_url} topbar={marca} />
       <main>
         <SorteoDetalle sorteo={sorteoConVendidos} organizador={organizador} conteoOrganizador={conteoOrganizador} />
