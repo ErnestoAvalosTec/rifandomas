@@ -81,6 +81,12 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
     // Sincronizar boletos: el verificador público lee boletos.estatus, no pedidos.estatus
     if (estatus === 'pagado') {
       await sb.from('boletos').update({ estatus: 'pagado' }).eq('pedido_id', id)
+      // Best-effort: si WhatsApp falla, el pedido ya quedó marcado como pagado
+      fetch('/api/pedidos/notificar-pago', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pedidoId: id }),
+      }).catch(() => {})
     } else {
       // Cancelado: liberar los números para que otros puedan comprarlos
       await sb.from('boletos')
