@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { MultiSelectFilter } from '@/components/ui/multi-select-filter'
 import { Input } from '@/components/ui/input'
 import { formatCurrency } from '@/lib/utils'
-import { Download, Clock, MoreHorizontal, CheckCircle2, XCircle, MessageCircle, User, Search, MapPin, Phone, Ticket, Hash, Tag } from 'lucide-react'
+import { Download, Clock, MoreHorizontal, CheckCircle2, XCircle, MessageCircle, Send, User, Search, MapPin, Phone, Ticket, Hash, Tag } from 'lucide-react'
 import { formatDistanceToNow, parseISO, differenceInHours } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -114,6 +114,16 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
     })
     if (res.ok) toast.success('Recordatorio enviado por WhatsApp')
     else toast.error('No se pudo enviar el recordatorio')
+  }
+
+  const reenviarPedido = async (p: Pedido) => {
+    const res = await fetch('/api/pedidos/reenviar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pedidoId: p.id }),
+    })
+    if (res.ok) toast.success('Pedido reenviado por WhatsApp')
+    else toast.error('No se pudo reenviar el pedido')
   }
 
   const exportarCSV = () => {
@@ -240,6 +250,9 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
                               <DropdownMenuItem onClick={() => enviarRecordatorio(p)}>
                                 <MessageCircle className="w-3.5 h-3.5 text-primary" />Enviar recordatorio
                               </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => reenviarPedido(p)}>
+                                <Send className="w-3.5 h-3.5 text-primary" />Reenviar pedido
+                              </DropdownMenuItem>
                             </>
                           )}
                         </DropdownMenuContent>
@@ -340,6 +353,9 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => enviarRecordatorio(p)}>
                                   <MessageCircle className="w-3.5 h-3.5 text-primary" />Enviar recordatorio
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => reenviarPedido(p)}>
+                                  <Send className="w-3.5 h-3.5 text-primary" />Reenviar pedido
                                 </DropdownMenuItem>
                               </>
                             )}
