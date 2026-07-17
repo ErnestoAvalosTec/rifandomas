@@ -25,3 +25,6 @@ create table if not exists public.campana_whatsapp_destinatarios (
 
 create index if not exists idx_campana_destinatarios_campana_estatus
   on public.campana_whatsapp_destinatarios (campana_id, estatus);
+
+alter table public.campanas_whatsapp enable row level security;
+alter table public.campana_whatsapp_destinatarios enable row level security;
