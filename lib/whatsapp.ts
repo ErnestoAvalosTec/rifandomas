@@ -17,6 +17,15 @@ async function getWaConfig(): Promise<WaConfig | null> {
   return data as WaConfig
 }
 
+// Normaliza a solo dígitos y agrega el código de país (52) si faltaba —
+// compartida con la deduplicación de mensajes masivos (misma regla de
+// normalización debe usarse en ambos lados o el dedupe por teléfono falla).
+export function normalizarTelefono(numero: string): string {
+  const digits = numero.replace(/\D/g, '')
+  if (!digits) return ''
+  return digits.length === 10 ? `52${digits}` : digits
+}
+
 export async function sendWhatsAppMessage(
   number: string,
   text: string
@@ -27,10 +36,8 @@ export async function sendWhatsAppMessage(
     return { ok: false, error: 'not_configured' }
   }
 
-  // Normalize: digits only, ensure Mexican country code (52) is present
-  const digits = number.replace(/\D/g, '')
-  if (!digits) return { ok: false, error: 'invalid_number' }
-  const normalized = digits.length === 10 ? `52${digits}` : digits
+  const normalized = normalizarTelefono(number)
+  if (!normalized) return { ok: false, error: 'invalid_number' }
 
   const baseUrl = config.api_url.replace(/\/$/, '')
 

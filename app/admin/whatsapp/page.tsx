@@ -6,6 +6,7 @@ import {
   Wifi, WifiOff, QrCode, MessageSquare, Loader2,
   Save, Phone, Send, Eye, EyeOff, RefreshCw,
 } from 'lucide-react'
+import { MensajesMasivos } from '@/components/admin/MensajesMasivos'
 
 type ConnStatus = 'loading' | 'unconfigured' | 'disconnected' | 'connecting' | 'connected' | 'error'
 
@@ -509,6 +510,9 @@ export default function AdminWhatsAppPage() {
           </div>
         </div>
       )}
+
+      {/* Mensajes masivos — only when connected */}
+      {status === 'connected' && <MensajesMasivos />}
 
       {/* Info note */}
       <div
