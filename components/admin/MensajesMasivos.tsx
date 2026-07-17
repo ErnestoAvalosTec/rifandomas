@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { Users, Send, Loader2, RefreshCw } from 'lucide-react'
+import { Users, Send, Loader2, RefreshCw, Square } from 'lucide-react'
 
 interface Sorteo {
   id: string
@@ -17,7 +17,7 @@ interface Campana {
   total_destinatarios: number
   enviados: number
   fallidos: number
-  estatus: 'enviando' | 'completado' | 'error'
+  estatus: 'enviando' | 'completado' | 'error' | 'pausado'
   created_at: string
   completed_at: string | null
   sorteos: { nombre: string } | null
@@ -33,7 +33,7 @@ interface Progreso {
   total_destinatarios: number
   enviados: number
   fallidos: number
-  estatus: 'enviando' | 'completado' | 'error'
+  estatus: 'enviando' | 'completado' | 'error' | 'pausado'
 }
 
 const ESTATUS_OPTIONS = [
@@ -46,6 +46,7 @@ const BTN =
   'inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-ui font-semibold transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed'
 const BTN_PRIMARY = `${BTN} bg-primary text-white hover:bg-primary/90`
 const BTN_OUTLINE = `${BTN} border border-brand-border text-brand-text hover:bg-brand-card`
+const BTN_DANGER = `${BTN} bg-red-600 text-white hover:bg-red-700`
 const INPUT =
   'w-full border border-brand-border rounded-xl px-3 py-2 text-sm text-white bg-[#161616] focus:outline-none focus:border-primary placeholder:text-white/30 font-body'
 
@@ -61,6 +62,8 @@ export function MensajesMasivos() {
   // puntual para que un doble clic no dispare procesarCampana() dos veces
   // en paralelo para la misma campaña (ver revisión de Task 7).
   const [reanudando, setReanudando] = useState<string | null>(null)
+  // POST /detener está en vuelo — evita doble clic mientras responde
+  const [deteniendo, setDeteniendo] = useState(false)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
@@ -149,6 +152,17 @@ export function MensajesMasivos() {
     }
   }
 
+  const detener = async () => {
+    if (!progreso) return
+    setDeteniendo(true)
+    try {
+      await fetch(`/api/admin/whatsapp/masivo/${progreso.id}/detener`, { method: 'POST' })
+      toast('Envío detenido')
+    } finally {
+      setDeteniendo(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -206,20 +220,41 @@ export function MensajesMasivos() {
         </div>
 
         <div className="flex justify-end">
-          <button onClick={enviar} disabled={enviando || progreso?.estatus === 'enviando'} className={BTN_PRIMARY}>
-            {enviando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            Enviar a todos
-          </button>
+          {progreso?.estatus === 'enviando' ? (
+            <button onClick={detener} disabled={deteniendo} className={BTN_DANGER}>
+              {deteniendo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Square className="w-4 h-4" />}
+              Detener envío
+            </button>
+          ) : (
+            <button onClick={enviar} disabled={enviando} className={BTN_PRIMARY}>
+              {enviando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              Enviar a todos
+            </button>
+          )}
         </div>
 
         {progreso && (
           <div className="pt-2 border-t border-brand-border space-y-2">
-            <div className="flex items-center justify-between text-xs font-ui text-brand-muted">
+            <div className="flex items-center justify-between text-xs font-ui text-brand-muted gap-2">
               <span>
                 {progreso.estatus === 'enviando'
                   ? `Enviando ${progreso.enviados + progreso.fallidos}/${progreso.total_destinatarios}...`
+                  : progreso.estatus === 'pausado'
+                  ? `Pausado: ${progreso.enviados} enviados, ${progreso.fallidos} fallidos de ${progreso.total_destinatarios}`
                   : `Completado: ${progreso.enviados} enviados, ${progreso.fallidos} fallidos de ${progreso.total_destinatarios}`}
               </span>
+              {progreso.estatus === 'pausado' && (
+                <button
+                  onClick={() => reanudar(progreso.id)}
+                  disabled={reanudando === progreso.id}
+                  className={`${BTN_OUTLINE} flex-shrink-0`}
+                >
+                  {reanudando === progreso.id
+                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    : <RefreshCw className="w-3.5 h-3.5" />}
+                  Reanudar
+                </button>
+              )}
             </div>
             <div className="w-full h-2 bg-[#161616] rounded-full overflow-hidden">
               <div
@@ -248,7 +283,7 @@ export function MensajesMasivos() {
                     {new Date(c.created_at).toLocaleString('es-MX')} · {c.enviados} enviados, {c.fallidos} fallidos de {c.total_destinatarios}
                   </p>
                 </div>
-                {c.estatus === 'enviando' ? (
+                {(c.estatus === 'enviando' || c.estatus === 'pausado') ? (
                   <button
                     onClick={() => reanudar(c.id)}
                     disabled={reanudando === c.id}
