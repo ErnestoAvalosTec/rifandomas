@@ -6,6 +6,13 @@ function delayAleatorio(minMs: number, maxMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+// Evita que dos invocaciones de procesarCampana para la misma campaña corran
+// en paralelo (p. ej. "Detener" mientras el loop duerme el delay entre envíos,
+// seguido de "Reanudar" antes de que ese loop despierte): sin este guard, la
+// segunda invocación reinicia el estatus a "enviando" y arranca su propio
+// snapshot de pendientes mientras la primera sigue viva, duplicando envíos.
+const campanasEnProceso = new Set<string>()
+
 // Actualiza los contadores en vivo y devuelve el estatus actual de la
 // campaña — se combina en una sola llamada para no agregar un round-trip
 // extra por destinatario solo para detectar si alguien le dio "Detener".
@@ -42,46 +49,52 @@ async function actualizarContadores(supabase: any, campanaId: string): Promise<s
 // instante sí se termina de mandar (no se puede cancelar una petición HTTP a
 // Evolution API a medias); el corte ocurre antes del siguiente destinatario.
 export async function procesarCampana(campanaId: string): Promise<void> {
-  const supabase = createAdminSupabaseClient() as any
+  if (campanasEnProceso.has(campanaId)) return
+  campanasEnProceso.add(campanaId)
+  try {
+    const supabase = createAdminSupabaseClient() as any
 
-  const { data: campana } = await supabase
-    .from('campanas_whatsapp')
-    .select('mensaje, estatus')
-    .eq('id', campanaId)
-    .single()
-  if (!campana) return
+    const { data: campana } = await supabase
+      .from('campanas_whatsapp')
+      .select('mensaje, estatus')
+      .eq('id', campanaId)
+      .single()
+    if (!campana) return
 
-  if (campana.estatus !== 'enviando') {
-    await supabase.from('campanas_whatsapp').update({ estatus: 'enviando' }).eq('id', campanaId)
-  }
+    if (campana.estatus !== 'enviando') {
+      await supabase.from('campanas_whatsapp').update({ estatus: 'enviando' }).eq('id', campanaId)
+    }
 
-  const { data: destinatarios } = await supabase
-    .from('campana_whatsapp_destinatarios')
-    .select('id, telefono, nombre')
-    .eq('campana_id', campanaId)
-    .eq('estatus', 'pendiente')
-    .order('id', { ascending: true })
+    const { data: destinatarios } = await supabase
+      .from('campana_whatsapp_destinatarios')
+      .select('id, telefono, nombre')
+      .eq('campana_id', campanaId)
+      .eq('estatus', 'pendiente')
+      .order('id', { ascending: true })
 
-  for (const destinatario of destinatarios ?? []) {
-    const texto = campana.mensaje.replaceAll('{nombre}', destinatario.nombre || 'ahí')
-    const result = await sendWhatsAppMessage(destinatario.telefono, texto)
+    for (const destinatario of destinatarios ?? []) {
+      const texto = campana.mensaje.replaceAll('{nombre}', destinatario.nombre || 'ahí')
+      const result = await sendWhatsAppMessage(destinatario.telefono, texto)
+
+      await supabase
+        .from('campana_whatsapp_destinatarios')
+        .update({
+          estatus: result.ok ? 'enviado' : 'error',
+          enviado_at: result.ok ? new Date().toISOString() : null,
+        })
+        .eq('id', destinatario.id)
+
+      const estatusActual = await actualizarContadores(supabase, campanaId)
+      if (estatusActual !== 'enviando') return
+
+      await delayAleatorio(8000, 15000)
+    }
 
     await supabase
-      .from('campana_whatsapp_destinatarios')
-      .update({
-        estatus: result.ok ? 'enviado' : 'error',
-        enviado_at: result.ok ? new Date().toISOString() : null,
-      })
-      .eq('id', destinatario.id)
-
-    const estatusActual = await actualizarContadores(supabase, campanaId)
-    if (estatusActual !== 'enviando') return
-
-    await delayAleatorio(8000, 15000)
+      .from('campanas_whatsapp')
+      .update({ estatus: 'completado', completed_at: new Date().toISOString() })
+      .eq('id', campanaId)
+  } finally {
+    campanasEnProceso.delete(campanaId)
   }
-
-  await supabase
-    .from('campanas_whatsapp')
-    .update({ estatus: 'completado', completed_at: new Date().toISOString() })
-    .eq('id', campanaId)
 }
