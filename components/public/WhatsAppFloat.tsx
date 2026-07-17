@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { X } from 'lucide-react'
 
-const WA_URL = 'https://wa.me/523312834663'
+const WA_URL = 'https://wa.me/523318739737'
 
 const MESSAGES = [
   '¿En qué te podemos ayudar? 😊',

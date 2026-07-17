@@ -599,7 +599,7 @@ function MiniDestacadoCard({ sorteo }: { sorteo: SorteoDestacado }) {
 function MiniNoFeaturedCard() {
   return (
     <a
-      href="https://wa.me/3312834663?text=Quiero%20ser%20destacado"
+      href="https://wa.me/523318739737?text=Quiero%20ser%20destacado"
       target="_blank"
       rel="noopener noreferrer"
       className="flex flex-col items-center justify-center text-center"
