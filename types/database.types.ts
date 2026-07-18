@@ -261,6 +261,7 @@ export interface Database {
           boleto_id: string
           numero_ganador: string
           evidencia_urls: string[]
+          link_externo: string | null
           declarado_por: string | null
           created_at: string
           updated_at: string
@@ -273,6 +274,7 @@ export interface Database {
           boleto_id: string
           numero_ganador: string
           evidencia_urls?: string[]
+          link_externo?: string | null
           declarado_por?: string | null
           created_at?: string
           updated_at?: string
@@ -280,6 +282,7 @@ export interface Database {
         Update: {
           numero_ganador?: string
           evidencia_urls?: string[]
+          link_externo?: string | null
           declarado_por?: string | null
           updated_at?: string
         }
