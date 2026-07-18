@@ -36,3 +36,6 @@ next-env.d.ts
 
 # imagenes de referencia (no subir a git para no aumentar el peso del repo)
 imagenes/*
+
+# git worktrees locales
+.worktrees/
