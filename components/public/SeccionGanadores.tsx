@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { Trophy, X, ZoomIn } from 'lucide-react'
+import { Trophy, X, ZoomIn, ExternalLink } from 'lucide-react'
 import type { Database } from '@/types/database.types'
 
 type Premio = Database['public']['Tables']['premios']['Row']
@@ -12,6 +12,7 @@ interface GanadorInfo {
   numero_ganador: string
   evidencia_urls: string[]
   nombre_corto: string | null
+  link_externo: string | null
 }
 
 const LUGAR_LABEL: Record<number, string> = { 1: '1er', 2: '2do', 3: '3er' }
@@ -79,6 +80,18 @@ export function SeccionGanadores({ premios, ganadores }: { premios: Premio[]; ga
                             </button>
                           ))}
                         </div>
+                      )}
+                      {ganador.link_externo && (
+                        <a
+                          href={ganador.link_externo}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 mt-2 text-xs font-ui font-semibold"
+                          style={{ color: '#4ADE80' }}
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Ver publicación
+                        </a>
                       )}
                     </>
                   ) : (

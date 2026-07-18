@@ -143,6 +143,7 @@ interface GanadorInfo {
   numero_ganador: string
   evidencia_urls: string[]
   nombre_corto: string | null
+  link_externo: string | null
 }
 
 export function SorteoDetalle({

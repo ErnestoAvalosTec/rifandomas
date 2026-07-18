@@ -106,7 +106,7 @@ export default async function SorteoPage({ params }: { params: { id: string } })
     supabase.from('boletos').select('sorteo_id').eq('sorteo_id', sorteo.id).in('estatus', ['reservado', 'pagado']),
     admin.from('perfiles').select('nombre, apellidos, avatar_url, calificacion, verificado, created_at').eq('id', sorteo.usuario_id).single(),
     admin.from('sorteos').select('estatus').eq('usuario_id', sorteo.usuario_id),
-    admin.from('sorteo_ganadores').select('premio_id, numero_ganador, evidencia_urls, pedidos(cliente_nombre, cliente_apellidos)').eq('sorteo_id', sorteo.id),
+    admin.from('sorteo_ganadores').select('premio_id, numero_ganador, evidencia_urls, link_externo, pedidos(cliente_nombre, cliente_apellidos)').eq('sorteo_id', sorteo.id),
   ])
 
   const ganadores = (ganadoresData ?? []).map((g: any) => {
@@ -118,6 +118,7 @@ export default async function SorteoPage({ params }: { params: { id: string } })
       numero_ganador: g.numero_ganador as string,
       evidencia_urls: (g.evidencia_urls ?? []) as string[],
       nombre_corto: nombreCorto as string | null,
+      link_externo: (g.link_externo ?? null) as string | null,
     }
   })
 
