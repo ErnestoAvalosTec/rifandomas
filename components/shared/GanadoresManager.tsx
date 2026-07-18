@@ -21,11 +21,13 @@ interface GanadorLocal {
   premio_id: string
   numero_ganador: string
   evidencia_urls: string[]
+  link_externo: string | null
 }
 
 interface GanadorDraft {
   numeroGanador: string
   evidenciaUrls: string[]
+  linkExterno: string
 }
 
 export function GanadoresManager({ sorteoId, open, onClose }: { sorteoId: string; open: boolean; onClose: () => void }) {
@@ -55,6 +57,7 @@ export function GanadoresManager({ sorteoId, open, onClose }: { sorteoId: string
         draftsIniciales[p.id] = {
           numeroGanador: existente?.numero_ganador ?? '',
           evidenciaUrls: existente?.evidencia_urls ?? [],
+          linkExterno: existente?.link_externo ?? '',
         }
         if (existente) guardados.add(p.id)
       })
@@ -109,7 +112,12 @@ export function GanadoresManager({ sorteoId, open, onClose }: { sorteoId: string
     const res = await fetch(`/api/sorteos/${sorteoId}/ganadores`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ premioId, numeroGanador: draft.numeroGanador.trim(), evidenciaUrls: draft.evidenciaUrls }),
+      body: JSON.stringify({
+        premioId,
+        numeroGanador: draft.numeroGanador.trim(),
+        evidenciaUrls: draft.evidenciaUrls,
+        linkExterno: draft.linkExterno.trim(),
+      }),
     })
     const json = await res.json()
     setGuardando((prev) => ({ ...prev, [premioId]: false }))
@@ -154,6 +162,14 @@ export function GanadoresManager({ sorteoId, open, onClose }: { sorteoId: string
                     value={draft.numeroGanador}
                     onChange={(e) =>
                       setDrafts((prev) => ({ ...prev, [premio.id]: { ...prev[premio.id], numeroGanador: e.target.value } }))
+                    }
+                  />
+
+                  <Input
+                    placeholder="Link externo (opcional) — YouTube, Facebook, etc."
+                    value={draft.linkExterno}
+                    onChange={(e) =>
+                      setDrafts((prev) => ({ ...prev, [premio.id]: { ...prev[premio.id], linkExterno: e.target.value } }))
                     }
                   />
 
