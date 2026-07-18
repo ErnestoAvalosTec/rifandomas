@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils'
-import { Clock, Ticket, ChevronRight, Share2, Banknote } from 'lucide-react'
+import { Clock, Ticket, ChevronRight, Share2, Banknote, Trophy } from 'lucide-react'
 import type { Database } from '@/types/database.types'
 
 type Sorteo = Database['public']['Tables']['sorteos']['Row'] & {
@@ -22,6 +22,7 @@ interface Paquete {
 interface SorteoCardProps {
   sorteo: Sorteo
   onParticipar: (sorteo: Sorteo, paquete: Paquete) => void
+  finalizado?: boolean
 }
 
 const MEDAL: Record<number, string> = { 1: '🏆', 2: '🥈', 3: '🥉' }
@@ -98,7 +99,7 @@ function NavLoadingOverlay({ radius }: { radius: number }) {
   )
 }
 
-export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
+export function SorteoCard({ sorteo, onParticipar, finalizado = false }: SorteoCardProps) {
   const router = useRouter()
   const premios = sorteo.premios?.slice().sort((a, b) => a.lugar - b.lugar) ?? []
   const paquetes = buildPaquetes(sorteo)
@@ -230,7 +231,7 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
           )}
 
           {/* Lleno — solo si no tiene contador encima */}
-          {porcentaje >= 80 && totalPremios <= 1 && (
+          {porcentaje >= 80 && totalPremios <= 1 && !finalizado && (
             <span className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full px-1 py-px animate-pulse" style={{ fontSize: 7, fontWeight: 700 }}>¡Lleno!</span>
           )}
 
@@ -316,19 +317,32 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
 
           {/* CTA + compartir */}
           <div style={{ display: 'flex', gap: 5 }}>
-            <button
-              onClick={() => onParticipar(sorteo, paqueteSeleccionado)}
-              style={{
+            {finalizado ? (
+              <div style={{
                 flex: 1, padding: '7px 0',
-                background: 'linear-gradient(135deg, #F97316, #EA580C)',
-                color: '#fff', fontSize: 11, fontWeight: 700,
-                borderRadius: 6, border: 'none', cursor: 'pointer',
+                background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.8)',
+                fontSize: 11, fontWeight: 700,
+                borderRadius: 6,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
-              }}
-            >
-              <Ticket style={{ width: 10, height: 10 }} />
-              ¡Participar!
-            </button>
+              }}>
+                <Trophy style={{ width: 10, height: 10 }} />
+                Sorteo finalizado
+              </div>
+            ) : (
+              <button
+                onClick={() => onParticipar(sorteo, paqueteSeleccionado)}
+                style={{
+                  flex: 1, padding: '7px 0',
+                  background: 'linear-gradient(135deg, #F97316, #EA580C)',
+                  color: '#fff', fontSize: 11, fontWeight: 700,
+                  borderRadius: 6, border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
+                }}
+              >
+                <Ticket style={{ width: 10, height: 10 }} />
+                ¡Participar!
+              </button>
+            )}
             <button
               onClick={handleCompartir}
               aria-label="Compartir sorteo"
@@ -414,7 +428,7 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
               }}>
                 {MEDAL[premioActual?.lugar ?? 1]} {LUGAR[premioActual?.lugar ?? 1]}
               </span>
-              {porcentaje >= 80 && (
+              {porcentaje >= 80 && !finalizado && (
                 <span style={{
                   background: '#EF4444', color: '#fff',
                   borderRadius: 999, padding: '4px 8px', fontSize: 10, fontWeight: 700,
@@ -550,22 +564,35 @@ export function SorteoCard({ sorteo, onParticipar }: SorteoCardProps) {
 
           {/* CTA — orange + compartir */}
           <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              onClick={() => onParticipar(sorteo, paqueteSeleccionado)}
-              style={{
+            {finalizado ? (
+              <div style={{
                 flex: 1, padding: '12px 0',
-                background: 'linear-gradient(135deg, #F97316, #EA580C)',
-                color: '#fff', fontSize: 15, fontWeight: 700,
-                borderRadius: 10, border: 'none', cursor: 'pointer',
+                background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)',
+                fontSize: 15, fontWeight: 700,
+                borderRadius: 10,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                transition: 'opacity 0.15s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
-              onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
-            >
-              <Ticket style={{ width: 16, height: 16 }} />
-              ¡Participar!
-            </button>
+              }}>
+                <Trophy style={{ width: 16, height: 16 }} />
+                Sorteo finalizado
+              </div>
+            ) : (
+              <button
+                onClick={() => onParticipar(sorteo, paqueteSeleccionado)}
+                style={{
+                  flex: 1, padding: '12px 0',
+                  background: 'linear-gradient(135deg, #F97316, #EA580C)',
+                  color: '#fff', fontSize: 15, fontWeight: 700,
+                  borderRadius: 10, border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                  transition: 'opacity 0.15s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+              >
+                <Ticket style={{ width: 16, height: 16 }} />
+                ¡Participar!
+              </button>
+            )}
             <button
               onClick={handleCompartir}
               aria-label="Compartir sorteo"
