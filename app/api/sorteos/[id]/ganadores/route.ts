@@ -24,10 +24,15 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const access = await requireSorteoAccess(params.id)
   if (access.error) return access.error
 
-  const { premioId, numeroGanador, evidenciaUrls } = await req.json()
+  const { premioId, numeroGanador, evidenciaUrls, linkExterno } = await req.json()
 
   if (!premioId || !numeroGanador?.trim() || !Array.isArray(evidenciaUrls) || evidenciaUrls.length === 0) {
     return NextResponse.json({ error: 'Falta el número de boleto ganador o la evidencia' }, { status: 400 })
+  }
+
+  const linkExternoTrim: string | null = typeof linkExterno === 'string' ? linkExterno.trim() : ''
+  if (linkExternoTrim && !/^https?:\/\//i.test(linkExternoTrim)) {
+    return NextResponse.json({ error: 'El link externo debe empezar con http:// o https://' }, { status: 400 })
   }
 
   const supabase = createAdminSupabaseClient() as any
@@ -74,6 +79,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         boleto_id: boleto.id,
         numero_ganador: numeroNormalizado,
         evidencia_urls: evidenciaUrls,
+        link_externo: linkExternoTrim || null,
         declarado_por: access.userId,
         updated_at: new Date().toISOString(),
       },
