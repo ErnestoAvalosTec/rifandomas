@@ -9,13 +9,14 @@ import { useOrdenesBadge } from '@/hooks/useOrdenesBadge'
 import {
   Ticket, LayoutDashboard, Users, LogOut, ShoppingCart,
   ImageIcon, Palette, MessageCircle, Menu, X, ChevronRight, MessageSquare,
-  Images,
+  Images, BarChart3,
 } from 'lucide-react'
 
 const ADMIN_NAV = [
   { href: '/admin',              label: 'Panel',      icon: LayoutDashboard, exact: true },
   { href: '/admin/sorteos',      label: 'Sorteos',    icon: Ticket },
   { href: '/admin/ordenes',      label: 'Órdenes',    icon: ShoppingCart },
+  { href: '/admin/reportes',     label: 'Reportes',   icon: BarChart3 },
   { href: '/admin/usuarios',     label: 'Usuarios',   icon: Users },
   { href: '/admin/preguntas',    label: 'Preguntas',  icon: MessageSquare },
   { href: '/admin/hero',         label: 'Hero',       icon: ImageIcon },
