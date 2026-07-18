@@ -23,6 +23,13 @@ interface SorteoCardProps {
   sorteo: Sorteo
   onParticipar: (sorteo: Sorteo, paquete: Paquete) => void
   finalizado?: boolean
+  // Atenúa la tarjeta a gris hasta que el ancestro más cercano con class="group"
+  // reciba hover/focus. No usar `filter` en el wrapper externo para lograr esto:
+  // un `filter` en cualquier ancestro de la imagen flotante de escritorio
+  // (.premio-imagen, position:absolute con offset negativo) rompe su recorte
+  // (ver app/globals.css .card-premio/.premio-imagen). Por eso el gris se aplica
+  // aquí, directo sobre objetivos seguros (imagen, overlay de contenido).
+  desaturarHastaHover?: boolean
 }
 
 const MEDAL: Record<number, string> = { 1: '🏆', 2: '🥈', 3: '🥉' }
@@ -99,7 +106,7 @@ function NavLoadingOverlay({ radius }: { radius: number }) {
   )
 }
 
-export function SorteoCard({ sorteo, onParticipar, finalizado = false }: SorteoCardProps) {
+export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturarHastaHover = false }: SorteoCardProps) {
   const router = useRouter()
   const premios = sorteo.premios?.slice().sort((a, b) => a.lugar - b.lugar) ?? []
   const paquetes = buildPaquetes(sorteo)
@@ -164,7 +171,10 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false }: SorteoC
   return (
     <>
       {/* ── MOBILE COMPACT (muestra 2 por fila en celular) ── */}
-      <div className="sm:hidden rounded-xl overflow-hidden border border-white/10" style={{ background: '#166534', position: 'relative' }}>
+      <div
+        className={`sm:hidden rounded-xl overflow-hidden border border-white/10 ${desaturarHastaHover ? 'grayscale group-hover:grayscale-0 group-focus-visible:grayscale-0 transition-[filter] duration-300' : ''}`}
+        style={{ background: '#166534', position: 'relative' }}
+      >
         {navigating && <NavLoadingOverlay radius={12} />}
         {/* Imagen — tappable para cambiar premio */}
         <div
@@ -398,7 +408,7 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false }: SorteoC
               alt={premioActual.nombre}
               width={210}
               height={210}
-              className="premio-imagen"
+              className={`premio-imagen ${desaturarHastaHover ? 'grayscale group-hover:grayscale-0 group-focus-visible:grayscale-0 transition-[filter] duration-300' : ''}`}
               priority
             />
           ) : (
@@ -627,6 +637,16 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false }: SorteoC
             </span>
           </div>
         </div>
+
+        {/* Overlay gris sobre el fondo/contenido de la tarjeta (no la imagen flotante,
+            que queda fuera de esta caja) — evita usar `filter` aquí para no romper
+            el recorte de .premio-imagen (ver nota en SorteoCardProps). */}
+        {desaturarHastaHover && (
+          <div
+            className="absolute inset-0 rounded-[20px] pointer-events-none opacity-100 group-hover:opacity-0 group-focus-visible:opacity-0 transition-opacity duration-300"
+            style={{ background: '#8a8a8a', mixBlendMode: 'saturation' }}
+          />
+        )}
       </div>
     </div>
     </>

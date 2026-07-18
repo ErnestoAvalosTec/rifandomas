@@ -34,9 +34,9 @@ export function SorteosFinalizadosGrid({ sorteos }: { sorteos: Sorteo[] }) {
               tabIndex={0}
               onClick={() => router.push(`/sorteo/${sorteo.id}`)}
               onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/sorteo/${sorteo.id}`) }}
-              className="cursor-pointer grayscale hover:grayscale-0 focus-visible:grayscale-0 transition-all duration-300 outline-none rounded-2xl"
+              className="group cursor-pointer outline-none rounded-2xl"
             >
-              <SorteoCard sorteo={sorteo} onParticipar={() => {}} finalizado />
+              <SorteoCard sorteo={sorteo} onParticipar={() => {}} finalizado desaturarHastaHover />
             </div>
           ))}
         </div>
