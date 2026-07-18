@@ -13,6 +13,7 @@ export default async function OrdenesPage() {
     .from('sorteos')
     .select('id, nombre')
     .eq('usuario_id', session.user.id)
+    .not('estatus', 'in', '(finalizado,pausado)')
     .order('created_at', { ascending: false })
 
   const sorteos: { id: string; nombre: string }[] = misSorteos ?? []

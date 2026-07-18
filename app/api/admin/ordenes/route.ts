@@ -11,9 +11,9 @@ export async function GET() {
   try {
     const supabase = createAdminSupabaseClient()
 
-    const { data: pedidos, error } = await (supabase as any)
+    const { data: pedidosRaw, error } = await (supabase as any)
       .from('pedidos')
-      .select('*, sorteos(id, nombre)')
+      .select('*, sorteos(id, nombre, estatus)')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -21,7 +21,13 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    if (!pedidos?.length) return NextResponse.json([])
+    // Los pedidos de sorteos finalizados/pausados quedan archivados — se
+    // consultan desde /admin/reportes, no aquí.
+    const pedidos = (pedidosRaw ?? []).filter(
+      (p: any) => p.sorteos?.estatus !== 'finalizado' && p.sorteos?.estatus !== 'pausado'
+    )
+
+    if (!pedidos.length) return NextResponse.json([])
 
     const pedidoIds: string[] = pedidos.map((p: any) => p.id)
 

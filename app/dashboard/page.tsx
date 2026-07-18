@@ -21,14 +21,19 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false })
 
   const sorteos = (sorteosData ?? []) as Pick<SorteoRow, 'id' | 'nombre' | 'estatus' | 'total_numeros' | 'created_at'>[]
-  const sorteoIds = sorteos.map((s) => s.id)
   const sorteosRecientes = sorteos.slice(0, 5)
 
-  const { data: pedidosData } = sorteoIds.length
+  // Los pedidos de sorteos finalizados/pausados quedan archivados: no cuentan
+  // en "Pedidos Totales" ni "Ingresos Pagados" (ver /dashboard/reportes).
+  const sorteoIdsNoArchivados = sorteos
+    .filter((s) => s.estatus !== 'finalizado' && s.estatus !== 'pausado')
+    .map((s) => s.id)
+
+  const { data: pedidosData } = sorteoIdsNoArchivados.length
     ? await supabase
         .from('pedidos')
         .select('id, monto_total, estatus, created_at')
-        .in('sorteo_id', sorteoIds)
+        .in('sorteo_id', sorteoIdsNoArchivados)
     : { data: [] }
 
   const pedidos = (pedidosData ?? []) as Pick<PedidoRow, 'id' | 'monto_total' | 'estatus' | 'created_at'>[]
