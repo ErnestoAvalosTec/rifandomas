@@ -21,14 +21,22 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'Solo se puede finalizar un sorteo activo' }, { status: 400 })
   }
 
-  const { error } = await supabase
+  // Atomic update: filter by id AND estatus to prevent TOCTOU race
+  const { data: updated, error } = await supabase
     .from('sorteos')
     .update({ estatus: 'finalizado' })
     .eq('id', params.id)
+    .eq('estatus', 'activo')
+    .select()
 
   if (error) {
     console.error('[finalizar-sorteo] update:', error)
     return NextResponse.json({ error: 'Error al finalizar el sorteo' }, { status: 500 })
+  }
+
+  // No rows affected means status changed between check and update
+  if (!updated || updated.length === 0) {
+    return NextResponse.json({ error: 'Solo se puede finalizar un sorteo activo' }, { status: 400 })
   }
 
   return NextResponse.json({ ok: true })
