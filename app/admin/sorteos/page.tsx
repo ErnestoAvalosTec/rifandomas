@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button'
 import { formatDate, formatCurrency, CATEGORIAS } from '@/lib/utils'
 import {
   CheckCircle2, XCircle, ChevronDown, ChevronUp, Pencil,
-  PauseCircle, Trash2, PlayCircle, Plus, Loader2, Tag, MoreHorizontal, Facebook,
+  PauseCircle, Trash2, PlayCircle, Plus, Loader2, Tag, MoreHorizontal, Facebook, Trophy,
 } from 'lucide-react'
 import Link from 'next/link'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import type { Database } from '@/types/database.types'
+import { GanadoresManager } from '@/components/shared/GanadoresManager'
 
 type SorteoRow = Database['public']['Tables']['sorteos']['Row']
 type Estatus = SorteoRow['estatus']
@@ -58,6 +59,10 @@ export default function AdminSorteosPage() {
   const [rechazando, setRechazando]           = useState<string | null>(null)
   const [accionPendiente, setAccionPendiente] = useState<{ id: string; tipo: 'pausado' | 'eliminado' } | null>(null)
   const [motivoAccion, setMotivoAccion]       = useState('')
+
+  const [finalizarPendiente, setFinalizarPendiente] = useState<string | null>(null)
+  const [finalizando, setFinalizando]               = useState<string | null>(null)
+  const [ganadoresAbierto, setGanadoresAbierto]      = useState<string | null>(null)
 
   const cargar = async () => {
     const { data } = await sb
@@ -158,6 +163,17 @@ export default function AdminSorteosPage() {
     if (error) { toast.error('Error al reactivar'); return }
     toast.success('Sorteo reactivado')
     setSorteos(prev => prev.filter(s => s.id !== id))
+  }
+
+  const finalizar = async (id: string) => {
+    setFinalizando(id)
+    const res = await fetch(`/api/sorteos/${id}/finalizar`, { method: 'POST' })
+    const json = await res.json()
+    setFinalizando(null)
+    if (!res.ok) { toast.error(json.error ?? 'Error al finalizar el sorteo'); return }
+    toast.success('Sorteo finalizado')
+    setSorteos((prev) => prev.filter((s) => s.id !== id))
+    setFinalizarPendiente(null)
   }
 
   const confirmarAccion = async () => {
@@ -270,6 +286,16 @@ export default function AdminSorteosPage() {
                       Publicar en Facebook
                     </Button>
                   )}
+                  {s.estatus === 'activo' && (
+                    <Button size="sm" variant="secondary" onClick={() => setFinalizarPendiente(s.id)} className="gap-1.5 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 hover:text-blue-400">
+                      <Trophy className="w-3.5 h-3.5" />Finalizar
+                    </Button>
+                  )}
+                  {s.estatus === 'finalizado' && (
+                    <Button size="sm" variant="secondary" onClick={() => setGanadoresAbierto(s.id)} className="gap-1.5">
+                      <Trophy className="w-3.5 h-3.5" />Gestionar ganadores
+                    </Button>
+                  )}
                   {s.estatus !== 'eliminado' && (
                     <>
                       <Link href={`/admin/sorteos/${s.id}/editar`}>
@@ -320,6 +346,16 @@ export default function AdminSorteosPage() {
                         <DropdownMenuItem disabled={publicandoFb === s.id} onClick={() => publicarSorteoActivo(s)}>
                           {publicandoFb === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Facebook className="w-3.5 h-3.5 text-blue-400" />}
                           Publicar en Facebook
+                        </DropdownMenuItem>
+                      )}
+                      {s.estatus === 'activo' && (
+                        <DropdownMenuItem onClick={() => setFinalizarPendiente(s.id)}>
+                          <Trophy className="w-3.5 h-3.5 text-blue-400" />Finalizar
+                        </DropdownMenuItem>
+                      )}
+                      {s.estatus === 'finalizado' && (
+                        <DropdownMenuItem onClick={() => setGanadoresAbierto(s.id)}>
+                          <Trophy className="w-3.5 h-3.5" />Gestionar ganadores
                         </DropdownMenuItem>
                       )}
                       {s.estatus !== 'eliminado' && (
@@ -513,9 +549,28 @@ export default function AdminSorteosPage() {
                 </div>
               )}
 
+              {/* ── Finalizar confirm ── */}
+              {finalizarPendiente === s.id && (
+                <div className="border-t border-brand-border px-5 py-4 space-y-3">
+                  <p className="text-xs text-brand-muted font-ui">
+                    El sorteo dejará de venderse y pasará a "Sorteos Finalizados" en la web pública. Podrás declarar los ganadores ahora o después.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setFinalizarPendiente(null)}>Cancelar</Button>
+                    <Button size="sm" disabled={finalizando === s.id} onClick={() => finalizar(s.id)}>
+                      {finalizando === s.id && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />}
+                      Confirmar finalización
+                    </Button>
+                  </div>
+                </div>
+              )}
+
             </div>
           ))}
         </div>
+      )}
+      {ganadoresAbierto && (
+        <GanadoresManager sorteoId={ganadoresAbierto} open={!!ganadoresAbierto} onClose={() => setGanadoresAbierto(null)} />
       )}
     </div>
   )
