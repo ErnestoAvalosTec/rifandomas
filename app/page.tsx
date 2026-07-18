@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/public/Navbar'
 import { HeroSection } from '@/components/public/HeroSection'
 import { SorteosGrid } from '@/components/public/SorteosGrid'
+import { SorteosFinalizadosGrid } from '@/components/public/SorteosFinalizadosGrid'
 import { VerificadorBoleto } from '@/components/public/VerificadorBoleto'
 import { Footer } from '@/components/public/Footer'
 import type { Database } from '@/types/database.types'
@@ -27,8 +28,16 @@ export default async function HomePage() {
     .eq('estatus', 'activo')
     .order('created_at', { ascending: false })
 
+  const { data: sorteosFinalizados } = await supabase
+    .from('sorteos')
+    .select('*, premios(*)')
+    .eq('estatus', 'finalizado')
+    .order('fecha_sorteo', { ascending: false })
+    .limit(12)
+
   const sorteoTyped = (sorteos ?? []) as (SorteoRow & { premios: PremioRow[] })[]
-  const sorteoIds = sorteoTyped.map((s) => s.id)
+  const finalizadosTyped = (sorteosFinalizados ?? []) as (SorteoRow & { premios: PremioRow[] })[]
+  const sorteoIds = [...sorteoTyped.map((s) => s.id), ...finalizadosTyped.map((s) => s.id)]
 
   // Fetch boletos vendidos + hero data in parallel
   const [boletoResult, slidesResult, destacadoResult] = await Promise.all([
@@ -59,6 +68,11 @@ export default async function HomePage() {
     boletos_vendidos: vendidosPorSorteo[s.id] ?? 0,
   }))
 
+  const finalizadosConVendidos = finalizadosTyped.map((s) => ({
+    ...s,
+    boletos_vendidos: vendidosPorSorteo[s.id] ?? 0,
+  }))
+
   // Build sorteos destacados (hasta 3) con su conteo de boletos vendidos
   const destacadosRaw = (destacadoResult.data ?? []) as any[]
   const sorteosDestacados = destacadosRaw.map((d) => ({
@@ -76,6 +90,7 @@ export default async function HomePage() {
           ctaBannerUrl={marca?.cta_banner_url ?? null}
         />
         <SorteosGrid sorteos={sorteosConVendidos} />
+        <SorteosFinalizadosGrid sorteos={finalizadosConVendidos} />
         <VerificadorBoleto sorteos={sorteoTyped.map((s) => ({ id: s.id, nombre: s.nombre }))} />
       </main>
       <Footer logoUrl={marca?.logo_url} footer={marca} />
