@@ -16,10 +16,14 @@ export async function POST(req: NextRequest) {
     const { data: cuenta } = pedido
       ? await supabase
           .from('sorteos')
-          .select('usuario_id')
+          .select('usuario_id, estatus')
           .eq('id', pedido.sorteo_id)
           .single()
       : { data: null }
+
+    if (cuenta && cuenta.estatus !== 'activo') {
+      return NextResponse.json({ error: 'Este pedido pertenece a un sorteo que ya no está activo' }, { status: 400 })
+    }
 
     const { data: cuentaDeposito } = cuenta
       ? await supabase

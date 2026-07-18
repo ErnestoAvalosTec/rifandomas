@@ -75,8 +75,12 @@ export function OrdenesTable({ sorteos, pedidosIniciales }: OrdenesTableProps) {
   }, [sorteoIds.join(',')])
 
   const cambiarEstatus = async (id: string, estatus: 'pagado' | 'cancelado') => {
-    const { error } = await sb.from('pedidos').update({ estatus }).eq('id', id)
+    const { data: updated, error } = await sb.from('pedidos').update({ estatus }).eq('id', id).select()
     if (error) { toast.error('Error al actualizar el pedido'); return }
+    if (!updated || updated.length === 0) {
+      toast.error('Este pedido ya no se puede modificar (el sorteo no está activo)')
+      return
+    }
 
     // Sincronizar boletos: el verificador público lee boletos.estatus, no pedidos.estatus
     if (estatus === 'pagado') {

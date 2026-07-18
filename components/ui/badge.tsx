@@ -12,6 +12,7 @@ const badgeVariants = cva(
         borrador: 'border-brand-border bg-brand-border/30 text-brand-muted',
         pendiente: 'border-yellow-500/50 bg-yellow-500/10 text-yellow-400',
         activo: 'border-green-500/50 bg-green-500/10 text-green-400',
+        pausado: 'border-orange-500/50 bg-orange-500/10 text-orange-400',
         rechazado: 'border-red-500/50 bg-red-500/10 text-red-400',
         finalizado: 'border-blue-500/50 bg-blue-500/10 text-blue-400',
         pagado: 'border-green-500/50 bg-green-500/10 text-green-400',
