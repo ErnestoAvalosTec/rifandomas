@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { useOrdenesBadge } from '@/hooks/useOrdenesBadge'
 import {
   LayoutDashboard, Ticket, Plus, ShoppingCart, Settings,
-  LogOut, Menu, X, ChevronRight, MessageSquare,
+  LogOut, Menu, X, ChevronRight, MessageSquare, BarChart3,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/sorteos',   icon: Ticket,          label: 'Mis Sorteos' },
   { href: '/dashboard/sorteos/nuevo', icon: Plus,        label: 'Crear Sorteo' },
   { href: '/dashboard/ordenes',   icon: ShoppingCart,    label: 'Órdenes' },
+  { href: '/dashboard/reportes',  icon: BarChart3,       label: 'Reportes' },
   { href: '/dashboard/preguntas', icon: MessageSquare,   label: 'Preguntas' },
   { href: '/dashboard/configuracion', icon: Settings,    label: 'Configuración' },
 ]
