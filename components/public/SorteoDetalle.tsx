@@ -142,7 +142,7 @@ interface GanadorInfo {
   premio_id: string
   numero_ganador: string
   evidencia_urls: string[]
-  pedidos: { cliente_nombre: string; cliente_apellidos: string } | null
+  nombre_corto: string | null
 }
 
 export function SorteoDetalle({
@@ -181,18 +181,20 @@ export function SorteoDetalle({
           </p>
         )}
 
-        <div
-          className="inline-flex items-start gap-2.5 mx-auto text-left"
-          style={{
-            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 12, padding: '10px 14px', maxWidth: 440,
-          }}
-        >
-          <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{esLoteria ? '🎰' : '📱'}</span>
-          <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12.5, lineHeight: 1.55 }}>
-            {anuncioGanador(esLoteria)}
-          </span>
-        </div>
+        {!finalizado && (
+          <div
+            className="inline-flex items-start gap-2.5 mx-auto text-left"
+            style={{
+              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 12, padding: '10px 14px', maxWidth: 440,
+            }}
+          >
+            <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{esLoteria ? '🎰' : '📱'}</span>
+            <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12.5, lineHeight: 1.55 }}>
+              {anuncioGanador(esLoteria)}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="max-w-sm mx-auto px-4">

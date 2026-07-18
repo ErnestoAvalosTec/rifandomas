@@ -109,6 +109,18 @@ export default async function SorteoPage({ params }: { params: { id: string } })
     admin.from('sorteo_ganadores').select('premio_id, numero_ganador, evidencia_urls, pedidos(cliente_nombre, cliente_apellidos)').eq('sorteo_id', sorteo.id),
   ])
 
+  const ganadores = (ganadoresData ?? []).map((g: any) => {
+    const primerNombre = g.pedidos?.cliente_nombre?.trim().split(/\s+/)[0] ?? ''
+    const primerApellido = g.pedidos?.cliente_apellidos?.trim().split(/\s+/)[0] ?? ''
+    const nombreCorto = [primerNombre, primerApellido].filter(Boolean).join(' ') || null
+    return {
+      premio_id: g.premio_id as string,
+      numero_ganador: g.numero_ganador as string,
+      evidencia_urls: (g.evidencia_urls ?? []) as string[],
+      nombre_corto: nombreCorto as string | null,
+    }
+  })
+
   const sorteoConVendidos = { ...sorteo, boletos_vendidos: boletos?.length ?? 0 }
   const conteoOrganizador = {
     activos: sorteosOrganizador?.filter((s: any) => s.estatus === 'activo').length ?? 0,
@@ -126,7 +138,7 @@ export default async function SorteoPage({ params }: { params: { id: string } })
           sorteo={sorteoConVendidos}
           organizador={organizador}
           conteoOrganizador={conteoOrganizador}
-          ganadores={(ganadoresData ?? []) as any}
+          ganadores={ganadores}
         />
       </main>
       <Footer logoUrl={marca?.logo_url} footer={marca} />

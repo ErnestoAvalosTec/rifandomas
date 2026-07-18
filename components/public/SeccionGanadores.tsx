@@ -11,16 +11,10 @@ interface GanadorInfo {
   premio_id: string
   numero_ganador: string
   evidencia_urls: string[]
-  pedidos: { cliente_nombre: string; cliente_apellidos: string } | null
+  nombre_corto: string | null
 }
 
 const LUGAR_LABEL: Record<number, string> = { 1: '1er', 2: '2do', 3: '3er' }
-
-function nombreCorto(nombre: string, apellidos: string) {
-  const primerNombre = nombre.trim().split(/\s+/)[0] ?? ''
-  const primerApellido = apellidos.trim().split(/\s+/)[0] ?? ''
-  return `${primerNombre} ${primerApellido}`.trim()
-}
 
 export function SeccionGanadores({ premios, ganadores }: { premios: Premio[]; ganadores: GanadorInfo[] }) {
   const [lightbox, setLightbox] = useState<string | null>(null)
@@ -54,7 +48,7 @@ export function SeccionGanadores({ premios, ganadores }: { premios: Premio[]; ga
                   {ganador ? (
                     <>
                       <p className="text-white font-ui font-semibold text-sm mb-2">
-                        🏆 {ganador.pedidos ? nombreCorto(ganador.pedidos.cliente_nombre, ganador.pedidos.cliente_apellidos) : 'Ganador'}
+                        🏆 {ganador.nombre_corto ?? 'Ganador'}
                         <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}> — boleto #{ganador.numero_ganador}</span>
                       </p>
                       {ganador.evidencia_urls.length > 0 && (

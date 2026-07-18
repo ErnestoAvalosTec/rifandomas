@@ -17,12 +17,16 @@ export async function POST(req: NextRequest) {
 
     const { data: sorteoData, error: errSorteo } = await supabase
       .from('sorteos')
-      .select('usuario_id, nombre')
+      .select('usuario_id, nombre, estatus')
       .eq('id', sorteo_id)
       .single()
 
     if (errSorteo || !sorteoData) {
       return NextResponse.json({ error: 'Sorteo no encontrado' }, { status: 404 })
+    }
+
+    if (sorteoData.estatus !== 'activo') {
+      return NextResponse.json({ error: 'Este sorteo ya no está disponible para la venta de boletos' }, { status: 400 })
     }
 
     let pedido: any = null
