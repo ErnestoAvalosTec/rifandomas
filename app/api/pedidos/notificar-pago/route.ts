@@ -21,8 +21,12 @@ export async function POST(req: NextRequest) {
   }
 
   const { data: sorteo } = pedido.sorteo_id
-    ? await supabase.from('sorteos').select('nombre').eq('id', pedido.sorteo_id).single()
+    ? await supabase.from('sorteos').select('nombre, estatus').eq('id', pedido.sorteo_id).single()
     : { data: null }
+
+  if (sorteo && sorteo.estatus !== 'activo') {
+    return NextResponse.json({ error: 'Este pedido pertenece a un sorteo que ya no está activo' }, { status: 400 })
+  }
 
   const { data: boletos } = await supabase
     .from('boletos')
