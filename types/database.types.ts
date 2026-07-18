@@ -252,6 +252,38 @@ export interface Database {
           activo?: boolean
         }
       }
+      sorteo_ganadores: {
+        Row: {
+          id: string
+          sorteo_id: string
+          premio_id: string
+          pedido_id: string
+          boleto_id: string
+          numero_ganador: string
+          evidencia_urls: string[]
+          declarado_por: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          sorteo_id: string
+          premio_id: string
+          pedido_id: string
+          boleto_id: string
+          numero_ganador: string
+          evidencia_urls?: string[]
+          declarado_por?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          numero_ganador?: string
+          evidencia_urls?: string[]
+          declarado_por?: string | null
+          updated_at?: string
+        }
+      }
     }
     Functions: {
       reservar_boletos: {
