@@ -21,7 +21,7 @@ async function getSorteo(id: string): Promise<SorteoConPremios | null> {
     .from('sorteos')
     .select('*, premios(*)')
     .eq('id', id)
-    .eq('estatus', 'activo')
+    .in('estatus', ['activo', 'finalizado'])
     .single()
   return (data as SorteoConPremios | null) ?? null
 }
@@ -101,11 +101,12 @@ export default async function SorteoPage({ params }: { params: { id: string } })
   // se consulta con el cliente admin (bypassa RLS) en lugar del cliente del visitante.
   const admin = createAdminSupabaseClient() as any
 
-  const [{ data: marca }, { data: boletos }, { data: organizador }, { data: sorteosOrganizador }] = await Promise.all([
+  const [{ data: marca }, { data: boletos }, { data: organizador }, { data: sorteosOrganizador }, { data: ganadoresData }] = await Promise.all([
     sb.from('marca').select(MARCA_SELECT).eq('id', 1).single(),
     supabase.from('boletos').select('sorteo_id').eq('sorteo_id', sorteo.id).in('estatus', ['reservado', 'pagado']),
     admin.from('perfiles').select('nombre, apellidos, avatar_url, calificacion, verificado, created_at').eq('id', sorteo.usuario_id).single(),
     admin.from('sorteos').select('estatus').eq('usuario_id', sorteo.usuario_id),
+    admin.from('sorteo_ganadores').select('premio_id, numero_ganador, evidencia_urls, pedidos(cliente_nombre, cliente_apellidos)').eq('sorteo_id', sorteo.id),
   ])
 
   const sorteoConVendidos = { ...sorteo, boletos_vendidos: boletos?.length ?? 0 }
@@ -121,7 +122,12 @@ export default async function SorteoPage({ params }: { params: { id: string } })
       <JsonLd sorteo={sorteo} premioPrincipal={premioPrincipal} />
       <Navbar logoUrl={marca?.logo_url} topbar={marca} />
       <main>
-        <SorteoDetalle sorteo={sorteoConVendidos} organizador={organizador} conteoOrganizador={conteoOrganizador} />
+        <SorteoDetalle
+          sorteo={sorteoConVendidos}
+          organizador={organizador}
+          conteoOrganizador={conteoOrganizador}
+          ganadores={(ganadoresData ?? []) as any}
+        />
       </main>
       <Footer logoUrl={marca?.logo_url} footer={marca} />
     </div>

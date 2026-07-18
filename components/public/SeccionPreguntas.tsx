@@ -21,7 +21,7 @@ const PSEUDONIMOS = [
 
 const PREVIEW_COUNT = 3
 
-export function SeccionPreguntas({ sorteoId }: { sorteoId: string }) {
+export function SeccionPreguntas({ sorteoId, soloLectura = false }: { sorteoId: string; soloLectura?: boolean }) {
   const [preguntas, setPreguntas] = useState<Pregunta[]>([])
   const [cargando, setCargando] = useState(true)
   const [expandido, setExpandido] = useState(false)
@@ -108,8 +108,10 @@ export function SeccionPreguntas({ sorteoId }: { sorteoId: string }) {
         </p>
       </div>
 
-      {/* ── CTA Preguntar ── */}
-      <button
+      {!soloLectura && (
+        <>
+          {/* ── CTA Preguntar ── */}
+          <button
         onClick={() => { setFormAbierto(v => !v); setConfirmacion(false) }}
         style={{
           width: '100%',
@@ -230,6 +232,8 @@ export function SeccionPreguntas({ sorteoId }: { sorteoId: string }) {
             </form>
           )}
         </div>
+      )}
+        </>
       )}
 
       {/* ── Lista Q&A ── */}

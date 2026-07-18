@@ -10,6 +10,7 @@ import { anuncioGanador } from '@/lib/sorteoTexto'
 import { SeccionPreguntas } from './SeccionPreguntas'
 import { SorteosRelacionados } from './SorteosRelacionados'
 import { VerificadorBoleto } from './VerificadorBoleto'
+import { SeccionGanadores } from './SeccionGanadores'
 import type { Database } from '@/types/database.types'
 
 type Sorteo = Database['public']['Tables']['sorteos']['Row'] & {
@@ -137,7 +138,21 @@ function GaleriaFotos({ premios }: { premios: Database['public']['Tables']['prem
   )
 }
 
-export function SorteoDetalle({ sorteo, organizador, conteoOrganizador }: { sorteo: Sorteo; organizador?: Organizador | null; conteoOrganizador?: ConteoOrganizador }) {
+interface GanadorInfo {
+  premio_id: string
+  numero_ganador: string
+  evidencia_urls: string[]
+  pedidos: { cliente_nombre: string; cliente_apellidos: string } | null
+}
+
+export function SorteoDetalle({
+  sorteo, organizador, conteoOrganizador, ganadores = [],
+}: {
+  sorteo: Sorteo
+  organizador?: Organizador | null
+  conteoOrganizador?: ConteoOrganizador
+  ganadores?: GanadorInfo[]
+}) {
   const [modalOpen, setModalOpen] = useState(false)
   const [paqueteSeleccionado, setPaqueteSeleccionado] = useState<Paquete | null>(null)
 
@@ -147,6 +162,7 @@ export function SorteoDetalle({ sorteo, organizador, conteoOrganizador }: { sort
   }
 
   const esLoteria = !!(sorteo as any).es_loteria
+  const finalizado = sorteo.estatus === 'finalizado'
 
   return (
     <section className="py-12 sm:py-16" style={{ background: '#1c1c1c' }}>
@@ -180,22 +196,24 @@ export function SorteoDetalle({ sorteo, organizador, conteoOrganizador }: { sort
       </div>
 
       <div className="max-w-sm mx-auto px-4">
-        <SorteoCard sorteo={sorteo} onParticipar={handleParticipar} />
+        <SorteoCard sorteo={sorteo} onParticipar={handleParticipar} finalizado={finalizado} />
       </div>
 
       <GaleriaFotos premios={sorteo.premios} />
+
+      {finalizado && <SeccionGanadores premios={sorteo.premios} ganadores={ganadores} />}
 
       {organizador && (
         <OrganizadorInfo organizador={organizador} conteo={conteoOrganizador ?? { activos: 0, finalizados: 0 }} />
       )}
 
-      <SeccionPreguntas sorteoId={sorteo.id} />
+      <SeccionPreguntas sorteoId={sorteo.id} soloLectura={finalizado} />
 
       <SorteosRelacionados sorteoId={sorteo.id} />
 
-      <VerificadorBoleto sorteos={[{ id: sorteo.id, nombre: sorteo.nombre }]} />
+      {!finalizado && <VerificadorBoleto sorteos={[{ id: sorteo.id, nombre: sorteo.nombre }]} />}
 
-      {paqueteSeleccionado && (
+      {!finalizado && paqueteSeleccionado && (
         <FormularioCompra
           open={modalOpen}
           onClose={() => setModalOpen(false)}
