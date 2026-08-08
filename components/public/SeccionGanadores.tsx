@@ -15,7 +15,7 @@ interface GanadorInfo {
   link_externo: string | null
 }
 
-const LUGAR_LABEL: Record<number, string> = { 1: '1er', 2: '2do', 3: '3er' }
+const LUGAR_LABEL: Record<number, string> = { 1: '1er', 2: '2do', 3: '3er', 4: '4to', 5: '5to' }
 
 export function SeccionGanadores({ premios, ganadores }: { premios: Premio[]; ganadores: GanadorInfo[] }) {
   const [lightbox, setLightbox] = useState<string | null>(null)
@@ -24,7 +24,7 @@ export function SeccionGanadores({ premios, ganadores }: { premios: Premio[]; ga
   return (
     <>
       <div className="max-w-2xl mx-auto px-4 mt-14" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 48 }}>
-        <h2 className="font-title text-white text-center mb-8" style={{ fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', letterSpacing: '0.05em' }}>
+        <h2 className="font-title text-white text-center mb-8" style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', letterSpacing: '0.05em' }}>
           GANADORES
         </h2>
 
@@ -87,7 +87,7 @@ export function SeccionGanadores({ premios, ganadores }: { premios: Premio[]; ga
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 mt-2 text-xs font-ui font-semibold"
-                          style={{ color: '#4ADE80' }}
+                          style={{ color: '#0C9646' }}
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                           Ver publicación

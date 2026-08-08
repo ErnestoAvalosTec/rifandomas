@@ -40,7 +40,7 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid rgba(255,255,255,0.1)',
   borderRadius: 10,
   padding: '10px 14px',
-  fontSize: 14,
+  fontSize: 17,
   color: '#fff',
   outline: 'none',
   fontFamily: 'inherit',
@@ -49,7 +49,7 @@ const inputStyle: React.CSSProperties = {
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
-  fontSize: 11,
+  fontSize: 14,
   fontWeight: 700,
   color: 'rgba(255,255,255,0.5)',
   letterSpacing: '0.05em',
@@ -67,11 +67,11 @@ const cardStyle: React.CSSProperties = {
 const btnPrimary: React.CSSProperties = {
   width: '100%',
   padding: '11px 0',
-  background: '#22C55E',
+  background: '#0C9646',
   color: '#fff',
   border: 'none',
   borderRadius: 10,
-  fontSize: 13,
+  fontSize: 16,
   fontWeight: 700,
   cursor: 'pointer',
   display: 'flex',
@@ -89,7 +89,7 @@ const btnOutline: React.CSSProperties = {
   color: 'rgba(255,255,255,0.7)',
   border: '1px solid rgba(255,255,255,0.15)',
   borderRadius: 10,
-  fontSize: 13,
+  fontSize: 16,
   fontWeight: 600,
   cursor: 'pointer',
   display: 'flex',
@@ -184,22 +184,22 @@ export default function ConfiguracionPage() {
   const updateCuenta   = (i: number, field: keyof Cuenta, val: string) =>
     setCuentas(cuentas.map((c, idx) => idx === i ? { ...c, [field]: val } : c))
 
-  const errStyle: React.CSSProperties = { fontSize: 11, color: '#F87171', marginTop: 4 }
+  const errStyle: React.CSSProperties = { fontSize: 14, color: '#F87171', marginTop: 4 }
 
   return (
     <div className="max-w-2xl mx-auto" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
       <div>
-        <h1 className="font-title" style={{ fontSize: 32, color: '#fff', letterSpacing: '0.06em' }}>CONFIGURACIÓN</h1>
-        <p className="font-body" style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginTop: 4 }}>
+        <h1 className="font-title" style={{ fontSize: 35, color: '#fff', letterSpacing: '0.06em' }}>CONFIGURACIÓN</h1>
+        <p className="font-body" style={{ fontSize: 16, color: 'rgba(255,255,255,0.45)', marginTop: 4 }}>
           Administra tu cuenta y cuentas de depósito.
         </p>
       </div>
 
       {/* Datos personales */}
       <div style={cardStyle}>
-        <h2 className="font-ui" style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Save style={{ width: 16, height: 16, color: '#22C55E' }} />
+        <h2 className="font-ui" style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Save style={{ width: 16, height: 16, color: '#0C9646' }} />
           Datos personales
         </h2>
 
@@ -215,9 +215,9 @@ export default function ConfiguracionPage() {
             ) : (
               <div style={{
                 width: 64, height: 64, borderRadius: '50%',
-                background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)',
+                background: 'rgba(12, 150, 70,0.12)', border: '1px solid rgba(12, 150, 70,0.25)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#22C55E', fontWeight: 700, fontSize: 20,
+                color: '#0C9646', fontWeight: 700, fontSize: 23,
               }}>
                 <Camera style={{ width: 22, height: 22 }} />
               </div>
@@ -226,7 +226,7 @@ export default function ConfiguracionPage() {
               htmlFor="avatar-input"
               style={{
                 position: 'absolute', bottom: -2, right: -2, width: 26, height: 26, borderRadius: '50%',
-                background: '#22C55E', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: '#0C9646', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', border: '2px solid #252525',
               }}
               title="Cambiar foto de perfil"
@@ -243,8 +243,8 @@ export default function ConfiguracionPage() {
             />
           </div>
           <div>
-            <p className="font-ui text-white" style={{ fontSize: 13, fontWeight: 600 }}>Foto de perfil</p>
-            <p className="font-body" style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
+            <p className="font-ui text-white" style={{ fontSize: 16, fontWeight: 600 }}>Foto de perfil</p>
+            <p className="font-body" style={{ fontSize: 15, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
               Visible para los participantes en tus sorteos.
             </p>
           </div>
@@ -270,7 +270,7 @@ export default function ConfiguracionPage() {
           <div>
             <label className="font-ui" style={labelStyle}>Red social (para verificación)</label>
             <input placeholder="@usuario o enlace de Instagram, Facebook, TikTok..." style={inputStyle} {...perfilForm.register('redSocial')} />
-            <p className="font-body" style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 6, lineHeight: 1.5 }}>
+            <p className="font-body" style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', marginTop: 6, lineHeight: 1.5 }}>
               Compártela con nuestro equipo para verificar tu cuenta y mostrar la insignia de "Perfil verificado".
             </p>
           </div>
@@ -283,8 +283,8 @@ export default function ConfiguracionPage() {
 
       {/* Cambiar contraseña */}
       <div style={cardStyle}>
-        <h2 className="font-ui" style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Lock style={{ width: 16, height: 16, color: '#22C55E' }} />
+        <h2 className="font-ui" style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Lock style={{ width: 16, height: 16, color: '#0C9646' }} />
           Cambiar contraseña
         </h2>
         <form onSubmit={passForm.handleSubmit(cambiarPassword)} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -308,8 +308,8 @@ export default function ConfiguracionPage() {
       {/* Cuentas de depósito */}
       <div style={cardStyle}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 className="font-ui" style={{ fontSize: 15, fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <CreditCard style={{ width: 16, height: 16, color: '#22C55E' }} />
+          <h2 className="font-ui" style={{ fontSize: 18, fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <CreditCard style={{ width: 16, height: 16, color: '#0C9646' }} />
             Cuentas de depósito
           </h2>
           <button
@@ -322,7 +322,7 @@ export default function ConfiguracionPage() {
               background: 'transparent',
               border: '1px solid rgba(255,255,255,0.15)',
               color: 'rgba(255,255,255,0.7)',
-              fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              fontSize: 15, fontWeight: 600, cursor: 'pointer',
             }}
           >
             <Plus style={{ width: 13, height: 13 }} />
@@ -342,7 +342,7 @@ export default function ConfiguracionPage() {
               gap: 12,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span className="font-ui" style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Cuenta {i + 1}</span>
+                <span className="font-ui" style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>Cuenta {i + 1}</span>
                 <button
                   type="button"
                   onClick={() => eliminarCuenta(i)}
@@ -384,7 +384,7 @@ export default function ConfiguracionPage() {
         )}
 
         {cuentas.length === 0 && (
-          <p className="font-body" style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '16px 0' }}>
+          <p className="font-body" style={{ fontSize: 16, color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '16px 0' }}>
             No tienes cuentas registradas. Agrégalas para que los clientes puedan depositarte.
           </p>
         )}

@@ -32,7 +32,7 @@ export function OrganizadorInfo({ organizador, conteo }: { organizador: Organiza
           padding: 20,
         }}
       >
-        <p className="font-ui" style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>
+        <p className="font-ui" style={{ fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>
           Organizado por
         </p>
 
@@ -49,9 +49,9 @@ export function OrganizadorInfo({ organizador, conteo }: { organizador: Organiza
               <div
                 style={{
                   width: 56, height: 56, borderRadius: '50%',
-                  background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)',
+                  background: 'rgba(12, 150, 70,0.12)', border: '1px solid rgba(12, 150, 70,0.25)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#22C55E', fontWeight: 700, fontSize: 18,
+                  color: '#0C9646', fontWeight: 700, fontSize: 21,
                 }}
                 className="font-ui"
               >
@@ -77,7 +77,7 @@ export function OrganizadorInfo({ organizador, conteo }: { organizador: Organiza
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
               <p
                 className="font-ui text-white"
-                style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}
+                style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}
               >
                 {nombreCompleto}
               </p>
@@ -87,7 +87,7 @@ export function OrganizadorInfo({ organizador, conteo }: { organizador: Organiza
                   style={{
                     display: 'inline-flex', alignItems: 'center',
                     background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-                    color: 'rgba(255,255,255,0.55)', fontSize: 9, fontWeight: 700, letterSpacing: '0.05em',
+                    color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: 700, letterSpacing: '0.05em',
                     borderRadius: 999, padding: '2px 6px', textTransform: 'uppercase',
                     flexShrink: 0, whiteSpace: 'nowrap',
                   }}
@@ -98,10 +98,10 @@ export function OrganizadorInfo({ organizador, conteo }: { organizador: Organiza
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
               <Star style={{ width: 13, height: 13, color: '#FACC15', fill: '#FACC15' }} />
-              <span className="font-ui" style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
+              <span className="font-ui" style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>
                 {organizador.calificacion.toFixed(1)}
               </span>
-              <span className="font-body" style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
+              <span className="font-body" style={{ fontSize: 15, color: 'rgba(255,255,255,0.4)' }}>
                 · {antiguedadEnPlataforma(organizador.created_at)}
               </span>
             </div>
@@ -110,14 +110,14 @@ export function OrganizadorInfo({ organizador, conteo }: { organizador: Organiza
 
         <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
           <div style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '10px 14px', textAlign: 'center' }}>
-            <p className="font-title text-white" style={{ fontSize: 20, lineHeight: 1.1 }}>{conteo.activos}</p>
-            <p className="font-ui" style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: 2 }}>
+            <p className="font-title text-white" style={{ fontSize: 23, lineHeight: 1.1 }}>{conteo.activos}</p>
+            <p className="font-ui" style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: 2 }}>
               Sorteos activos
             </p>
           </div>
           <div style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '10px 14px', textAlign: 'center' }}>
-            <p className="font-title text-white" style={{ fontSize: 20, lineHeight: 1.1 }}>{conteo.finalizados}</p>
-            <p className="font-ui" style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: 2 }}>
+            <p className="font-title text-white" style={{ fontSize: 23, lineHeight: 1.1 }}>{conteo.finalizados}</p>
+            <p className="font-ui" style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: 2 }}>
               Sorteos finalizados
             </p>
           </div>

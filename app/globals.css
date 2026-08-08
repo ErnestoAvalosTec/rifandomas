@@ -42,7 +42,7 @@
   }
 
   ::selection {
-    background-color: #22C55E;
+    background-color: #0C9646;
     color: #ffffff;
   }
 
@@ -58,7 +58,7 @@
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #22C55E;
+    background: #0C9646;
   }
 }
 
@@ -137,14 +137,6 @@ input[type=number] {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(229, 231, 235, 0.9);
-  }
-
-  /* Gradient text */
-  .text-gradient-primary {
-    background: linear-gradient(135deg, #16A34A, #22C55E, #4ADE80);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
   }
 
   /* Shimmer skeleton */

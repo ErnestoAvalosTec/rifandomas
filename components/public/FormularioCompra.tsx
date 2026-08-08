@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress'
 import { SelectorNumeros } from './SelectorNumeros'
 import { formatCurrency, ESTADOS_MEXICO } from '@/lib/utils'
-import { CheckCircle2, Loader2, Minus, Plus } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { CheckCircle2, Copy, Check, Loader2, Minus, Plus } from 'lucide-react'
 import type { Database } from '@/types/database.types'
 
 type Sorteo = Database['public']['Tables']['sorteos']['Row'] & {
@@ -36,9 +37,9 @@ interface FormularioCompraProps {
 const schemaCliente = z.object({
   nombre: z.string().min(2, 'Mínimo 2 caracteres'),
   apellido_paterno: z.string().min(2, 'Requerido'),
-  apellido_materno: z.string().min(2, 'Requerido'),
+  apellido_materno: z.string().optional(),
   telefono: z.string().length(10, 'Ingresa 10 dígitos sin el código de país'),
-  estado: z.string().min(1, 'Selecciona tu estado'),
+  estado: z.string().optional(),
   aviso_privacidad: z.literal(true, { errorMap: () => ({ message: 'Debes aceptar el aviso' }) }),
 })
 
@@ -52,6 +53,9 @@ const BTN_BASE: React.CSSProperties = {
   cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
 }
 
+const storageKey = (sorteoId: string) => `rf_pedido_${sorteoId}`
+const STORAGE_TTL_MS = 6 * 60 * 60 * 1000 // 6 horas
+
 export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: FormularioCompraProps) {
   const maxCantidad = Math.min(50, sorteo.total_numeros)
   const [paso, setPaso] = useState(0)
@@ -61,6 +65,7 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
   const [pedidoExitoso, setPedidoExitoso] = useState(false)
   const [datosCliente, setDatosCliente] = useState<ClienteForm | null>(null)
   const [referenciaPedido, setReferenciaPedido] = useState<string | null>(null)
+  const [referenciaCopiada, setReferenciaCopiada] = useState(false)
 
   const monto = cantidad * sorteo.precio_unitario
 
@@ -75,9 +80,48 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
     return () => window.removeEventListener('beforeunload', handler)
   }, [enviando])
 
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm<ClienteForm>({
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<ClienteForm>({
     resolver: zodResolver(schemaCliente),
   })
+
+  const limpiarProgresoGuardado = () => {
+    try { localStorage.removeItem(storageKey(sorteo.id)) } catch { /* localStorage no disponible */ }
+  }
+
+  // Restaura el progreso si el usuario recargó la página o cerró la pestaña sin querer
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey(sorteo.id))
+      if (!raw) return
+      const saved = JSON.parse(raw)
+      if (!saved || Date.now() - saved.ts > STORAGE_TTL_MS) {
+        limpiarProgresoGuardado()
+        return
+      }
+      if (saved.cantidad) setCantidadRaw(saved.cantidad)
+      if (Array.isArray(saved.numerosSeleccionados)) setNumerosSeleccionados(saved.numerosSeleccionados)
+      if (saved.datosCliente) {
+        setDatosCliente(saved.datosCliente)
+        setPaso(1)
+        setValue('nombre', saved.datosCliente.nombre ?? '')
+        setValue('apellido_paterno', saved.datosCliente.apellido_paterno ?? '')
+        setValue('apellido_materno', saved.datosCliente.apellido_materno ?? '')
+        setValue('telefono', saved.datosCliente.telefono ?? '')
+        setValue('estado', saved.datosCliente.estado ?? '')
+      }
+    } catch { /* datos guardados corruptos, se ignoran */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Guarda el progreso mientras el pedido no se haya completado
+  useEffect(() => {
+    if (pedidoExitoso) return
+    const sinProgreso = !datosCliente && numerosSeleccionados.length === 0 && cantidad === (paqueteInicial.cantidad || 1)
+    if (sinProgreso) return
+    try {
+      localStorage.setItem(storageKey(sorteo.id), JSON.stringify({ cantidad, numerosSeleccionados, datosCliente, ts: Date.now() }))
+    } catch { /* localStorage no disponible */ }
+  }, [cantidad, numerosSeleccionados, datosCliente, pedidoExitoso, paqueteInicial.cantidad, sorteo.id])
 
   const setCantidad = (n: number) => {
     const v = Math.max(1, Math.min(maxCantidad, isNaN(n) ? 1 : n))
@@ -93,7 +137,20 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
     setPedidoExitoso(false)
     setDatosCliente(null)
     setReferenciaPedido(null)
+    setReferenciaCopiada(false)
+    limpiarProgresoGuardado()
     onClose()
+  }
+
+  const copiarReferencia = async () => {
+    if (!referenciaPedido) return
+    try {
+      await navigator.clipboard.writeText(referenciaPedido)
+      setReferenciaCopiada(true)
+      setTimeout(() => setReferenciaCopiada(false), 2000)
+    } catch {
+      toast.error('No se pudo copiar la referencia.')
+    }
   }
 
   const terminarPedido = async () => {
@@ -112,9 +169,9 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
           sorteo_id: sorteo.id,
           usuario_id: sorteo.usuario_id,
           cliente_nombre: datosCliente.nombre,
-          cliente_apellidos: `${datosCliente.apellido_paterno} ${datosCliente.apellido_materno}`,
+          cliente_apellidos: [datosCliente.apellido_paterno, datosCliente.apellido_materno].filter(Boolean).join(' '),
           cliente_telefono: telefonoConCodigo,
-          cliente_estado: datosCliente.estado,
+          cliente_estado: datosCliente.estado || null,
           monto_total: monto,
           numeros: numerosSeleccionados,
         }),
@@ -123,8 +180,28 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
       const json = await res.json()
 
       if (res.status === 409 && json.error === 'numeros_no_disponibles') {
-        toast.error('Uno o más números ya fueron tomados. Por favor selecciona otros.', { duration: 6000 })
-        setNumerosSeleccionados([])
+        // En vez de perder toda la selección, solo se descartan los números
+        // que ya no están disponibles (consulta puntual, sin esperar al realtime).
+        const supabase = createClient() as any
+        const { data } = await supabase
+          .from('boletos')
+          .select('numero, estatus')
+          .eq('sorteo_id', sorteo.id)
+          .in('numero', numerosSeleccionados)
+
+        const ocupados = new Set(
+          (data ?? []).filter((b: { estatus: string }) => b.estatus !== 'disponible').map((b: { numero: string }) => b.numero)
+        )
+        const disponibles = numerosSeleccionados.filter((n) => !ocupados.has(n))
+        setNumerosSeleccionados(disponibles)
+
+        const perdidos = numerosSeleccionados.length - disponibles.length
+        toast.error(
+          perdidos > 0
+            ? `${perdidos} número${perdidos > 1 ? 's' : ''} ya ${perdidos > 1 ? 'fueron tomados' : 'fue tomado'}. Elige ${perdidos} más para continuar.`
+            : 'Uno o más números ya fueron tomados. Por favor selecciona otros.',
+          { duration: 6000 }
+        )
         return
       }
       if (!res.ok) throw new Error(json.error ?? 'No se pudo crear el pedido.')
@@ -148,6 +225,7 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
           referencia,
         }),
       })
+      limpiarProgresoGuardado()
       setPedidoExitoso(true)
     } catch (err) {
       toast.error('Ocurrió un error. Por favor intenta de nuevo.')
@@ -178,15 +256,15 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
             <div style={{
               width: 40, height: 40,
               border: '3px solid rgba(255,255,255,0.15)',
-              borderTopColor: '#4ADE80',
+              borderTopColor: '#0C9646',
               borderRadius: '50%',
               animation: 'rf-spin 0.75s linear infinite',
             }} />
             <div>
-              <p style={{ color: '#fff', fontSize: 15, fontWeight: 700, marginBottom: 4 }}>
+              <p style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 4 }}>
                 Procesando tu pedido...
               </p>
-              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12 }}>
+              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 15 }}>
                 No cierres ni recargues esta ventana.
               </p>
             </div>
@@ -201,15 +279,23 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
               Tienes <strong className="text-brand-gold">48 horas</strong> para realizar la transferencia.
             </p>
             {referenciaPedido && (
-              <div
-                className="inline-flex flex-col items-center gap-1 mx-auto mb-6 px-4 py-3 rounded-xl border"
+              <button
+                type="button"
+                onClick={copiarReferencia}
+                className="inline-flex flex-col items-center gap-1 mx-auto mb-6 px-4 py-3 rounded-xl border cursor-pointer"
                 style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.1)' }}
               >
                 <span className="text-[11px] text-brand-muted font-ui uppercase tracking-wide">
                   Usa esta referencia al transferir
                 </span>
-                <span className="font-title text-2xl text-primary tracking-widest">{referenciaPedido}</span>
-              </div>
+                <span className="flex items-center gap-2 font-title text-2xl text-primary tracking-widest">
+                  {referenciaPedido}
+                  {referenciaCopiada ? <Check className="w-4 h-4 text-brand-green" /> : <Copy className="w-4 h-4 opacity-60" />}
+                </span>
+                <span className="text-[10px] text-brand-muted font-ui">
+                  {referenciaCopiada ? '¡Copiada!' : 'Toca para copiar'}
+                </span>
+              </button>
             )}
             <Button onClick={handleClose} size="lg" className="w-full">Cerrar</Button>
           </div>
@@ -272,7 +358,7 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
                         background: 'rgba(255,255,255,0.07)',
                         border: '1px solid rgba(255,255,255,0.15)',
                         borderRadius: 10, color: '#fff',
-                        fontSize: 'clamp(16px, 4vw, 24px)', fontWeight: 800, outline: 'none',
+                        fontSize: 'clamp(19px, 4vw, 27px)', fontWeight: 800, outline: 'none',
                       }}
                     />
 
@@ -284,9 +370,9 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
                       className="w-8 h-8 sm:w-11 sm:h-11 flex items-center justify-center flex-shrink-0"
                       style={{
                         borderRadius: 8,
-                        background: cantidad >= maxCantidad ? 'rgba(255,255,255,0.04)' : 'rgba(34,197,94,0.15)',
-                        border: `1px solid ${cantidad >= maxCantidad ? 'rgba(255,255,255,0.12)' : 'rgba(34,197,94,0.4)'}`,
-                        color: cantidad >= maxCantidad ? 'rgba(255,255,255,0.25)' : '#4ADE80',
+                        background: cantidad >= maxCantidad ? 'rgba(255,255,255,0.04)' : 'rgba(12, 150, 70,0.15)',
+                        border: `1px solid ${cantidad >= maxCantidad ? 'rgba(255,255,255,0.12)' : 'rgba(12, 150, 70,0.4)'}`,
+                        color: cantidad >= maxCantidad ? 'rgba(255,255,255,0.25)' : '#0C9646',
                         cursor: cantidad >= maxCantidad ? 'not-allowed' : 'pointer',
                       }}
                     >
@@ -294,16 +380,16 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
                     </button>
                   </div>
 
-                  <p className="text-center text-xs text-brand-muted font-ui">
-                    {cantidad} boleto{cantidad > 1 ? 's' : ''} × {formatCurrency(sorteo.precio_unitario)} c/u
+                  <p className="text-center text-xs text-brand-muted font-ui" style={{ fontWeight: 300 }}>
+                    <strong style={{ fontWeight: 800, color: '#fff' }}>{cantidad}</strong> boleto{cantidad > 1 ? 's' : ''} × {formatCurrency(sorteo.precio_unitario)} c/u
                   </p>
 
                   {/* Total */}
                   <div
                     className="flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 rounded-xl border"
-                    style={{ background: 'rgba(34,197,94,0.07)', borderColor: 'rgba(34,197,94,0.2)' }}
+                    style={{ background: 'rgba(12, 150, 70,0.07)', borderColor: 'rgba(12, 150, 70,0.2)' }}
                   >
-                    <span className="font-ui text-brand-muted text-xs sm:text-sm">Total a pagar:</span>
+                    <span className="font-ui text-brand-muted text-xs sm:text-sm" style={{ fontWeight: 300 }}>Total a pagar:</span>
                     <span className="font-title text-xl sm:text-2xl text-primary">{formatCurrency(monto)}</span>
                   </div>
                 </div>
@@ -330,7 +416,7 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
                         {errors.apellido_paterno && <p className="text-xs text-red-400">{errors.apellido_paterno.message}</p>}
                       </div>
                       <div className="space-y-1.5">
-                        <Label htmlFor="ap_materno">Ap. Materno</Label>
+                        <Label htmlFor="ap_materno">Ap. Materno <span className="text-brand-muted font-normal">(opcional)</span></Label>
                         <Input id="ap_materno" placeholder="Materno" {...register('apellido_materno')} />
                         {errors.apellido_materno && <p className="text-xs text-red-400">{errors.apellido_materno.message}</p>}
                       </div>
@@ -346,8 +432,8 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label>Estado</Label>
-                    <Select onValueChange={(v) => setValue('estado', v)}>
+                    <Label>Estado <span className="text-brand-muted font-normal">(opcional)</span></Label>
+                    <Select value={watch('estado') || undefined} onValueChange={(v) => setValue('estado', v)}>
                       <SelectTrigger><SelectValue placeholder="Selecciona tu estado" /></SelectTrigger>
                       <SelectContent>{ESTADOS_MEXICO.map((est) => <SelectItem key={est} value={est}>{est}</SelectItem>)}</SelectContent>
                     </Select>
@@ -371,8 +457,8 @@ export function FormularioCompra({ open, onClose, sorteo, paqueteInicial }: Form
             {paso === 1 && (
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-ui font-semibold text-white">
-                    Elige tus {cantidad} número{cantidad > 1 ? 's' : ''}
+                  <h3 className="font-ui text-white" style={{ fontWeight: 300 }}>
+                    Elige tus <strong style={{ fontWeight: 800 }}>{cantidad}</strong> número{cantidad > 1 ? 's' : ''}
                   </h3>
                   <span className="text-primary font-title text-xl">{formatCurrency(monto)}</span>
                 </div>

@@ -33,7 +33,7 @@ export function FiltroPanel({ categoriasDisponibles, filtros, onChange, resultad
     border: '1px solid rgba(255,255,255,0.12)',
     borderRadius: 7,
     padding: '7px 9px',
-    fontSize: 12,
+    fontSize: 15,
     outline: 'none',
   }
 
@@ -75,7 +75,7 @@ export function FiltroPanel({ categoriasDisponibles, filtros, onChange, resultad
             borderBottom: 'none',
             borderLeft: 'none',
             borderRight: '1px solid rgba(255,255,255,0.07)',
-            background: visible ? 'transparent' : 'rgba(74,222,128,0.08)',
+            background: visible ? 'transparent' : 'rgba(12, 150, 70,0.08)',
             cursor: 'pointer',
             padding: '10px 0',
             borderRadius: 0,
@@ -87,7 +87,7 @@ export function FiltroPanel({ categoriasDisponibles, filtros, onChange, resultad
             <ChevronRight style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.45)' }} />
           ) : (
             <>
-              <SlidersHorizontal style={{ width: 12, height: 12, color: '#4ADE80' }} />
+              <SlidersHorizontal style={{ width: 12, height: 12, color: '#0C9646' }} />
               <ChevronLeft style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.7)' }} />
             </>
           )}
@@ -109,10 +109,10 @@ export function FiltroPanel({ categoriasDisponibles, filtros, onChange, resultad
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              color: '#fff', fontSize: 11, fontWeight: 700,
+              color: '#fff', fontSize: 14, fontWeight: 700,
               letterSpacing: '0.07em', textTransform: 'uppercase',
             }}>
-              <SlidersHorizontal style={{ width: 13, height: 13, color: '#4ADE80', flexShrink: 0 }} />
+              <SlidersHorizontal style={{ width: 13, height: 13, color: '#0C9646', flexShrink: 0 }} />
               Filtros
             </span>
             {hayFiltros && (
@@ -131,11 +131,11 @@ export function FiltroPanel({ categoriasDisponibles, filtros, onChange, resultad
 
           {/* Results badge */}
           <div style={{
-            background: hayFiltros ? 'rgba(74,222,128,0.12)' : 'rgba(255,255,255,0.05)',
-            border: `1px solid ${hayFiltros ? 'rgba(74,222,128,0.25)' : 'rgba(255,255,255,0.07)'}`,
+            background: hayFiltros ? 'rgba(12, 150, 70,0.12)' : 'rgba(255,255,255,0.05)',
+            border: `1px solid ${hayFiltros ? 'rgba(12, 150, 70,0.25)' : 'rgba(255,255,255,0.07)'}`,
             borderRadius: 7, padding: '5px 8px', textAlign: 'center',
-            color: hayFiltros ? '#4ADE80' : 'rgba(255,255,255,0.35)',
-            fontSize: 10, fontWeight: 600,
+            color: hayFiltros ? '#0C9646' : 'rgba(255,255,255,0.35)',
+            fontSize: 13, fontWeight: 600,
           }}>
             {hayFiltros ? `${resultados} de ${total} sorteos` : `${total} sorteos`}
           </div>
@@ -145,7 +145,7 @@ export function FiltroPanel({ categoriasDisponibles, filtros, onChange, resultad
           {/* Category */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
             <p style={{
-              color: 'rgba(255,255,255,0.45)', fontSize: 9, fontWeight: 700,
+              color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: 700,
               letterSpacing: '0.06em', textTransform: 'uppercase', margin: 0,
             }}>
               Categoría
@@ -167,13 +167,13 @@ export function FiltroPanel({ categoriasDisponibles, filtros, onChange, resultad
           {/* Price range */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <p style={{
-              color: 'rgba(255,255,255,0.45)', fontSize: 9, fontWeight: 700,
+              color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: 700,
               letterSpacing: '0.06em', textTransform: 'uppercase', margin: 0,
             }}>
               Precio de boleto
             </p>
             <div>
-              <label style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9, display: 'block', marginBottom: 4 }}>
+              <label style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, display: 'block', marginBottom: 4 }}>
                 Mínimo ($)
               </label>
               <input
@@ -185,7 +185,7 @@ export function FiltroPanel({ categoriasDisponibles, filtros, onChange, resultad
               />
             </div>
             <div>
-              <label style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9, display: 'block', marginBottom: 4 }}>
+              <label style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, display: 'block', marginBottom: 4 }}>
                 Máximo ($)
               </label>
               <input
@@ -208,7 +208,7 @@ export function FiltroPanel({ categoriasDisponibles, filtros, onChange, resultad
                   background: 'rgba(255,255,255,0.06)',
                   color: 'rgba(255,255,255,0.55)',
                   border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: 7, fontSize: 10, fontWeight: 600,
+                  borderRadius: 7, fontSize: 13, fontWeight: 600,
                   cursor: 'pointer',
                 }}
               >

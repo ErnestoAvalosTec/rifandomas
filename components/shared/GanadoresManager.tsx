@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Loader2, Upload, X, CheckCircle2 } from 'lucide-react'
 
-const LUGAR_LABEL: Record<number, string> = { 1: '1er Premio', 2: '2do Premio', 3: '3er Premio' }
+const LUGAR_LABEL: Record<number, string> = { 1: '1er Premio', 2: '2do Premio', 3: '3er Premio', 4: '4to Premio', 5: '5to Premio' }
 const MAX_EVIDENCIAS = 6
 
 interface PremioLocal {

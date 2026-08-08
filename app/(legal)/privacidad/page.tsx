@@ -28,7 +28,7 @@ function Section({
       >
         <span
           className="font-ui text-sm font-bold px-2 py-0.5 rounded-md flex-shrink-0"
-          style={{ background: '#22C55E', color: '#fff' }}
+          style={{ background: '#0C9646', color: '#fff' }}
         >
           {number}
         </span>
@@ -123,7 +123,7 @@ export default function PrivacidadPage() {
         </p>
         <div
           className="mt-6 p-4 rounded-xl text-sm font-body leading-relaxed text-brand-muted"
-          style={{ background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.2)' }}
+          style={{ background: 'rgba(12, 150, 70,0.07)', border: '1px solid rgba(12, 150, 70,0.2)' }}
         >
           El presente Aviso de Privacidad se emite en cumplimiento de la{' '}
           <strong className="text-white">
@@ -355,7 +355,7 @@ export default function PrivacidadPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <span
                     className="w-7 h-7 rounded-lg font-title text-base flex items-center justify-center text-white flex-shrink-0"
-                    style={{ background: '#22C55E' }}
+                    style={{ background: '#0C9646' }}
                   >
                     {letra}
                   </span>

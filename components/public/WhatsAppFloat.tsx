@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { X } from 'lucide-react'
 
-const WA_URL = 'https://wa.me/523318739737'
+const WA_URL = 'https://wa.me/523318767517'
 
 const MESSAGES = [
   '¿En qué te podemos ayudar? 😊',
@@ -95,7 +95,7 @@ export function WhatsAppFloat() {
 
             {/* Texto */}
             <p style={{
-              color: '#fff', fontSize: 13, fontWeight: 500,
+              color: '#fff', fontSize: 16, fontWeight: 500,
               lineHeight: 1.45, paddingRight: 14,
               fontFamily: 'var(--font-inter, sans-serif)',
             }}>

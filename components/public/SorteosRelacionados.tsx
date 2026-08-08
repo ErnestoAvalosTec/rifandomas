@@ -73,7 +73,7 @@ function MiniCard({ sorteo }: { sorteo: SorteoRel }) {
             color: '#fff',
             borderRadius: 4,
             padding: '2px 6px',
-            fontSize: 9,
+            fontSize: 12,
             fontWeight: 800,
             lineHeight: 1,
           }}
@@ -87,7 +87,7 @@ function MiniCard({ sorteo }: { sorteo: SorteoRel }) {
         <p
           style={{
             color: '#fff',
-            fontSize: 12,
+            fontSize: 15,
             fontWeight: 600,
             lineHeight: 1.35,
             display: '-webkit-box',
@@ -99,7 +99,7 @@ function MiniCard({ sorteo }: { sorteo: SorteoRel }) {
           {primer?.nombre ?? sorteo.nombre}
         </p>
         {primer?.valor_estimado ? (
-          <p style={{ color: 'rgba(253,186,116,0.85)', fontSize: 10, fontWeight: 600, marginTop: 5 }}>
+          <p style={{ color: 'rgba(253,186,116,0.85)', fontSize: 13, fontWeight: 600, marginTop: 5 }}>
             {formatCurrency(primer.valor_estimado)}
           </p>
         ) : null}
@@ -137,11 +137,11 @@ export function SorteosRelacionados({ sorteoId }: { sorteoId: string }) {
         <div>
           <h2
             className="font-title text-white"
-            style={{ fontSize: 'clamp(1.1rem, 3vw, 1.5rem)', letterSpacing: '0.05em' }}
+            style={{ fontSize: 'clamp(1.3rem, 3vw, 1.7rem)', letterSpacing: '0.05em' }}
           >
             MÁS SORTEOS
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 12, marginTop: 2 }}>
+          <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 15, marginTop: 2 }}>
             Sorteos que pueden interesarte
           </p>
         </div>

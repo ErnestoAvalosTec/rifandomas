@@ -8,8 +8,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { Ticket, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+import { AuthLogo } from '@/components/public/AuthLogo'
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''
 
@@ -26,7 +27,7 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid rgba(255,255,255,0.1)',
   borderRadius: 10,
   padding: '10px 14px',
-  fontSize: 14,
+  fontSize: 17,
   color: '#fff',
   outline: 'none',
   fontFamily: 'inherit',
@@ -97,21 +98,7 @@ export default function LoginPage() {
     >
       <div style={{ width: '100%', maxWidth: 420 }}>
 
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 10,
-              background: '#22C55E',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <Ticket style={{ width: 20, height: 20, color: '#fff' }} />
-            </div>
-            <span className="font-title" style={{ fontSize: 28, letterSpacing: '0.08em', color: '#fff' }}>
-              RIFANDO<span style={{ color: '#22C55E' }}>+</span>
-            </span>
-          </Link>
-        </div>
+        <AuthLogo />
 
         {/* Card */}
         <div style={{
@@ -120,10 +107,10 @@ export default function LoginPage() {
           borderRadius: 16,
           padding: '36px 32px',
         }}>
-          <h1 className="font-title" style={{ fontSize: 28, color: '#fff', letterSpacing: '0.06em', marginBottom: 6 }}>
+          <h1 className="font-title" style={{ fontSize: 31, color: '#fff', letterSpacing: '0.06em', marginBottom: 6 }}>
             INICIAR SESIÓN
           </h1>
-          <p className="font-body" style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 28 }}>
+          <p className="font-body" style={{ fontSize: 16, color: 'rgba(255,255,255,0.45)', marginBottom: 28 }}>
             Accede a tu cuenta para gestionar tus sorteos.
           </p>
 
@@ -131,7 +118,7 @@ export default function LoginPage() {
 
             {/* Email */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              <label className="font-ui" style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.04em' }}>
+              <label className="font-ui" style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.04em' }}>
                 CORREO ELECTRÓNICO
               </label>
               <input
@@ -143,13 +130,13 @@ export default function LoginPage() {
                 {...register('email')}
               />
               {errors.email && (
-                <p className="font-body" style={{ fontSize: 11, color: '#F87171' }}>{errors.email.message}</p>
+                <p className="font-body" style={{ fontSize: 14, color: '#F87171' }}>{errors.email.message}</p>
               )}
             </div>
 
             {/* Password */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              <label className="font-ui" style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.04em' }}>
+              <label className="font-ui" style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.04em' }}>
                 CONTRASEÑA
               </label>
               <div style={{ position: 'relative' }}>
@@ -177,7 +164,7 @@ export default function LoginPage() {
                 </button>
               </div>
               {errors.password && (
-                <p className="font-body" style={{ fontSize: 11, color: '#F87171' }}>{errors.password.message}</p>
+                <p className="font-body" style={{ fontSize: 14, color: '#F87171' }}>{errors.password.message}</p>
               )}
             </div>
 
@@ -199,11 +186,11 @@ export default function LoginPage() {
               style={{
                 width: '100%',
                 padding: '12px 0',
-                background: (cargando || (!!TURNSTILE_SITE_KEY && !captchaToken)) ? 'rgba(34,197,94,0.6)' : '#22C55E',
+                background: (cargando || (!!TURNSTILE_SITE_KEY && !captchaToken)) ? 'rgba(12, 150, 70,0.6)' : '#0C9646',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 10,
-                fontSize: 14,
+                fontSize: 17,
                 fontWeight: 700,
                 letterSpacing: '0.04em',
                 cursor: (cargando || (!!TURNSTILE_SITE_KEY && !captchaToken)) ? 'not-allowed' : 'pointer',
@@ -222,9 +209,9 @@ export default function LoginPage() {
 
           </form>
 
-          <p className="font-body" style={{ textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 24 }}>
+          <p className="font-body" style={{ textAlign: 'center', fontSize: 16, color: 'rgba(255,255,255,0.4)', marginTop: 24 }}>
             ¿No tienes cuenta?{' '}
-            <Link href="/registro" style={{ color: '#22C55E', fontWeight: 600, textDecoration: 'none' }}>
+            <Link href="/registro" style={{ color: '#0C9646', fontWeight: 600, textDecoration: 'none' }}>
               Regístrate gratis
             </Link>
           </p>

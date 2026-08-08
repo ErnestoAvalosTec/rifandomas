@@ -79,7 +79,7 @@ export function SeccionPreguntas({ sorteoId, soloLectura = false }: { sorteoId: 
     border: '1px solid rgba(255,255,255,0.1)',
     borderRadius: 8,
     padding: '9px 12px',
-    fontSize: 13,
+    fontSize: 16,
     color: '#fff',
     outline: 'none',
     marginTop: 6,
@@ -95,11 +95,11 @@ export function SeccionPreguntas({ sorteoId, soloLectura = false }: { sorteoId: 
       <div style={{ marginBottom: 20 }}>
         <h2
           className="font-title text-white"
-          style={{ fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', letterSpacing: '0.05em' }}
+          style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', letterSpacing: '0.05em' }}
         >
           PREGUNTAS
         </h2>
-        <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 12, marginTop: 3 }}>
+        <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 15, marginTop: 3 }}>
           {cargando
             ? 'Cargando...'
             : preguntas.length === 0
@@ -126,7 +126,7 @@ export function SeccionPreguntas({ sorteoId, soloLectura = false }: { sorteoId: 
           justifyContent: 'center',
           gap: 10,
           color: '#fff',
-          fontSize: 14,
+          fontSize: 17,
           fontWeight: 600,
           transition: 'border-color 0.15s, background 0.15s',
           marginBottom: formAbierto ? 0 : 18,
@@ -150,15 +150,15 @@ export function SeccionPreguntas({ sorteoId, soloLectura = false }: { sorteoId: 
         >
           {confirmacion ? (
             <div style={{ textAlign: 'center', padding: '14px 0' }}>
-              <p style={{ color: '#4ADE80', fontWeight: 700, fontSize: 14 }}>Pregunta enviada</p>
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 5 }}>
+              <p style={{ color: '#0C9646', fontWeight: 700, fontSize: 17 }}>Pregunta enviada</p>
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15, marginTop: 5 }}>
                 El organizador la revisará y decidirá si publicarla.
               </p>
             </div>
           ) : (
             <form onSubmit={handleEnviar} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                <label style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                   Tu nombre (opcional)
                 </label>
                 <input
@@ -170,7 +170,7 @@ export function SeccionPreguntas({ sorteoId, soloLectura = false }: { sorteoId: 
                 />
               </div>
               <div>
-                <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                <label style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                   Tu pregunta *
                 </label>
                 <textarea
@@ -182,7 +182,7 @@ export function SeccionPreguntas({ sorteoId, soloLectura = false }: { sorteoId: 
                   rows={3}
                   style={{ ...inputBase, resize: 'vertical' }}
                 />
-                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 4, textAlign: 'right' }}>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.25)', marginTop: 4, textAlign: 'right' }}>
                   {texto.length}/400
                 </p>
               </div>
@@ -193,9 +193,9 @@ export function SeccionPreguntas({ sorteoId, soloLectura = false }: { sorteoId: 
                   style={{
                     flex: 1,
                     padding: '10px 0',
-                    background: (!texto.trim() || enviando) ? 'rgba(34,197,94,0.35)' : '#22C55E',
+                    background: (!texto.trim() || enviando) ? 'rgba(12, 150, 70,0.35)' : '#0C9646',
                     color: '#fff',
-                    fontSize: 13,
+                    fontSize: 16,
                     fontWeight: 700,
                     border: 'none',
                     borderRadius: 8,
@@ -290,10 +290,10 @@ export function SeccionPreguntas({ sorteoId, soloLectura = false }: { sorteoId: 
                         }}
                       />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ color: '#fff', fontSize: 14, fontWeight: 500, lineHeight: 1.45 }}>
+                        <p style={{ color: '#fff', fontSize: 17, fontWeight: 500, lineHeight: 1.45 }}>
                           {p.pregunta}
                         </p>
-                        <p style={{ color: 'rgba(255,255,255,0.32)', fontSize: 11, marginTop: 4 }}>
+                        <p style={{ color: 'rgba(255,255,255,0.32)', fontSize: 14, marginTop: 4 }}>
                           {p.nombre_autor}
                         </p>
                       </div>
@@ -310,9 +310,9 @@ export function SeccionPreguntas({ sorteoId, soloLectura = false }: { sorteoId: 
                         <div style={{ paddingTop: 12 }}>
                           <p
                             style={{
-                              fontSize: 10,
+                              fontSize: 13,
                               fontWeight: 700,
-                              color: '#4ADE80',
+                              color: '#0C9646',
                               marginBottom: 7,
                               letterSpacing: '0.06em',
                               textTransform: 'uppercase',
@@ -320,7 +320,7 @@ export function SeccionPreguntas({ sorteoId, soloLectura = false }: { sorteoId: 
                           >
                             Respuesta del organizador
                           </p>
-                          <p style={{ color: 'rgba(255,255,255,0.78)', fontSize: 13, lineHeight: 1.6 }}>
+                          <p style={{ color: 'rgba(255,255,255,0.78)', fontSize: 16, lineHeight: 1.6 }}>
                             {p.respuesta}
                           </p>
                         </div>
@@ -342,7 +342,7 @@ export function SeccionPreguntas({ sorteoId, soloLectura = false }: { sorteoId: 
                   border: 'none',
                   cursor: 'pointer',
                   color: 'rgba(255,255,255,0.7)',
-                  fontSize: 13,
+                  fontSize: 16,
                   fontWeight: 600,
                   display: 'inline-flex',
                   alignItems: 'center',

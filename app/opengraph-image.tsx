@@ -27,7 +27,7 @@ export default async function Image() {
           width: '100%',
           height: '100%',
           backgroundColor: '#ffffff',
-          borderTop: '14px solid #22C55E',
+          borderTop: '14px solid #0C9646',
         }}
       >
         {logoUrl ? (
@@ -38,13 +38,13 @@ export default async function Image() {
             style={{ height: 110, marginBottom: 36, objectFit: 'contain' }}
           />
         ) : (
-          <div style={{ fontSize: 72, fontWeight: 800, color: '#22C55E', marginBottom: 36 }}>
+          <div style={{ fontSize: 75, fontWeight: 800, color: '#0C9646', marginBottom: 36 }}>
             RifandoMas
           </div>
         )}
         <div
           style={{
-            fontSize: 44,
+            fontSize: 47,
             fontWeight: 700,
             color: '#111827',
             textAlign: 'center',
@@ -54,7 +54,7 @@ export default async function Image() {
         >
           Sorteos y Rifas Virtuales en México
         </div>
-        <div style={{ fontSize: 26, color: '#6b7280' }}>
+        <div style={{ fontSize: 29, color: '#6b7280' }}>
           rifandomas.com.mx
         </div>
       </div>

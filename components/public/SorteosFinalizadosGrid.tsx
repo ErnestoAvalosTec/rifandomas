@@ -15,13 +15,13 @@ export function SorteosFinalizadosGrid({ sorteos }: { sorteos: Sorteo[] }) {
   if (!sorteos.length) return null
 
   return (
-    <section className="py-16" style={{ background: '#1c1c1c', borderTop: '1px solid #3a3a3a' }}>
+    <section id="resultados" className="py-16" style={{ background: '#1c1c1c', borderTop: '1px solid #3a3a3a' }}>
       <div className="max-w-7xl mx-auto px-2 sm:px-6">
         <div className="mb-8 sm:mb-10 text-center">
-          <h2 className="font-title text-white" style={{ fontSize: 'clamp(1.6rem, 4vw, 2.5rem)', letterSpacing: '0.02em', marginBottom: 8 }}>
+          <h2 className="font-title text-white" style={{ fontSize: 'clamp(1.9rem, 4.2vw, 2.9rem)', fontWeight: 800, letterSpacing: '0.01em', marginBottom: 10 }}>
             SORTEOS FINALIZADOS
           </h2>
-          <p className="font-body mx-auto" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 'clamp(13px, 2vw, 15px)', maxWidth: 520 }}>
+          <p className="font-body mx-auto" style={{ color: 'rgba(255,255,255,0.48)', fontSize: 'clamp(16px, 2vw, 18px)', fontWeight: 300, letterSpacing: '0.01em', maxWidth: 520 }}>
             Consulta los resultados y ganadores de nuestros sorteos ya realizados.
           </p>
         </div>

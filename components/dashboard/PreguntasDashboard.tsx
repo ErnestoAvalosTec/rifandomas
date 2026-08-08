@@ -68,7 +68,7 @@ export function PreguntasDashboard({ preguntasIniciales }: PreguntasDashboardPro
   }
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)',
+    fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.4)',
     letterSpacing: '0.06em', textTransform: 'uppercase',
     display: 'block', marginBottom: 6,
   }
@@ -78,14 +78,14 @@ export function PreguntasDashboard({ preguntasIniciales }: PreguntasDashboardPro
       {/* ── Pendientes ── */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-          <h2 className="font-title text-white" style={{ fontSize: 20, letterSpacing: '0.04em' }}>
+          <h2 className="font-title text-white" style={{ fontSize: 23, letterSpacing: '0.04em' }}>
             PENDIENTES
           </h2>
           {pendientes.length > 0 && (
             <span style={{
               background: '#F97316', color: '#fff',
               borderRadius: 999, padding: '2px 8px',
-              fontSize: 11, fontWeight: 700,
+              fontSize: 14, fontWeight: 700,
             }}>
               {pendientes.length}
             </span>
@@ -94,8 +94,8 @@ export function PreguntasDashboard({ preguntasIniciales }: PreguntasDashboardPro
 
         {pendientes.length === 0 ? (
           <div style={{ ...cardBase, padding: '32px 24px', textAlign: 'center' }}>
-            <CheckCircle2 style={{ width: 32, height: 32, color: '#4ADE80', margin: '0 auto 10px' }} />
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>
+            <CheckCircle2 style={{ width: 32, height: 32, color: '#0C9646', margin: '0 auto 10px' }} />
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 17 }}>
               Sin preguntas pendientes
             </p>
           </div>
@@ -110,20 +110,20 @@ export function PreguntasDashboard({ preguntasIniciales }: PreguntasDashboardPro
                       background: 'rgba(255,255,255,0.06)',
                       border: '1px solid rgba(255,255,255,0.1)',
                       borderRadius: 6, padding: '2px 8px',
-                      fontSize: 10, color: 'rgba(255,255,255,0.6)', fontWeight: 600,
+                      fontSize: 13, color: 'rgba(255,255,255,0.6)', fontWeight: 600,
                     }}>
                       {p.sorteos?.nombre ?? 'Sorteo'}
                     </span>
-                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>
                       {formatFecha(p.created_at)}
                     </span>
                   </div>
 
                   {/* Pregunta */}
-                  <p style={{ color: '#fff', fontSize: 14, fontWeight: 500, lineHeight: 1.45, marginBottom: 4 }}>
+                  <p style={{ color: '#fff', fontSize: 17, fontWeight: 500, lineHeight: 1.45, marginBottom: 4 }}>
                     {p.pregunta}
                   </p>
-                  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, marginBottom: 14 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 14, marginBottom: 14 }}>
                     {p.nombre_autor}
                   </p>
 
@@ -140,7 +140,7 @@ export function PreguntasDashboard({ preguntasIniciales }: PreguntasDashboardPro
                         width: '100%', background: '#141414',
                         border: '1px solid rgba(255,255,255,0.1)',
                         borderRadius: 8, padding: '9px 12px',
-                        fontSize: 13, color: '#fff', outline: 'none',
+                        fontSize: 16, color: '#fff', outline: 'none',
                         resize: 'vertical', fontFamily: 'inherit',
                       }}
                     />
@@ -150,8 +150,8 @@ export function PreguntasDashboard({ preguntasIniciales }: PreguntasDashboardPro
                         disabled={!respuestas[p.id]?.trim() || enviando === p.id}
                         style={{
                           flex: 1, padding: '9px 0',
-                          background: (!respuestas[p.id]?.trim() || enviando === p.id) ? 'rgba(34,197,94,0.35)' : '#22C55E',
-                          color: '#fff', fontSize: 13, fontWeight: 700,
+                          background: (!respuestas[p.id]?.trim() || enviando === p.id) ? 'rgba(12, 150, 70,0.35)' : '#0C9646',
+                          color: '#fff', fontSize: 16, fontWeight: 700,
                           border: 'none', borderRadius: 8,
                           cursor: (!respuestas[p.id]?.trim() || enviando === p.id) ? 'not-allowed' : 'pointer',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -189,7 +189,7 @@ export function PreguntasDashboard({ preguntasIniciales }: PreguntasDashboardPro
       {/* ── Publicadas ── */}
       {publicadas.length > 0 && (
         <div>
-          <h2 className="font-title text-white" style={{ fontSize: 20, letterSpacing: '0.04em', marginBottom: 16 }}>
+          <h2 className="font-title text-white" style={{ fontSize: 23, letterSpacing: '0.04em', marginBottom: 16 }}>
             PUBLICADAS
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -212,12 +212,12 @@ export function PreguntasDashboard({ preguntasIniciales }: PreguntasDashboardPro
                       transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
                     }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ color: '#fff', fontSize: 13, fontWeight: 500, lineHeight: 1.4 }}>
+                      <p style={{ color: '#fff', fontSize: 16, fontWeight: 500, lineHeight: 1.4 }}>
                         {p.pregunta}
                       </p>
                       <div style={{ display: 'flex', gap: 10, marginTop: 4, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>{p.nombre_autor}</span>
-                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>{p.sorteos?.nombre}</span>
+                        <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>{p.nombre_autor}</span>
+                        <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.2)' }}>{p.sorteos?.nombre}</span>
                       </div>
                     </div>
                     <button
@@ -237,10 +237,10 @@ export function PreguntasDashboard({ preguntasIniciales }: PreguntasDashboardPro
                   </button>
                   {open && (
                     <div style={{ padding: '0 16px 13px 43px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                      <p style={{ fontSize: 10, fontWeight: 700, color: '#4ADE80', marginTop: 12, marginBottom: 5, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#0C9646', marginTop: 12, marginBottom: 5, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                         Tu respuesta
                       </p>
-                      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, lineHeight: 1.6 }}>
+                      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 16, lineHeight: 1.6 }}>
                         {p.respuesta}
                       </p>
                     </div>
@@ -255,7 +255,7 @@ export function PreguntasDashboard({ preguntasIniciales }: PreguntasDashboardPro
       {preguntas.length === 0 && (
         <div style={{ ...cardBase, padding: '48px 24px', textAlign: 'center' }}>
           <MessageSquare style={{ width: 36, height: 36, color: 'rgba(255,255,255,0.15)', margin: '0 auto 12px' }} />
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 17 }}>
             Aún no hay preguntas en tus sorteos.
           </p>
         </div>

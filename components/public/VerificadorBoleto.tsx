@@ -53,11 +53,11 @@ export function VerificadorBoleto({ sorteos }: { sorteos: SorteoOpcion[] }) {
   return (
     <section id="verificador" className="py-16" style={{ background: '#1c1c1c', borderTop: '1px solid #3a3a3a' }}>
       <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
-        <p className="text-primary text-sm font-ui font-semibold uppercase tracking-widest mb-3">Transparencia total</p>
-        <h2 className="font-title text-white" style={{ fontSize: 'clamp(1.6rem, 4vw, 2.5rem)', letterSpacing: '0.02em', marginBottom: 8 }}>
+        <p className="text-primary text-sm font-ui uppercase tracking-widest mb-3" style={{ fontWeight: 700 }}>Transparencia total</p>
+        <h2 className="font-title text-white" style={{ fontSize: 'clamp(1.9rem, 4.2vw, 2.9rem)', fontWeight: 800, letterSpacing: '0.01em', marginBottom: 10 }}>
           VERIFICA TU BOLETO
         </h2>
-        <p className="font-body mx-auto mb-8" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 'clamp(13px, 2vw, 15px)', maxWidth: 480 }}>
+        <p className="font-body mx-auto mb-8" style={{ color: 'rgba(255,255,255,0.48)', fontSize: 'clamp(16px, 2vw, 18px)', fontWeight: 300, letterSpacing: '0.01em', maxWidth: 480 }}>
           Selecciona tu sorteo, ingresa el número de tu boleto y conoce su estatus al instante.
         </p>
 

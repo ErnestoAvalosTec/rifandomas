@@ -33,11 +33,14 @@ interface SorteoCardProps {
 }
 
 const MEDAL: Record<number, string> = { 1: '🏆', 2: '🥈', 3: '🥉' }
-const LUGAR: Record<number, string> = { 1: '1er Premio', 2: '2do Premio', 3: '3er Premio' }
+const LUGAR: Record<number, string> = { 1: '1er Premio', 2: '2do Premio', 3: '3er Premio', 4: '4to Premio', 5: '5to Premio' }
 
 // Stack card shades — each layer noticeably darker to read as "card behind card"
 const STACK_2_BG = '#0b4520'
 const STACK_3_BG = '#062d12'
+// Sorteos finalizados usan tonos grises en vez de verdes, para no asomar color detrás de la tarjeta desaturada
+const STACK_2_BG_GRIS = '#333333'
+const STACK_3_BG_GRIS = '#242424'
 
 function useCountdown(targetDate: string) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
@@ -91,13 +94,13 @@ function NavLoadingOverlay({ radius }: { radius: number }) {
       <div style={{
         width: 30, height: 30,
         border: '2.5px solid rgba(255,255,255,0.1)',
-        borderTopColor: '#4ADE80',
+        borderTopColor: '#0C9646',
         borderRadius: '50%',
         animation: 'rf-spin 0.75s linear infinite',
       }} />
       <span style={{
         color: 'rgba(255,255,255,0.5)',
-        fontSize: 10, fontWeight: 600,
+        fontSize: 13, fontWeight: 600,
         letterSpacing: '0.08em', textTransform: 'uppercase',
       }}>
         Cargando
@@ -197,10 +200,10 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
             <span className="absolute top-1.5 left-1.5" style={{
               background: 'rgba(0,0,0,0.6)', color: '#fff',
               borderRadius: 4, padding: '2px 6px',
-              fontSize: 8, fontWeight: 800, lineHeight: 1,
+              fontSize: 11, fontWeight: 800, lineHeight: 1,
               backdropFilter: 'blur(4px)',
             }}>
-              {MEDAL[premioActual?.lugar ?? 1]} {LUGAR[premioActual?.lugar ?? 1]}
+              {MEDAL[premioActual?.lugar ?? 1] ? `${MEDAL[premioActual?.lugar ?? 1]} ` : ''}{LUGAR[premioActual?.lugar ?? 1]}
             </span>
           )}
 
@@ -208,10 +211,10 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
           <span className="absolute bottom-1.5 left-1.5" style={{
             background: '#F97316', color: '#fff',
             borderRadius: 4, padding: '2px 6px',
-            fontSize: 9, fontWeight: 800, lineHeight: 1,
+            fontSize: 12, fontWeight: 800, lineHeight: 1,
             boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
           }}>
-            {formatCurrency(sorteo.precio_unitario)}<span style={{ fontWeight: 400, fontSize: 7, marginLeft: 2 }}>/boleto</span>
+            {formatCurrency(sorteo.precio_unitario)}<span style={{ fontWeight: 300, fontSize: 10, marginLeft: 2, opacity: 0.85 }}>/boleto</span>
           </span>
 
           {/* Badge valor estimado — esquina inferior derecha */}
@@ -221,7 +224,7 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
               border: '1px solid rgba(249,115,22,0.55)',
               color: '#fdba74',
               borderRadius: 4, padding: '2px 5px',
-              fontSize: 8, fontWeight: 700, lineHeight: 1,
+              fontSize: 11, fontWeight: 700, lineHeight: 1,
               backdropFilter: 'blur(4px)',
             }}>
               Valor: {formatCurrency(premioActual.valor_estimado)}
@@ -233,7 +236,7 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
             <span className="absolute top-1.5 right-1.5" style={{
               background: 'rgba(0,0,0,0.55)', color: '#fff',
               borderRadius: 99, padding: '2px 6px',
-              fontSize: 8, fontWeight: 800, lineHeight: 1,
+              fontSize: 11, fontWeight: 800, lineHeight: 1,
               display: 'flex', alignItems: 'center', gap: 2,
             }}>
               {premioIndex + 1}/{totalPremios} <ChevronRight style={{ width: 8, height: 8, display: 'inline' }} />
@@ -242,7 +245,7 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
 
           {/* Lleno — solo si no tiene contador encima */}
           {porcentaje >= 80 && totalPremios <= 1 && !finalizado && (
-            <span className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full px-1 py-px animate-pulse" style={{ fontSize: 7, fontWeight: 700 }}>¡Lleno!</span>
+            <span className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full px-1 py-px animate-pulse" style={{ fontSize: 10, fontWeight: 700 }}>¡Lleno!</span>
           )}
 
           {/* Dots de posición — más visibles */}
@@ -266,13 +269,13 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
 
           {/* Título + descripción — llevan a la página informativa del sorteo */}
           <div onClick={irADetalle} style={{ cursor: 'pointer' }} title="Ver información del sorteo">
-            <h3 style={{ color: '#fff', fontSize: 12, fontWeight: 700, lineHeight: 1.2, marginBottom: 2 }}
+            <h3 style={{ color: '#fff', fontSize: 15, fontWeight: 700, lineHeight: 1.2, marginBottom: 2 }}
               className="line-clamp-1">
               {premioActual?.nombre ?? sorteo.nombre}
             </h3>
 
             {premioActual?.descripcion && (
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 10, lineHeight: 1.3, marginBottom: 4 }}
+              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, lineHeight: 1.3, marginBottom: 4 }}
                 className="line-clamp-1">
                 {premioActual.descripcion}
               </p>
@@ -284,11 +287,11 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
             <div style={{ marginBottom: 5 }}>
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 3,
-                background: 'rgba(34,197,94,0.18)',
-                border: '1px solid rgba(34,197,94,0.35)',
-                color: '#86EFAC',
+                background: 'rgba(12, 150, 70,0.18)',
+                border: '1px solid rgba(12, 150, 70,0.35)',
+                color: '#0C9646',
                 borderRadius: 4, padding: '3px 6px',
-                fontSize: 8, fontWeight: 700, lineHeight: 1,
+                fontSize: 11, fontWeight: 700, lineHeight: 1,
               }}>
                 <Banknote style={{ width: 9, height: 9 }} />
                 O equivalente en efectivo
@@ -299,11 +302,13 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
           {/* Barra de progreso + vendidos */}
           <div style={{ marginBottom: 5 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-              <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 9 }}>{vendidos.toLocaleString('es-MX')}/{sorteo.total_numeros.toLocaleString('es-MX')} vend.</span>
-              <span style={{ color: '#86EFAC', fontSize: 9, fontWeight: 700 }}>{porcentaje}%</span>
+              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 300 }}>
+                <strong style={{ color: '#fff', fontSize: 13, fontWeight: 800 }}>{vendidos.toLocaleString('es-MX')}</strong>/{sorteo.total_numeros.toLocaleString('es-MX')} vend.
+              </span>
+              <span style={{ color: '#0C9646', fontSize: 14, fontWeight: 800 }}>{porcentaje}%</span>
             </div>
             <div style={{ height: 3, background: 'rgba(0,0,0,0.3)', borderRadius: 2, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${porcentaje}%`, background: '#4ADE80', borderRadius: 2 }} />
+              <div style={{ height: '100%', width: `${porcentaje}%`, background: '#0C9646', borderRadius: 2 }} />
             </div>
           </div>
 
@@ -319,8 +324,8 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
                 flex: 1, background: 'rgba(255,255,255,0.15)',
                 borderRadius: 4, padding: '4px 1px', textAlign: 'center',
               }}>
-                <p style={{ fontSize: 11, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{String(val).padStart(2, '0')}</p>
-                <p style={{ fontSize: 7, color: 'rgba(255,255,255,0.55)', marginTop: 1 }}>{label}</p>
+                <p style={{ fontSize: 15, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{String(val).padStart(2, '0')}</p>
+                <p style={{ fontSize: 9, fontWeight: 300, color: 'rgba(255,255,255,0.5)', marginTop: 2, letterSpacing: '0.03em' }}>{label}</p>
               </div>
             ))}
           </div>
@@ -331,7 +336,7 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
               <div style={{
                 flex: 1, padding: '7px 0',
                 background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.8)',
-                fontSize: 11, fontWeight: 700,
+                fontSize: 14, fontWeight: 700,
                 borderRadius: 6,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
               }}>
@@ -343,8 +348,8 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
                 onClick={() => onParticipar(sorteo, paqueteSeleccionado)}
                 style={{
                   flex: 1, padding: '7px 0',
-                  background: 'linear-gradient(135deg, #F97316, #EA580C)',
-                  color: '#fff', fontSize: 11, fontWeight: 700,
+                  background: '#EA580C',
+                  color: '#fff', fontSize: 14, fontWeight: 700,
                   borderRadius: 6, border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
                 }}
@@ -377,7 +382,7 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
       {totalPremios > 2 && (
         <div style={{
           position: 'absolute', inset: 0,
-          background: STACK_3_BG,
+          background: finalizado ? STACK_3_BG_GRIS : STACK_3_BG,
           border: '1px solid rgba(255,255,255,0.06)',
           borderRadius: 20,
           transform: 'translateX(10px) translateY(10px) rotate(2.5deg)',
@@ -388,7 +393,7 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
       {totalPremios > 1 && (
         <div style={{
           position: 'absolute', inset: 0,
-          background: STACK_2_BG,
+          background: finalizado ? STACK_2_BG_GRIS : STACK_2_BG,
           border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: 20,
           transform: 'translateX(5px) translateY(5px) rotate(1.2deg)',
@@ -428,20 +433,20 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
         <div style={{ padding: '4px 14px 14px' }}>
 
           {/* Prize badge + navigation row */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', rowGap: 8, columnGap: 8, marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4,
                 background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)',
                 color: '#fff', borderRadius: 999, padding: '4px 10px',
-                fontSize: 11, fontWeight: 700,
+                fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap',
               }}>
-                {MEDAL[premioActual?.lugar ?? 1]} {LUGAR[premioActual?.lugar ?? 1]}
+                {LUGAR[premioActual?.lugar ?? 1]}
               </span>
               {porcentaje >= 80 && !finalizado && (
                 <span style={{
                   background: '#EF4444', color: '#fff',
-                  borderRadius: 999, padding: '4px 8px', fontSize: 10, fontWeight: 700,
+                  borderRadius: 999, padding: '4px 8px', fontSize: 13, fontWeight: 700,
                 }} className="animate-pulse">¡Casi lleno!</span>
               )}
             </div>
@@ -467,13 +472,12 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
                 <button onClick={irAlSiguiente} style={{
                   display: 'flex', alignItems: 'center', gap: 3,
                   background: 'rgba(255,255,255,0.15)',
-                  color: 'rgba(255,255,255,0.9)', fontSize: 10, fontWeight: 600,
+                  color: 'rgba(255,255,255,0.9)', fontSize: 13, fontWeight: 600,
                   border: '1px solid rgba(255,255,255,0.25)', borderRadius: 999,
                   padding: '3px 8px', cursor: 'pointer', whiteSpace: 'nowrap',
                   transition: 'all 0.2s',
                 }}>
-                  {MEDAL[(premios[(premioIndex + 1) % totalPremios]?.lugar) ?? 1]}
-                  {' '}Ver {LUGAR[(premios[(premioIndex + 1) % totalPremios]?.lugar) ?? 1]}
+                  {LUGAR[(premios[(premioIndex + 1) % totalPremios]?.lugar) ?? 1]}
                   <ChevronRight style={{ width: 10, height: 10 }} />
                 </button>
               </div>
@@ -485,24 +489,38 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
             {/* Nombre + descripción del premio — llevan a la página informativa del sorteo */}
             <div onClick={irADetalle} style={{ cursor: 'pointer' }} title="Ver información del sorteo">
               <h3 style={{
-                color: '#fff', fontSize: 19, fontWeight: 700,
-                lineHeight: 1.2, marginBottom: 3, letterSpacing: '-0.01em',
+                color: '#fff', fontSize: 23, fontWeight: 800,
+                lineHeight: 1.15, marginBottom: 4, letterSpacing: '-0.01em',
               }}>
                 {premioActual?.nombre ?? sorteo.nombre}
               </h3>
-              <div style={{ height: 34, marginBottom: 8, overflow: 'hidden' }}>
-                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, lineHeight: 1.45 }}>
-                  {premioActual?.descripcion ?? ''}
-                </p>
-              </div>
+              <p
+                className="line-clamp-2"
+                style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 300, lineHeight: 1.45, marginBottom: 10 }}
+              >
+                {premioActual?.descripcion ?? ''}
+              </p>
             </div>
+
+            {/* Precio por boleto — destacado, arriba de las estadísticas */}
+            <div style={{ marginBottom: 10 }}>
+              <span style={{
+                display: 'inline-flex', alignItems: 'baseline', gap: 5,
+                background: '#FBBF24', color: '#1c1c1c',
+                borderRadius: 8, padding: '6px 12px',
+              }}>
+                <strong style={{ fontWeight: 800, fontSize: 18 }}>{formatCurrency(sorteo.precio_unitario)}</strong>
+                <span style={{ fontWeight: 500, fontSize: 12 }}>por boleto · Precio fijo</span>
+              </span>
+            </div>
+
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 10, minHeight: 28 }}>
               {premioActual?.valor_estimado ? (
                 <span style={{
                   display: 'inline-flex', alignItems: 'center', gap: 4,
                   background: '#F97316', color: '#fff',
                   borderRadius: 999, padding: '4px 10px',
-                  fontSize: 11, fontWeight: 700,
+                  fontSize: 14, fontWeight: 700,
                 }}>
                   Valor: {formatCurrency(premioActual.valor_estimado)}
                 </span>
@@ -510,11 +528,11 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
               {premioActual?.intercambiable_efectivo && (
                 <span style={{
                   display: 'inline-flex', alignItems: 'center', gap: 4,
-                  background: 'rgba(34,197,94,0.18)',
-                  border: '1px solid rgba(34,197,94,0.4)',
-                  color: '#86EFAC',
+                  background: 'rgba(12, 150, 70,0.18)',
+                  border: '1px solid rgba(12, 150, 70,0.4)',
+                  color: '#0C9646',
                   borderRadius: 999, padding: '4px 10px',
-                  fontSize: 10, fontWeight: 700,
+                  fontSize: 13, fontWeight: 700,
                 }}>
                   <Banknote style={{ width: 12, height: 12 }} />
                   O equivalente en efectivo
@@ -526,17 +544,17 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
           {/* Progress */}
           <div style={{ marginBottom: 10 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 10, fontWeight: 500 }}>
-                {vendidos.toLocaleString('es-MX')} de {sorteo.total_numeros.toLocaleString('es-MX')} vendidos
+              <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: 300 }}>
+                <strong style={{ color: '#fff', fontSize: 15, fontWeight: 800 }}>{vendidos.toLocaleString('es-MX')}</strong> de {sorteo.total_numeros.toLocaleString('es-MX')} vendidos
               </span>
-              <span style={{ color: '#86EFAC', fontSize: 10, fontWeight: 600 }}>
-                {porcentaje}% vendido
+              <span style={{ color: '#0C9646', fontSize: 16, fontWeight: 800 }}>
+                {porcentaje}<span style={{ fontSize: 12, fontWeight: 400 }}>% vendido</span>
               </span>
             </div>
             <div style={{ height: 5, background: 'rgba(0,0,0,0.25)', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', width: `${porcentaje}%`,
-                background: '#4ADE80',
+                background: '#0C9646',
                 borderRadius: 3, transition: 'width 0.4s ease',
               }} />
             </div>
@@ -549,8 +567,8 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
             border: '1px solid rgba(255,255,255,0.07)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
-              <Clock style={{ width: 11, height: 11, color: '#86EFAC' }} />
-              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>Sorteo en:</span>
+              <Clock style={{ width: 11, height: 11, color: '#0C9646' }} />
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 300 }}>Sorteo en:</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 5 }}>
               {[
@@ -563,10 +581,10 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
                   background: '#fff', borderRadius: 7,
                   padding: '6px 4px', textAlign: 'center',
                 }}>
-                  <p style={{ fontSize: 17, fontWeight: 800, color: '#14532d', lineHeight: 1 }}>
+                  <p style={{ fontSize: 22, fontWeight: 800, color: '#14532d', lineHeight: 1 }}>
                     {String(val).padStart(2, '0')}
                   </p>
-                  <p style={{ fontSize: 8, color: '#6B7280', marginTop: 2, fontWeight: 500 }}>{label}</p>
+                  <p style={{ fontSize: 10, color: '#6B7280', marginTop: 3, fontWeight: 300, letterSpacing: '0.03em' }}>{label}</p>
                 </div>
               ))}
             </div>
@@ -578,7 +596,7 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
               <div style={{
                 flex: 1, padding: '12px 0',
                 background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)',
-                fontSize: 15, fontWeight: 700,
+                fontSize: 18, fontWeight: 700,
                 borderRadius: 10,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
               }}>
@@ -590,8 +608,8 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
                 onClick={() => onParticipar(sorteo, paqueteSeleccionado)}
                 style={{
                   flex: 1, padding: '12px 0',
-                  background: 'linear-gradient(135deg, #F97316, #EA580C)',
-                  color: '#fff', fontSize: 15, fontWeight: 700,
+                  background: '#EA580C',
+                  color: '#fff', fontSize: 18, fontWeight: 700,
                   borderRadius: 10, border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                   transition: 'opacity 0.15s',
@@ -622,20 +640,6 @@ export function SorteoCard({ sorteo, onParticipar, finalizado = false, desaturar
             </button>
           </div>
 
-          {/* Footer — chip de precio por boleto */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              background: 'rgba(34,197,94,0.12)',
-              border: '1px solid rgba(34,197,94,0.3)',
-              color: '#86EFAC',
-              borderRadius: 999, padding: '5px 12px',
-              fontSize: 11, fontWeight: 700,
-            }}>
-              <Ticket style={{ width: 12, height: 12 }} />
-              {formatCurrency(sorteo.precio_unitario)} por boleto · Precio fijo
-            </span>
-          </div>
         </div>
 
         {/* Overlay gris sobre el fondo/contenido de la tarjeta (no la imagen flotante,

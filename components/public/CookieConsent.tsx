@@ -79,22 +79,22 @@ export function CookieConsent() {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flex: 1, minWidth: 260 }}>
             <Cookie
               size={20}
-              style={{ color: '#22C55E', flexShrink: 0, marginTop: 2 }}
+              style={{ color: '#0C9646', flexShrink: 0, marginTop: 2 }}
               aria-hidden="true"
             />
-            <p style={{ fontSize: 13, lineHeight: 1.6, color: '#d1d5db', margin: 0 }}>
+            <p style={{ fontSize: 16, lineHeight: 1.6, color: '#d1d5db', margin: 0 }}>
               Usamos cookies esenciales para el funcionamiento de la plataforma (sesión de usuario) y
               cookies de análisis para mejorar la experiencia.{' '}
               <Link
                 href="/privacidad"
-                style={{ color: '#22C55E', textDecoration: 'underline', whiteSpace: 'nowrap' }}
+                style={{ color: '#0C9646', textDecoration: 'underline', whiteSpace: 'nowrap' }}
               >
                 Aviso de Privacidad
               </Link>
               {' · '}
               <Link
                 href="/terminos"
-                style={{ color: '#22C55E', textDecoration: 'underline', whiteSpace: 'nowrap' }}
+                style={{ color: '#0C9646', textDecoration: 'underline', whiteSpace: 'nowrap' }}
               >
                 Términos y Condiciones
               </Link>
@@ -111,7 +111,7 @@ export function CookieConsent() {
                 border: '1px solid rgba(255,255,255,0.15)',
                 background: 'transparent',
                 color: '#9ca3af',
-                fontSize: 13,
+                fontSize: 16,
                 fontWeight: 500,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
@@ -134,9 +134,9 @@ export function CookieConsent() {
               style={{
                 padding: '8px 20px',
                 borderRadius: 8,
-                background: '#22C55E',
+                background: '#0C9646',
                 color: '#fff',
-                fontSize: 13,
+                fontSize: 16,
                 fontWeight: 600,
                 cursor: 'pointer',
                 border: 'none',

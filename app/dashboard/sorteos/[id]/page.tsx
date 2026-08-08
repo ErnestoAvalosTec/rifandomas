@@ -18,7 +18,7 @@ const ESTATUS_LABEL: Record<string, string> = {
   eliminado: 'Eliminado',
 }
 
-const LUGAR_LABEL: Record<number, string> = { 1: '1er Premio', 2: '2do Premio', 3: '3er Premio' }
+const LUGAR_LABEL: Record<number, string> = { 1: '1er Premio', 2: '2do Premio', 3: '3er Premio', 4: '4to Premio', 5: '5to Premio' }
 
 export default async function SorteoDetallePage({ params }: { params: { id: string } }) {
   const supabase = createClient()

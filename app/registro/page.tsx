@@ -8,8 +8,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { Ticket, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+import { AuthLogo } from '@/components/public/AuthLogo'
 
 const schema = z.object({
   nombre:    z.string().min(2, 'Mínimo 2 caracteres'),
@@ -32,7 +33,7 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid rgba(255,255,255,0.1)',
   borderRadius: 10,
   padding: '10px 14px',
-  fontSize: 14,
+  fontSize: 17,
   color: '#fff',
   outline: 'none',
   fontFamily: 'inherit',
@@ -41,7 +42,7 @@ const inputStyle: React.CSSProperties = {
 }
 
 const labelStyle: React.CSSProperties = {
-  fontSize: 12,
+  fontSize: 15,
   fontWeight: 600,
   color: 'rgba(255,255,255,0.55)',
   letterSpacing: '0.04em',
@@ -50,7 +51,7 @@ const labelStyle: React.CSSProperties = {
 }
 
 const errorStyle: React.CSSProperties = {
-  fontSize: 11,
+  fontSize: 14,
   color: '#F87171',
   marginTop: 4,
 }
@@ -127,21 +128,7 @@ export default function RegistroPage() {
     >
       <div style={{ width: '100%', maxWidth: 460 }}>
 
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 10,
-              background: '#22C55E',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <Ticket style={{ width: 20, height: 20, color: '#fff' }} />
-            </div>
-            <span className="font-title" style={{ fontSize: 28, letterSpacing: '0.08em', color: '#fff' }}>
-              RIFANDO<span style={{ color: '#22C55E' }}>+</span>
-            </span>
-          </Link>
-        </div>
+        <AuthLogo />
 
         {/* Card */}
         <div style={{
@@ -150,10 +137,10 @@ export default function RegistroPage() {
           borderRadius: 16,
           padding: '36px 32px',
         }}>
-          <h1 className="font-title" style={{ fontSize: 28, color: '#fff', letterSpacing: '0.06em', marginBottom: 6 }}>
+          <h1 className="font-title" style={{ fontSize: 31, color: '#fff', letterSpacing: '0.06em', marginBottom: 6 }}>
             CREAR CUENTA
           </h1>
-          <p className="font-body" style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 28 }}>
+          <p className="font-body" style={{ fontSize: 16, color: 'rgba(255,255,255,0.45)', marginBottom: 28 }}>
             Únete y empieza a organizar sorteos hoy mismo.
           </p>
 
@@ -184,7 +171,7 @@ export default function RegistroPage() {
                     background: '#161616',
                     border: '1px solid rgba(255,255,255,0.1)',
                     borderRadius: 10,
-                    fontSize: 13, color: 'rgba(255,255,255,0.4)',
+                    fontSize: 16, color: 'rgba(255,255,255,0.4)',
                     flexShrink: 0,
                     userSelect: 'none',
                   }}
@@ -222,7 +209,7 @@ export default function RegistroPage() {
                 style={inputStyle}
                 {...register('redSocial')}
               />
-              <p className="font-body" style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 6, lineHeight: 1.5 }}>
+              <p className="font-body" style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', marginTop: 6, lineHeight: 1.5 }}>
                 Compártela para que nuestro equipo pueda verificar tu cuenta y mostrar la insignia de "Perfil verificado" a tus participantes.
               </p>
             </div>
@@ -291,11 +278,11 @@ export default function RegistroPage() {
               style={{
                 width: '100%',
                 padding: '12px 0',
-                background: (cargando || (!!TURNSTILE_SITE_KEY && !captchaToken)) ? 'rgba(34,197,94,0.6)' : '#22C55E',
+                background: (cargando || (!!TURNSTILE_SITE_KEY && !captchaToken)) ? 'rgba(12, 150, 70,0.6)' : '#0C9646',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 10,
-                fontSize: 14,
+                fontSize: 17,
                 fontWeight: 700,
                 letterSpacing: '0.04em',
                 cursor: (cargando || (!!TURNSTILE_SITE_KEY && !captchaToken)) ? 'not-allowed' : 'pointer',
@@ -314,9 +301,9 @@ export default function RegistroPage() {
 
           </form>
 
-          <p className="font-body" style={{ textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 24 }}>
+          <p className="font-body" style={{ textAlign: 'center', fontSize: 16, color: 'rgba(255,255,255,0.4)', marginTop: 24 }}>
             ¿Ya tienes cuenta?{' '}
-            <Link href="/login" style={{ color: '#22C55E', fontWeight: 600, textDecoration: 'none' }}>
+            <Link href="/login" style={{ color: '#0C9646', fontWeight: 600, textDecoration: 'none' }}>
               Inicia sesión
             </Link>
           </p>

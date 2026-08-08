@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
-import { Loader2, Search } from 'lucide-react'
+import { Loader2, Search, Shuffle } from 'lucide-react'
 import type { Database } from '@/types/database.types'
 
 type EstatusBoleto = Database['public']['Tables']['boletos']['Row']['estatus']
@@ -31,6 +31,11 @@ export function SelectorNumeros({
   const [busqueda, setBusqueda] = useState('')
 
   const digits = esLoteria ? Math.round(Math.log10(totalNumeros)) : String(totalNumeros).length
+
+  const todosLosNumeros = useMemo(
+    () => Array.from({ length: totalNumeros }, (_, i) => String(esLoteria ? i : i + 1).padStart(digits, '0')),
+    [totalNumeros, esLoteria, digits]
+  )
 
   useEffect(() => {
     const cargar = async () => {
@@ -97,6 +102,22 @@ export function SelectorNumeros({
     [boletos, seleccionados, onSeleccionChange, maxSeleccion]
   )
 
+  const faltantes = maxSeleccion - seleccionados.length
+
+  const elegirAlAzar = useCallback(() => {
+    const disponibles = todosLosNumeros.filter(
+      (n) => (boletos.get(n) ?? 'disponible') === 'disponible' && !seleccionados.includes(n)
+    )
+    if (faltantes <= 0 || disponibles.length === 0) return
+
+    for (let i = disponibles.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[disponibles[i], disponibles[j]] = [disponibles[j], disponibles[i]]
+    }
+
+    onSeleccionChange([...seleccionados, ...disponibles.slice(0, faltantes)])
+  }, [todosLosNumeros, boletos, seleccionados, faltantes, onSeleccionChange])
+
   if (cargando) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -105,9 +126,7 @@ export function SelectorNumeros({
     )
   }
 
-  const numeros = Array.from({ length: totalNumeros }, (_, i) =>
-    String(esLoteria ? i : i + 1).padStart(digits, '0')
-  )
+  const numeros = todosLosNumeros
 
   const search = busqueda.trim()
   const numerosFiltrados = search
@@ -129,9 +148,9 @@ export function SelectorNumeros({
             width: '100%', paddingLeft: 36, paddingRight: 12, height: 40,
             background: 'rgba(255,255,255,0.07)',
             border: '1px solid rgba(255,255,255,0.15)',
-            borderRadius: 10, color: '#fff', fontSize: 14, outline: 'none',
+            borderRadius: 10, color: '#fff', fontSize: 17, outline: 'none',
           }}
-          onFocus={e => { e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)' }}
+          onFocus={e => { e.currentTarget.style.borderColor = 'rgba(12, 150, 70,0.5)' }}
           onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
         />
         {search && (
@@ -156,10 +175,23 @@ export function SelectorNumeros({
         </span>
       </div>
 
-      <p className="text-sm font-ui text-brand-muted mb-3">
-        <span className="text-white font-semibold">{seleccionados.length}</span> de{' '}
-        <span className="text-white font-semibold">{maxSeleccion}</span> números seleccionados
-      </p>
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <p className="text-sm font-ui text-brand-muted">
+          <span className="text-white font-semibold">{seleccionados.length}</span> de{' '}
+          <span className="text-white font-semibold">{maxSeleccion}</span> números seleccionados
+        </p>
+        {faltantes > 0 && (
+          <button
+            type="button"
+            onClick={elegirAlAzar}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-ui font-semibold flex-shrink-0 transition-colors duration-150"
+            style={{ background: 'rgba(12, 150, 70,0.12)', border: '1px solid rgba(12, 150, 70,0.35)', color: '#0C9646' }}
+          >
+            <Shuffle className="w-3.5 h-3.5" />
+            Elegir al azar
+          </button>
+        )}
+      </div>
 
       {numerosFiltrados.length === 0 && (
         <p className="text-center py-6 text-sm font-ui" style={{ color: 'rgba(255,255,255,0.35)' }}>

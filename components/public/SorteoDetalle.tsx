@@ -31,7 +31,7 @@ interface ConteoOrganizador {
   finalizados: number
 }
 
-const LUGAR_LABEL: Record<number, string> = { 1: '1er', 2: '2do', 3: '3er' }
+const LUGAR_LABEL: Record<number, string> = { 1: '1er', 2: '2do', 3: '3er', 4: '4to', 5: '5to' }
 
 function GaleriaFotos({ premios }: { premios: Database['public']['Tables']['premios']['Row'][] }) {
   const [lightbox, setLightbox] = useState<string | null>(null)
@@ -54,7 +54,7 @@ function GaleriaFotos({ premios }: { premios: Database['public']['Tables']['prem
       >
         <h2
           className="font-title text-white text-center mb-8"
-          style={{ fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', letterSpacing: '0.05em' }}
+          style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', letterSpacing: '0.05em' }}
         >
           FOTOS DEL PREMIO
         </h2>
@@ -171,13 +171,13 @@ export function SorteoDetalle({
       <div className="max-w-lg mx-auto px-4 text-center mb-8 sm:mb-10">
         <h1
           className="font-title text-white"
-          style={{ fontSize: 'clamp(1.6rem, 4vw, 2.5rem)', letterSpacing: '0.02em', marginBottom: 10, lineHeight: 1.2 }}
+          style={{ fontSize: 'clamp(1.8rem, 4vw, 2.7rem)', letterSpacing: '0.02em', marginBottom: 10, lineHeight: 1.2 }}
         >
           {sorteo.nombre}
         </h1>
 
         {sorteo.descripcion && (
-          <p className="font-body" style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, lineHeight: 1.6, marginBottom: 14 }}>
+          <p className="font-body" style={{ color: 'rgba(255,255,255,0.6)', fontSize: 17, lineHeight: 1.6, marginBottom: 14 }}>
             {sorteo.descripcion}
           </p>
         )}
@@ -190,8 +190,8 @@ export function SorteoDetalle({
               borderRadius: 12, padding: '10px 14px', maxWidth: 440,
             }}
           >
-            <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{esLoteria ? '🎰' : '📱'}</span>
-            <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12.5, lineHeight: 1.55 }}>
+            <span style={{ fontSize: 19, lineHeight: 1, flexShrink: 0 }}>{esLoteria ? '🎰' : '📱'}</span>
+            <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 15.5, lineHeight: 1.55 }}>
               {anuncioGanador(esLoteria)}
             </span>
           </div>

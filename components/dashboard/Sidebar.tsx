@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useOrdenesBadge } from '@/hooks/useOrdenesBadge'
@@ -22,9 +23,10 @@ const NAV_ITEMS = [
 
 interface SidebarProps {
   userName?: string
+  logoUrl?: string | null
 }
 
-export function Sidebar({ userName }: SidebarProps) {
+export function Sidebar({ userName, logoUrl }: SidebarProps) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const badgeOrdenes = useOrdenesBadge('/dashboard/ordenes')
@@ -41,12 +43,25 @@ export function Sidebar({ userName }: SidebarProps) {
     <nav className="flex flex-col h-full">
       {/* Logo */}
       <div className="flex items-center gap-2 px-4 py-5 border-b border-brand-border">
-        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-          <Ticket className="w-4 h-4 text-white" />
-        </div>
-        <span className="font-title text-xl text-white">
-          RIFANDO<span className="text-brand-red">MAS</span>
-        </span>
+        {logoUrl ? (
+          <Image
+            src={logoUrl}
+            alt="Logo"
+            width={120}
+            height={36}
+            className="object-contain max-h-9 w-auto"
+            unoptimized
+          />
+        ) : (
+          <>
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+              <Ticket className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-title text-xl text-white">
+              RIFANDO<span className="text-brand-red">MAS</span>
+            </span>
+          </>
+        )}
       </div>
 
       {/* User */}
@@ -119,10 +134,16 @@ export function Sidebar({ userName }: SidebarProps) {
           {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-            <Ticket className="w-3.5 h-3.5 text-white" />
-          </div>
-          <span className="font-title text-lg text-white truncate">RIFANDO<span className="text-brand-red">MAS</span></span>
+          {logoUrl ? (
+            <Image src={logoUrl} alt="Logo" width={90} height={28} className="object-contain max-h-7 w-auto" unoptimized />
+          ) : (
+            <>
+              <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+                <Ticket className="w-3.5 h-3.5 text-white" />
+              </div>
+              <span className="font-title text-lg text-white truncate">RIFANDO<span className="text-brand-red">MAS</span></span>
+            </>
+          )}
         </div>
       </header>
 

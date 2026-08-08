@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -35,6 +35,7 @@ const NAV_LINKS = [
   { href: '#inicio', label: 'Inicio' },
   { href: '#sorteos', label: 'Sorteos' },
   { href: '#como-funciona', label: 'Cómo Funciona' },
+  { href: '#resultados', label: 'Resultados' },
   { href: '#verificador', label: 'Verificador' },
 ]
 
@@ -179,6 +180,8 @@ export function Navbar({ logoUrl, topbar }: { logoUrl?: string | null; topbar?: 
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
+  const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20)
@@ -188,6 +191,12 @@ export function Navbar({ logoUrl, topbar }: { logoUrl?: string | null; topbar?: 
 
   const handleNavClick = (href: string) => {
     setMenuOpen(false)
+
+    if (pathname !== '/') {
+      router.push(`/${href}`)
+      return
+    }
+
     const el = document.querySelector(href)
     el?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -338,13 +347,8 @@ export function Navbar({ logoUrl, topbar }: { logoUrl?: string | null; topbar?: 
         )}
         style={{ width: 270, background: '#252525', borderLeft: '1px solid #3a3a3a' }}
       >
-        {/* Header del drawer */}
-        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #3a3a3a' }}>
-          {logoUrl ? (
-            <Image src={logoUrl} alt="Logo" width={120} height={36} className="object-contain max-h-8 w-auto" unoptimized />
-          ) : (
-            <span className="font-title text-xl text-white">RIFANDO<span style={{ color: '#DC2626' }}>MAS</span></span>
-          )}
+        {/* Header del drawer — solo cerrar */}
+        <div className="flex items-center justify-end px-5 py-4" style={{ borderBottom: '1px solid #3a3a3a' }}>
           <button
             onClick={() => setMenuOpen(false)}
             className="p-1.5 rounded-lg transition-colors cursor-pointer"
@@ -353,6 +357,28 @@ export function Navbar({ logoUrl, topbar }: { logoUrl?: string | null; topbar?: 
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* CTA — arriba del todo */}
+        <div className="px-4 pt-4 pb-2">
+          <button
+            onClick={openModal}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-ui font-semibold text-sm text-white transition-opacity cursor-pointer"
+            style={{ background: '#0C9646' }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '0.9' }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+          >
+            <User className="w-4 h-4" />
+            Mi Cuenta
+          </button>
+          <Link
+            href="/registro"
+            onClick={() => setMenuOpen(false)}
+            className="block text-center mt-3 text-xs font-ui transition-colors duration-150 hover:underline"
+            style={{ color: '#60A5FA' }}
+          >
+            Regístrate Gratis
+          </Link>
         </div>
 
         {/* Links */}
@@ -370,20 +396,6 @@ export function Navbar({ logoUrl, topbar }: { logoUrl?: string | null; topbar?: 
             </button>
           ))}
         </nav>
-
-        {/* CTA */}
-        <div className="px-4 pb-8 pt-3" style={{ borderTop: '1px solid #3a3a3a' }}>
-          <button
-            onClick={openModal}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-ui font-semibold text-sm text-white transition-opacity cursor-pointer"
-            style={{ background: '#22C55E' }}
-            onMouseEnter={e => { e.currentTarget.style.opacity = '0.9' }}
-            onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
-          >
-            <User className="w-4 h-4" />
-            Mi Cuenta
-          </button>
-        </div>
       </div>
 
       {/* Login modal — self-contained */}

@@ -21,7 +21,7 @@ const STATUS_MAP: Record<ConnStatus, { label: string; color: string; dot: string
   unconfigured: { label: 'Sin configurar',  color: '#F97316', dot: '#FB923C' },
   disconnected: { label: 'Desconectado',    color: '#EF4444', dot: '#F87171' },
   connecting:   { label: 'Conectando...',   color: '#FBBF24', dot: '#FCD34D', pulse: true },
-  connected:    { label: 'Conectado',       color: '#22C55E', dot: '#4ADE80' },
+  connected:    { label: 'Conectado',       color: '#0C9646', dot: '#0C9646' },
   error:        { label: 'Error',           color: '#EF4444', dot: '#F87171' },
 }
 

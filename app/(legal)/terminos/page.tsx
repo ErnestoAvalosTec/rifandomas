@@ -28,7 +28,7 @@ function Section({
       >
         <span
           className="font-ui text-sm font-bold px-2 py-0.5 rounded-md flex-shrink-0"
-          style={{ background: '#22C55E', color: '#fff' }}
+          style={{ background: '#0C9646', color: '#fff' }}
         >
           {number}
         </span>
@@ -98,7 +98,7 @@ export default function TerminosPage() {
         </p>
         <div
           className="mt-6 p-4 rounded-xl text-sm font-body leading-relaxed text-brand-muted"
-          style={{ background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.2)' }}
+          style={{ background: 'rgba(12, 150, 70,0.07)', border: '1px solid rgba(12, 150, 70,0.2)' }}
         >
           Al acceder o usar la plataforma <strong className="text-white">RifandoMas</strong>, el
           Usuario acepta en su totalidad los presentes Términos y Condiciones. Si no está de

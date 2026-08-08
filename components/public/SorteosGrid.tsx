@@ -132,10 +132,10 @@ export function SorteosGrid({ sorteos }: SorteosGridProps) {
 
           {/* Encabezado SEO */}
           <div className="mb-8 sm:mb-10 text-center">
-            <h2 className="font-title text-white" style={{ fontSize: 'clamp(1.6rem, 4vw, 2.5rem)', letterSpacing: '0.02em', marginBottom: 8 }}>
+            <h2 className="font-title text-white" style={{ fontSize: 'clamp(1.9rem, 4.2vw, 2.9rem)', fontWeight: 800, letterSpacing: '0.01em', marginBottom: 10 }}>
               SORTEOS ACTIVOS
             </h2>
-            <p className="font-body mx-auto" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 'clamp(13px, 2vw, 15px)', maxWidth: 520 }}>
+            <p className="font-body mx-auto" style={{ color: 'rgba(255,255,255,0.48)', fontSize: 'clamp(16px, 2vw, 18px)', fontWeight: 300, letterSpacing: '0.01em', maxWidth: 520 }}>
               Elige tu sorteo, adquiere tus boletos y participa por grandes premios. Resultados 100% transparentes.
             </p>
           </div>
@@ -158,18 +158,18 @@ export function SorteosGrid({ sorteos }: SorteosGridProps) {
                     <div style={{
                       width: 68, height: 68,
                       borderRadius: '50%',
-                      background: active ? 'rgba(34,197,94,0.18)' : 'rgba(255,255,255,0.07)',
-                      border: `2px solid ${active ? '#22C55E' : 'transparent'}`,
+                      background: active ? 'rgba(12, 150, 70,0.18)' : 'rgba(255,255,255,0.07)',
+                      border: `2px solid ${active ? '#0C9646' : 'transparent'}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 35,
+                      fontSize: 38,
                       transition: 'all 0.15s',
                     }}>
                       {emoji}
                     </div>
                     <span style={{
-                      fontSize: 10,
+                      fontSize: 13,
                       fontWeight: active ? 700 : 500,
-                      color: active ? '#4ADE80' : 'rgba(255,255,255,0.65)',
+                      color: active ? '#0C9646' : 'rgba(255,255,255,0.65)',
                       textAlign: 'center',
                       whiteSpace: 'nowrap',
                       maxWidth: 64,
@@ -204,13 +204,13 @@ export function SorteosGrid({ sorteos }: SorteosGridProps) {
                   <div style={{
                     width: 28, height: 28,
                     border: '2.5px solid rgba(255,255,255,0.1)',
-                    borderTopColor: '#4ADE80',
+                    borderTopColor: '#0C9646',
                     borderRadius: '50%',
                     animation: 'rf-spin 0.75s linear infinite',
                   }} />
                   <span style={{
                     color: 'rgba(255,255,255,0.5)',
-                    fontSize: 10, fontWeight: 600,
+                    fontSize: 13, fontWeight: 600,
                     letterSpacing: '0.08em', textTransform: 'uppercase',
                   }}>Filtrando</span>
                 </div>
@@ -219,13 +219,13 @@ export function SorteosGrid({ sorteos }: SorteosGridProps) {
 
             {sorteosFiltrados.length === 0 ? (
               <div className="text-center py-20">
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16, marginBottom: 8 }}>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 19, marginBottom: 8 }}>
                   Ningún sorteo coincide con los filtros aplicados.
                 </p>
                 <button
                   onClick={() => aplicarFiltro({ categoria: '', precioMin: '', precioMax: '' })}
                   style={{
-                    color: '#4ADE80', fontSize: 13, fontWeight: 600,
+                    color: '#0C9646', fontSize: 16, fontWeight: 600,
                     background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline',
                   }}
                 >

@@ -86,7 +86,7 @@ function HeroSlider({ slides }: { slides: HeroSlide[] }) {
         }}>
           <Ticket style={{ width: 34, height: 34, color: '#fff' }} />
         </div>
-        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 600, textAlign: 'center', padding: '0 28px' }}>
+        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 16, fontWeight: 600, textAlign: 'center', padding: '0 28px' }}>
           Agrega imágenes del banner desde<br />Panel Admin → Hero
         </p>
       </div>
@@ -106,7 +106,7 @@ function HeroSlider({ slides }: { slides: HeroSlide[] }) {
             position: 'absolute', bottom: 0, left: 0, right: 0,
             padding: '12px 20px', background: 'rgba(0,0,0,0.52)',
           }}>
-            <p style={{ color: '#fff', fontSize: 15, fontWeight: 700 }}>{slide.titulo}</p>
+            <p style={{ color: '#fff', fontSize: 18, fontWeight: 700 }}>{slide.titulo}</p>
           </div>
         )}
       </div>
@@ -186,13 +186,13 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
           <div style={{
             width: 30, height: 30,
             border: '2.5px solid rgba(255,255,255,0.1)',
-            borderTopColor: '#4ADE80',
+            borderTopColor: '#0C9646',
             borderRadius: '50%',
             animation: 'rf-spin 0.75s linear infinite',
           }} />
           <span style={{
             color: 'rgba(255,255,255,0.5)',
-            fontSize: 10, fontWeight: 600,
+            fontSize: 13, fontWeight: 600,
             letterSpacing: '0.08em', textTransform: 'uppercase',
           }}>
             Cargando
@@ -220,7 +220,7 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
               display: 'inline-flex', alignItems: 'center', gap: 2,
               background: '#F97316', color: '#fff',
               borderRadius: 4, padding: '2px 5px',
-              fontSize: 8, fontWeight: 700, letterSpacing: '0.03em',
+              fontSize: 11, fontWeight: 700, letterSpacing: '0.03em',
             }}>
               <Star style={{ width: 7, height: 7 }} />
               DESTACADO
@@ -231,11 +231,11 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
             <span style={{
               background: 'rgba(0,0,0,0.75)', color: '#fff',
               borderRadius: 4, padding: '2px 6px',
-              fontSize: 9, fontWeight: 800, lineHeight: 1,
+              fontSize: 12, fontWeight: 800, lineHeight: 1,
               border: '1px solid rgba(255,255,255,0.15)',
               backdropFilter: 'blur(4px)',
             }}>
-              {formatCurrency(sorteo.precio_unitario)}<span style={{ fontWeight: 400, fontSize: 7, marginLeft: 2 }}>/boleto</span>
+              {formatCurrency(sorteo.precio_unitario)}<span style={{ fontWeight: 400, fontSize: 10, marginLeft: 2 }}>/boleto</span>
             </span>
           </div>
 
@@ -245,7 +245,7 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
               display: 'inline-flex', alignItems: 'center', gap: 2,
               background: 'rgba(0,0,0,0.6)', color: '#fff',
               borderRadius: 4, padding: '2px 5px',
-              fontSize: 8, fontWeight: 700, lineHeight: 1,
+              fontSize: 11, fontWeight: 700, lineHeight: 1,
               backdropFilter: 'blur(4px)',
             }}>
               <Ticket style={{ width: 8, height: 8 }} />
@@ -260,19 +260,19 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
             href={`/sorteo/${sorteo.id}`}
             onClick={irADetalle}
             className="lg:text-lg hover:underline"
-            style={{ color: '#fff', fontSize: 12, fontWeight: 800, lineHeight: 1.2, marginBottom: 3, display: 'block', textDecoration: 'none' }}
+            style={{ color: '#fff', fontSize: 15, fontWeight: 800, lineHeight: 1.2, marginBottom: 3, display: 'block', textDecoration: 'none' }}
             onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
             onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
           >
             {primerPremio?.nombre ?? sorteo.nombre}
           </a>
-          {primerPremio?.valor_estimado && (
+          {!!primerPremio?.valor_estimado && (
             <div className="hidden lg:block" style={{ marginBottom: 10 }}>
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 3,
                 background: 'rgba(249,115,22,0.2)', border: '1px solid rgba(249,115,22,0.4)',
                 color: '#fdba74', borderRadius: 5, padding: '2px 7px',
-                fontSize: 10, fontWeight: 700,
+                fontSize: 13, fontWeight: 700,
               }}>
                 Valor: {formatCurrency(primerPremio.valor_estimado)}
               </span>
@@ -282,28 +282,28 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
           {/* Progress — solo desktop */}
           <div className="hidden lg:block" style={{ marginBottom: 10 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>
-                {sorteo.boletos_vendidos.toLocaleString('es-MX')} de {sorteo.total_numeros.toLocaleString('es-MX')} vendidos
+              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', fontWeight: 300 }}>
+                <strong style={{ color: '#fff', fontWeight: 800, fontSize: 16 }}>{sorteo.boletos_vendidos.toLocaleString('es-MX')}</strong> de {sorteo.total_numeros.toLocaleString('es-MX')} vendidos
               </span>
-              <span style={{ fontSize: 11, color: '#4ADE80', fontWeight: 700 }}>{porcentaje}%</span>
+              <span style={{ fontSize: 17, color: '#0C9646', fontWeight: 800 }}>{porcentaje}%</span>
             </div>
             <div style={{ height: 5, background: 'rgba(0,0,0,0.35)', borderRadius: 3, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${porcentaje}%`, background: '#4ADE80', borderRadius: 3 }} />
+              <div style={{ height: '100%', width: `${porcentaje}%`, background: '#0C9646', borderRadius: 3 }} />
             </div>
           </div>
 
           {/* Countdown — mobile: solo días / desktop: los 4 */}
           <div className="lg:hidden" style={{ marginBottom: 8 }}>
             <div style={{ background: '#fff', borderRadius: 4, padding: '4px 6px', textAlign: 'center', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <p style={{ fontSize: 13, fontWeight: 800, color: '#14532d', lineHeight: 1 }}>{String(t.d).padStart(2, '0')}</p>
-              <p style={{ fontSize: 8, color: '#6B7280', fontWeight: 500 }}>días restantes</p>
+              <p style={{ fontSize: 17, fontWeight: 800, color: '#14532d', lineHeight: 1 }}>{String(t.d).padStart(2, '0')}</p>
+              <p style={{ fontSize: 10, color: '#6B7280', fontWeight: 300, letterSpacing: '0.02em' }}>días restantes</p>
             </div>
           </div>
           <div className="hidden lg:grid" style={{ gridTemplateColumns: 'repeat(4,1fr)', gap: 4, marginBottom: 12 }}>
             {[{ v: t.d, l: 'días' }, { v: t.h, l: 'hrs' }, { v: t.m, l: 'min' }, { v: t.s, l: 'seg' }].map(({ v, l }) => (
               <div key={l} style={{ background: '#fff', borderRadius: 5, padding: '6px 3px', textAlign: 'center' }}>
-                <p style={{ fontSize: 17, fontWeight: 800, color: '#14532d', lineHeight: 1 }}>{String(v).padStart(2, '0')}</p>
-                <p style={{ fontSize: 9, color: '#6B7280', marginTop: 2, fontWeight: 500 }}>{l}</p>
+                <p style={{ fontSize: 22, fontWeight: 800, color: '#14532d', lineHeight: 1 }}>{String(v).padStart(2, '0')}</p>
+                <p style={{ fontSize: 10, color: '#6B7280', marginTop: 3, fontWeight: 300, letterSpacing: '0.02em' }}>{l}</p>
               </div>
             ))}
           </div>
@@ -314,7 +314,7 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
             style={{
               width: '100%', padding: '7px 0',
               background: '#F97316', color: '#fff',
-              fontSize: 11, fontWeight: 800,
+              fontSize: 14, fontWeight: 800,
               borderRadius: 5, border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
               transition: 'opacity 0.15s', marginTop: 'auto',
@@ -330,13 +330,13 @@ function FeaturedSorteoCard({ sorteo }: { sorteo: SorteoDestacado }) {
 
       {/* WhatsApp link — solo visible en desktop */}
       <a
-        href="https://wa.me/3317385212?text=Quiero%20ser%20Destacado"
+        href="https://wa.me/3318767517?text=Quiero%20ser%20Destacado"
         target="_blank"
         rel="noopener noreferrer"
         className="hidden lg:block"
         style={{
           textAlign: 'center',
-          fontSize: 10, color: 'rgba(255,255,255,0.3)',
+          fontSize: 13, color: 'rgba(255,255,255,0.3)',
           padding: '7px 0',
           borderTop: '1px solid rgba(255,255,255,0.07)',
           textDecoration: 'none',
@@ -372,21 +372,21 @@ function NoFeaturedCard() {
         <Star style={{ width: 30, height: 30, color: '#F97316' }} />
       </div>
       <div>
-        <p style={{ color: '#fff', fontWeight: 800, fontSize: 17, marginBottom: 6 }}>
+        <p style={{ color: '#fff', fontWeight: 800, fontSize: 20, marginBottom: 6 }}>
           Espacio Destacado
         </p>
-        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, lineHeight: 1.6 }}>
+        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 15, lineHeight: 1.6 }}>
           Coloca tu sorteo aquí y llega a<br />miles de participantes.
         </p>
       </div>
       <a
-        href="https://wa.me/3317385212?text=Quiero%20ser%20Destacado"
+        href="https://wa.me/3318767517?text=Quiero%20ser%20Destacado"
         target="_blank"
         rel="noopener noreferrer"
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
           padding: '10px 22px', background: '#25D366',
-          color: '#fff', fontSize: 13, fontWeight: 700,
+          color: '#fff', fontSize: 16, fontWeight: 700,
           borderRadius: 6, textDecoration: 'none',
           transition: 'opacity 0.15s',
         }}
@@ -401,7 +401,7 @@ function NoFeaturedCard() {
 
 // ─── Mini Destacado Card (móvil/tablet) ───────────────────────────────────────
 const MEDAL: Record<number, string> = { 1: '🏆', 2: '🥈', 3: '🥉' }
-const LUGAR: Record<number, string> = { 1: '1er Premio', 2: '2do Premio', 3: '3er Premio' }
+const LUGAR: Record<number, string> = { 1: '1er Premio', 2: '2do Premio', 3: '3er Premio', 4: '4to Premio', 5: '5to Premio' }
 
 function MiniDestacadoCard({ sorteo }: { sorteo: SorteoDestacado }) {
   const premios = sorteo.premios.slice().sort((a, b) => a.lugar - b.lugar)
@@ -447,15 +447,15 @@ function MiniDestacadoCard({ sorteo }: { sorteo: SorteoDestacado }) {
               <span style={{
                 background: 'rgba(0,0,0,0.6)', color: '#fff',
                 borderRadius: 4, padding: '2px 4px',
-                fontSize: 7, fontWeight: 800, lineHeight: 1,
+                fontSize: 10, fontWeight: 800, lineHeight: 1,
                 backdropFilter: 'blur(4px)',
               }}>
-                {MEDAL[premioActual?.lugar ?? 1]} {LUGAR[premioActual?.lugar ?? 1]}
+                {MEDAL[premioActual?.lugar ?? 1] ? `${MEDAL[premioActual?.lugar ?? 1]} ` : ''}{LUGAR[premioActual?.lugar ?? 1]}
               </span>
               <span style={{
                 background: 'rgba(0,0,0,0.55)', color: '#fff',
                 borderRadius: 4, padding: '2px 4px',
-                fontSize: 7, fontWeight: 700, lineHeight: 1,
+                fontSize: 10, fontWeight: 700, lineHeight: 1,
                 backdropFilter: 'blur(4px)',
               }}>
                 {t.d}d
@@ -473,7 +473,7 @@ function MiniDestacadoCard({ sorteo }: { sorteo: SorteoDestacado }) {
                 position: 'absolute', top: 4, right: 4,
                 background: 'rgba(0,0,0,0.55)', color: '#fff',
                 borderRadius: 99, padding: '2px 5px', cursor: 'pointer',
-                fontSize: 7, fontWeight: 800, lineHeight: 1,
+                fontSize: 10, fontWeight: 800, lineHeight: 1,
                 display: 'flex', alignItems: 'center', gap: 1,
               }}
             >
@@ -484,7 +484,7 @@ function MiniDestacadoCard({ sorteo }: { sorteo: SorteoDestacado }) {
               <span style={{
                 background: 'rgba(0,0,0,0.65)', color: '#fff',
                 borderRadius: 4, padding: '2px 4px',
-                fontSize: 7, fontWeight: 700, lineHeight: 1,
+                fontSize: 10, fontWeight: 700, lineHeight: 1,
                 backdropFilter: 'blur(4px)',
               }}>
                 {t.d}d
@@ -497,10 +497,10 @@ function MiniDestacadoCard({ sorteo }: { sorteo: SorteoDestacado }) {
             position: 'absolute', bottom: 4, left: 4,
             background: '#F97316', color: '#fff',
             borderRadius: 4, padding: '2px 4px',
-            fontSize: 8, fontWeight: 800, lineHeight: 1,
+            fontSize: 11, fontWeight: 800, lineHeight: 1,
             boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
           }}>
-            {formatCurrency(sorteo.precio_unitario)}<span style={{ fontWeight: 400, fontSize: 6, marginLeft: 1 }}>/boleto</span>
+            {formatCurrency(sorteo.precio_unitario)}<span style={{ fontWeight: 400, fontSize: 9, marginLeft: 1 }}>/boleto</span>
           </span>
 
           {/* Esquina inferior derecha — valor estimado del premio actual */}
@@ -511,7 +511,7 @@ function MiniDestacadoCard({ sorteo }: { sorteo: SorteoDestacado }) {
               border: '1px solid rgba(249,115,22,0.55)',
               color: '#fdba74',
               borderRadius: 4, padding: '2px 4px',
-              fontSize: 7, fontWeight: 700, lineHeight: 1,
+              fontSize: 10, fontWeight: 700, lineHeight: 1,
               backdropFilter: 'blur(4px)',
             }}>
               Valor: {formatCurrency(premioActual.valor_estimado)}
@@ -535,7 +535,7 @@ function MiniDestacadoCard({ sorteo }: { sorteo: SorteoDestacado }) {
         </div>
 
         <p style={{
-          color: '#fff', fontSize: 11, fontWeight: 800, lineHeight: 1.25,
+          color: '#fff', fontSize: 14, fontWeight: 800, lineHeight: 1.25,
           display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
           padding: '6px 7px 0',
         }}>
@@ -544,32 +544,18 @@ function MiniDestacadoCard({ sorteo }: { sorteo: SorteoDestacado }) {
       </Link>
 
       <div style={{ padding: '4px 7px 7px', display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-        {/* Indicador de sorteo destacado */}
-        <span style={{
-          display: 'inline-flex', alignItems: 'center', gap: 3,
-          alignSelf: 'flex-start',
-          background: 'rgba(249,115,22,0.18)',
-          border: '1px solid rgba(249,115,22,0.4)',
-          color: '#fdba74',
-          borderRadius: 4, padding: '2px 5px',
-          fontSize: 8, fontWeight: 800, letterSpacing: '0.03em',
-        }}>
-          <Star style={{ width: 8, height: 8 }} />
-          SORTEO DESTACADO
-        </span>
-
         {/* % de boletos vendidos */}
         <div>
           <div style={{ height: 4, background: 'rgba(0,0,0,0.35)', borderRadius: 2, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${porcentaje}%`, background: '#4ADE80', borderRadius: 2 }} />
+            <div style={{ height: '100%', width: `${porcentaje}%`, background: '#0C9646', borderRadius: 2 }} />
           </div>
-          <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.55)', marginTop: 2 }}>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', marginTop: 2 }}>
             {porcentaje}% vendido
           </p>
         </div>
 
         {/* Cantidad de números emitidos */}
-        <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 3 }}>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 3 }}>
           <Ticket style={{ width: 8, height: 8, flexShrink: 0 }} />
           {sorteo.total_numeros.toLocaleString('es-MX')} números
         </p>
@@ -580,7 +566,7 @@ function MiniDestacadoCard({ sorteo }: { sorteo: SorteoDestacado }) {
           style={{
             width: '100%', padding: '5px 0', marginTop: 'auto',
             background: '#F97316', color: '#fff',
-            fontSize: 10, fontWeight: 800,
+            fontSize: 13, fontWeight: 800,
             borderRadius: 5, border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
             transition: 'opacity 0.15s',
@@ -599,7 +585,7 @@ function MiniDestacadoCard({ sorteo }: { sorteo: SorteoDestacado }) {
 function MiniNoFeaturedCard() {
   return (
     <a
-      href="https://wa.me/523318739737?text=Quiero%20ser%20destacado"
+      href="https://wa.me/523318767517?text=Quiero%20ser%20destacado"
       target="_blank"
       rel="noopener noreferrer"
       className="flex flex-col items-center justify-center text-center"
@@ -620,7 +606,7 @@ function MiniNoFeaturedCard() {
       }}>
         <Star style={{ width: 14, height: 14, color: '#F97316' }} />
       </div>
-      <p style={{ color: '#fff', fontSize: 10.5, fontWeight: 700, lineHeight: 1.3 }}>
+      <p style={{ color: '#fff', fontSize: 13.5, fontWeight: 700, lineHeight: 1.3 }}>
         ¿Quieres ser<br />destacado?
       </p>
     </a>
@@ -687,13 +673,13 @@ export function HeroSection({ slides, sorteosDestacados = [], ctaBannerUrl }: He
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
                   >
-                    <Icon style={{ width: 28, height: 28, color: '#4ADE80' }} />
+                    <Icon style={{ width: 28, height: 28, color: '#0C9646' }} />
                   </div>
                   <div>
                     <p className="text-xs sm:text-base" style={{ color: '#fff', fontWeight: 700, lineHeight: 1.3 }}>
                       {label}
                     </p>
-                    <p className="hidden sm:block" style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginTop: 4 }}>
+                    <p className="hidden sm:block" style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, marginTop: 4 }}>
                       {sub}
                     </p>
                   </div>

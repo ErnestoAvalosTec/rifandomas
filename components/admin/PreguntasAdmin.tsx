@@ -65,10 +65,10 @@ export function PreguntasAdmin({ preguntasIniciales }: { preguntasIniciales: Pre
       style={{
         padding: '5px 14px',
         borderRadius: 999,
-        border: `1px solid ${filtro === val ? 'rgba(34,197,94,0.5)' : 'rgba(255,255,255,0.1)'}`,
-        background: filtro === val ? 'rgba(34,197,94,0.12)' : 'transparent',
-        color: filtro === val ? '#4ADE80' : 'rgba(255,255,255,0.5)',
-        fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
+        border: `1px solid ${filtro === val ? 'rgba(12, 150, 70,0.5)' : 'rgba(255,255,255,0.1)'}`,
+        background: filtro === val ? 'rgba(12, 150, 70,0.12)' : 'transparent',
+        color: filtro === val ? '#0C9646' : 'rgba(255,255,255,0.5)',
+        fontSize: 15, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
       }}
     >
       {label}
@@ -86,7 +86,7 @@ export function PreguntasAdmin({ preguntasIniciales }: { preguntasIniciales: Pre
     width: '100%', background: '#141414',
     border: '1px solid rgba(255,255,255,0.12)',
     borderRadius: 7, padding: '8px 10px',
-    fontSize: 13, color: '#fff', outline: 'none',
+    fontSize: 16, color: '#fff', outline: 'none',
     fontFamily: 'inherit',
   }
 
@@ -97,14 +97,14 @@ export function PreguntasAdmin({ preguntasIniciales }: { preguntasIniciales: Pre
         {pill('Todas', 'todas')}
         {pill('Pendientes', 'pendiente')}
         {pill('Publicadas', 'publicada')}
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginLeft: 6 }}>
+        <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.3)', marginLeft: 6 }}>
           {filtradas.length} {filtradas.length === 1 ? 'pregunta' : 'preguntas'}
         </span>
       </div>
 
       {filtradas.length === 0 ? (
         <div style={{ ...cardBase, padding: '48px 24px', textAlign: 'center' }}>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>No hay preguntas con este filtro.</p>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 17 }}>No hay preguntas con este filtro.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -133,26 +133,26 @@ export function PreguntasAdmin({ preguntasIniciales }: { preguntasIniciales: Pre
                     transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
                   }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ color: '#fff', fontSize: 13, fontWeight: 500, lineHeight: 1.4 }}>
+                    <p style={{ color: '#fff', fontSize: 16, fontWeight: 500, lineHeight: 1.4 }}>
                       {p.pregunta}
                     </p>
                     <div style={{ display: 'flex', gap: 10, marginTop: 5, flexWrap: 'wrap', alignItems: 'center' }}>
                       <span style={{
-                        background: p.estado === 'publicada' ? 'rgba(34,197,94,0.12)' : 'rgba(249,115,22,0.12)',
-                        border: `1px solid ${p.estado === 'publicada' ? 'rgba(34,197,94,0.3)' : 'rgba(249,115,22,0.3)'}`,
-                        color: p.estado === 'publicada' ? '#4ADE80' : '#FB923C',
+                        background: p.estado === 'publicada' ? 'rgba(12, 150, 70,0.12)' : 'rgba(249,115,22,0.12)',
+                        border: `1px solid ${p.estado === 'publicada' ? 'rgba(12, 150, 70,0.3)' : 'rgba(249,115,22,0.3)'}`,
+                        color: p.estado === 'publicada' ? '#0C9646' : '#FB923C',
                         borderRadius: 4, padding: '1px 6px',
-                        fontSize: 10, fontWeight: 700,
+                        fontSize: 13, fontWeight: 700,
                       }}>
                         {p.estado === 'publicada' ? 'Publicada' : 'Pendiente'}
                       </span>
-                      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
+                      <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>
                         {p.sorteos?.nombre}
                       </span>
-                      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)' }}>
+                      <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.25)' }}>
                         por {autor}
                       </span>
-                      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>
+                      <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.2)' }}>
                         {formatFecha(p.created_at)}
                       </span>
                     </div>
@@ -163,10 +163,10 @@ export function PreguntasAdmin({ preguntasIniciales }: { preguntasIniciales: Pre
                       onClick={() => isEditing ? setEditando(null) : iniciarEdicion(p)}
                       style={{
                         background: 'none', border: 'none', cursor: 'pointer',
-                        color: isEditing ? '#4ADE80' : 'rgba(255,255,255,0.3)',
+                        color: isEditing ? '#0C9646' : 'rgba(255,255,255,0.3)',
                         padding: 5, transition: 'color 0.15s',
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.color = '#4ADE80' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#0C9646' }}
                       onMouseLeave={e => { if (!isEditing) e.currentTarget.style.color = 'rgba(255,255,255,0.3)' }}
                       title="Editar"
                     >
@@ -194,19 +194,19 @@ export function PreguntasAdmin({ preguntasIniciales }: { preguntasIniciales: Pre
                     {isEditing ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 12 }}>
                         <div>
-                          <label style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
+                          <label style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
                             Autor
                           </label>
                           <input value={editData.nombre_autor} onChange={e => setEditData(d => ({ ...d, nombre_autor: e.target.value }))} style={inputStyle} maxLength={50} />
                         </div>
                         <div>
-                          <label style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
+                          <label style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
                             Pregunta
                           </label>
                           <textarea value={editData.pregunta} onChange={e => setEditData(d => ({ ...d, pregunta: e.target.value }))} style={{ ...inputStyle, resize: 'vertical' }} rows={2} maxLength={400} />
                         </div>
                         <div>
-                          <label style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
+                          <label style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
                             Respuesta
                           </label>
                           <textarea value={editData.respuesta} onChange={e => setEditData(d => ({ ...d, respuesta: e.target.value }))} style={{ ...inputStyle, resize: 'vertical' }} rows={3} maxLength={600} placeholder="Dejar vacío para mantener como pendiente" />
@@ -217,8 +217,8 @@ export function PreguntasAdmin({ preguntasIniciales }: { preguntasIniciales: Pre
                             disabled={guardando}
                             style={{
                               flex: 1, padding: '8px 0',
-                              background: '#22C55E', color: '#fff',
-                              fontSize: 12, fontWeight: 700,
+                              background: '#0C9646', color: '#fff',
+                              fontSize: 15, fontWeight: 700,
                               border: 'none', borderRadius: 8, cursor: 'pointer',
                               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                             }}
@@ -242,20 +242,20 @@ export function PreguntasAdmin({ preguntasIniciales }: { preguntasIniciales: Pre
                       </div>
                     ) : (
                       <div style={{ paddingTop: 12 }}>
-                        <p style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)', marginBottom: 5, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.35)', marginBottom: 5, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                           Preguntó: {p.nombre_autor}
                         </p>
                         {p.respuesta ? (
                           <>
-                            <p style={{ fontSize: 10, fontWeight: 700, color: '#4ADE80', marginTop: 10, marginBottom: 5, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                            <p style={{ fontSize: 13, fontWeight: 700, color: '#0C9646', marginTop: 10, marginBottom: 5, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                               Respuesta publicada
                             </p>
-                            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, lineHeight: 1.6 }}>
+                            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 16, lineHeight: 1.6 }}>
                               {p.respuesta}
                             </p>
                           </>
                         ) : (
-                          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, fontStyle: 'italic' }}>
+                          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 16, fontStyle: 'italic' }}>
                             Sin respuesta aún.
                           </p>
                         )}

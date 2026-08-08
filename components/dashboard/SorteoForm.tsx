@@ -45,7 +45,7 @@ const schema = z.object({
   precio_unitario: z.coerce.number().min(1),
   promo_activa: z.boolean().default(false),
   promo_tipo: z.enum(['x_por_y', 'compra_lleva']).optional(),
-  premios: z.array(premioSchema).min(1, 'Agrega al menos 1 premio').max(3),
+  premios: z.array(premioSchema).min(1, 'Agrega al menos 1 premio').max(5),
   cuentas: z.array(cuentaSchema).default([]),
 })
 
@@ -396,8 +396,8 @@ export function SorteoForm({ sorteo, userId, adminMode = false, premiosIniciales
       {/* ── Premios ── */}
       <div className="bg-brand-card border border-brand-border rounded-2xl p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-ui font-semibold text-brand-text">Premios (máx. 3)</h2>
-          {premioFields.length < 3 && (
+          <h2 className="font-ui font-semibold text-brand-text">Premios (máx. 5)</h2>
+          {premioFields.length < 5 && (
             <Button
               type="button"
               variant="outline"
